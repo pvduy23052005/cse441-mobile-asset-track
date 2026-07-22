@@ -1,6 +1,6 @@
-# Tài liệu Phân tích và Thiết kế Hệ thống AssetTrack
+# Tài liệu Phân tích và Thiết kế Kỹ thuật Hệ thống AssetTrack (Technical SAD)
 
-Tài liệu này trình bày chi tiết về mặt phân tích và thiết kế hệ thống (Systems Analysis and Design - SAD) cho dự án AssetTrack, bao gồm đặc tả yêu cầu, biểu đồ Use Case, biểu đồ tuần tự (Sequence Diagrams), biểu đồ chuyển trạng thái (State Transition Diagrams) và kiến trúc hệ thống tổng thể.
+Tài liệu này tập trung chuyên sâu vào các sơ đồ mô hình hóa phần mềm theo chuẩn **Systems Analysis and Design (SAD)** cho dự án AssetTrack, bao gồm đặc tả Yêu cầu, Use Case, Biểu đồ Hoạt động (Activity Diagrams), Biểu đồ Tuần tự (Sequence Diagrams), Biểu đồ Chuyển trạng thái (State Transition Diagrams), Biểu đồ Thực thể Lớp (UML Class Diagram) và Kiến trúc Hệ thống.
 
 ---
 
@@ -23,7 +23,7 @@ Tài liệu này trình bày chi tiết về mặt phân tích và thiết kế 
 
 ## 2. Phân tích Use Case (Use Case Analysis)
 
-### 2.1. Biểu đồ Use Case (Use Case Diagram)
+### 2.1. Biểu đồ Use Case tổng thể (Use Case Diagram)
 
 ```mermaid
 flowchart LR
@@ -61,7 +61,7 @@ flowchart LR
     Supervisor --> UC_ConfigPM
 ```
 
-### 2.2. Đặc tả Use Case tiêu biểu (Use Case Specification - SOS Breakdown Workflow)
+### 2.2. Đặc tả Use Case tiêu biểu (Use Case Specification)
 
 | Thành phần đặc tả | Mô tả chi tiết |
 | :--- | :--- |
@@ -73,9 +73,55 @@ flowchart LR
 
 ---
 
-## 3. Biểu đồ Tuần tự (Sequence Diagrams)
+## 3. Biểu đồ Hoạt động (Activity Diagrams)
 
-### 3.1. Luồng Báo hỏng SOS và Đẩy Thông báo
+### 3.1. Quy trình Xử lý Sự cố khẩn cấp (Breakdown SOS Workflow)
+```mermaid
+flowchart TD
+    A([Bắt đầu]) --> B[Operator quét mã QR trên thân máy]
+    B --> C[Hệ thống hiển thị Hộ chiếu thiết bị]
+    C --> D["Operator chọn 'Báo lỗi SOS', điền mô tả & chụp hình lỗi"]
+    D --> E["Hệ thống tạo phiếu SOS (Trạng thái: Pending)"]
+    E --> F["Hệ thống chuyển trạng thái máy sang 'Repairing'"]
+    F --> G[Hệ thống gửi Push Notification tới ME]
+    G --> H["ME Engineer nhận việc & tiến hành sửa chữa (Trạng thái: In Progress)"]
+    H --> I[ME hoàn thành sửa chữa, cập nhật vật tư tiêu hao]
+    I --> J["ME chụp ảnh bàn giao, chuyển trạng thái phiếu sang 'Completed'"]
+    J --> K[Quản đốc Supervisor kiểm tra hiện trường]
+    K --> L[Quản đốc ký tên điện tử nghiệm thu trên màn hình]
+    L --> M["Hệ thống lưu chữ ký, chuyển trạng thái phiếu sang 'Approved'"]
+    M --> N["Hệ thống tự động chuyển trạng thái máy về 'Active'"]
+    N --> O([Kết thúc])
+```
+
+### 3.2. Quy trình Bảo trì Định kỳ (Preventive Maintenance Workflow)
+```mermaid
+flowchart TD
+    A([Bắt đầu]) --> B[Hệ thống theo dõi số giờ máy chạy]
+    B --> C{Số giờ chạy >= Mốc cấu hình bảo trì?}
+    C -- Có --> D["Hệ thống tự động tạo PM Checklist (Trạng thái: Pending)"]
+    D --> E["Hệ thống chuyển trạng thái máy sang 'Maintenance'"]
+    E --> F[Hệ thống phân công task cho ME]
+    F --> G[ME mở danh sách checklist cần làm]
+    G --> H[ME thực hiện hạng mục bảo dưỡng]
+    H --> I[ME tích chọn hoàn thành hạng mục]
+    I --> J{Hoàn tất 100% Checklist?}
+    J -- Chưa --> H
+    J -- Rồi --> K[ME chụp ảnh linh kiện mới làm bằng chứng]
+    K --> L["ME bấm 'Hoàn thành' (Trạng thái: Completed)"]
+    L --> M[Quản đốc kiểm tra & ký tên nghiệm thu]
+    M --> N["Hệ thống lưu chữ ký, cập nhật trạng thái phiếu sang 'Approved'"]
+    N --> O["Hệ thống cập nhật thời điểm bảo trì gần nhất và chuyển máy về 'Active'"]
+    O --> P([Kết thúc])
+    C -- Không --> Q[Tiếp tục chạy máy & theo dõi số giờ]
+    Q --> P
+```
+
+---
+
+## 4. Biểu đồ Tuần tự (Sequence Diagrams)
+
+### 4.1. Luồng Báo hỏng SOS và Đẩy Thông báo
 
 ```mermaid
 sequenceDiagram
@@ -102,7 +148,7 @@ sequenceDiagram
     ME->>App: Nhấn Notification -> Xem chi tiết sự cố
 ```
 
-### 3.2. Luồng Sửa chữa & Thực thi PM Checklist
+### 4.2. Luồng Sửa chữa & Thực thi PM Checklist
 
 ```mermaid
 sequenceDiagram
@@ -125,7 +171,7 @@ sequenceDiagram
     App-->>ME: Hiển thị "Đang đợi Quản đốc nghiệm thu"
 ```
 
-### 3.3. Luồng Nghiệm thu và Ký tên điện tử (Digital Sign-off)
+### 4.3. Luồng Nghiệm thu và Ký tên điện tử (Digital Sign-off)
 
 ```mermaid
 sequenceDiagram
@@ -148,9 +194,9 @@ sequenceDiagram
 
 ---
 
-## 4. Biểu đồ Chuyển trạng thái (State Transition Diagrams)
+## 5. Biểu đồ Chuyển trạng thái (State Transition Diagrams)
 
-### 4.1. Trạng thái Thiết bị (Machine States)
+### 5.1. Trạng thái Thiết bị (Machine States)
 
 ```mermaid
 stateDiagram-v2
@@ -164,7 +210,7 @@ stateDiagram-v2
     Inactive --> [*]
 ```
 
-### 4.2. Trạng thái Phiếu công việc (Work Order / PM Checklist States)
+### 5.2. Trạng thái Phiếu công việc (Work Order / PM Checklist States)
 
 ```mermaid
 stateDiagram-v2
@@ -178,9 +224,118 @@ stateDiagram-v2
 
 ---
 
-## 5. Kiến trúc Hệ thống Tổng thể (System Architecture)
+## 6. Sơ đồ Thực thể Lớp (UML Class Diagram)
 
-Hệ thống được thiết kế theo kiến trúc **Serverless Backend-as-a-Service (BaaS)** để tối giản hóa tài nguyên phát triển cho nhóm 2 người:
+```mermaid
+classDiagram
+    direction TB
+
+    class UserRole {
+        <<enumeration>>
+        OPERATOR
+        ME_ENGINEER
+        SUPERVISOR
+    }
+
+    class MachineStatus {
+        <<enumeration>>
+        ACTIVE
+        REPAIRING
+        MAINTENANCE
+        INACTIVE
+    }
+
+    class TaskStatus {
+        <<enumeration>>
+        PENDING
+        ASSIGNED
+        IN_PROGRESS
+        COMPLETED
+        APPROVED
+    }
+
+    class SeverityLevel {
+        <<enumeration>>
+        LOW
+        MEDIUM
+        HIGH
+        CRITICAL
+    }
+
+    class UserProfile {
+        +UUID id
+        +String fullName
+        +UserRole role
+        +DateTime createdAt
+        +login()
+        +updateProfile()
+    }
+
+    class Machine {
+        +UUID id
+        +String code
+        +String name
+        +Map specifications
+        +MachineStatus status
+        +double runningHours
+        +DateTime lastMaintenance
+        +DateTime createdAt
+        +updateRunningHours()
+        +changeStatus()
+    }
+
+    class WorkOrder {
+        +UUID id
+        +UUID machineId
+        +UUID reporterId
+        +UUID assigneeId
+        +UUID supervisorId
+        +SeverityLevel severity
+        +String description
+        +String imageUrl
+        +TaskStatus status
+        +DateTime downtimeStart
+        +DateTime downtimeEnd
+        +String supervisorSignatureUrl
+        +claim()
+        +complete()
+        +approve()
+    }
+
+    class PmChecklist {
+        +UUID id
+        +UUID machineId
+        +UUID assigneeId
+        +UUID supervisorId
+        +double scheduledHours
+        +TaskStatus status
+        +String supervisorSignatureUrl
+        +DateTime completedAt
+        +execute()
+        +approve()
+    }
+
+    class PmChecklistItem {
+        +UUID id
+        +UUID pmChecklistId
+        +String taskDescription
+        +boolean isChecked
+        +String photoUrl
+        +DateTime checkedAt
+        +toggleCheck()
+        +uploadProofPhoto()
+    }
+
+    UserProfile "1" -- "0..*" WorkOrder : "báo lỗi / tiếp nhận / nghiệm thu"
+    UserProfile "1" -- "0..*" PmChecklist : "thực hiện / nghiệm thu"
+    Machine "1" -- "0..*" WorkOrder : "phát sinh sự cố"
+    Machine "1" -- "0..*" PmChecklist : "bảo trì định kỳ"
+    PmChecklist "1" *-- "1..*" PmChecklistItem : "bao gồm các hạng mục"
+```
+
+---
+
+## 7. Kiến trúc Hệ thống Tổng thể (System Architecture)
 
 ```mermaid
 graph TD
@@ -220,6 +375,3 @@ graph TD
     EdgeFunc -->|Send Payload| FCM
     FCM -->|Push Notification| Client_App
 ```
-
-* **Data Flow Realtime:** Supabase hỗ trợ giao thức WebSockets (`Realtime`) cho phép ứng dụng Flutter lắng nghe trực tiếp sự thay đổi trạng thái máy móc trên database mà không cần cơ chế pull liên tục, giúp tiết kiệm băng thông và pin điện thoại của người dùng.
-* **Row-Level Security (RLS):** Bảo vệ dữ liệu trực tiếp tại lớp cơ sở dữ liệu. Bất kỳ request nào từ Flutter SDK đi qua cũng đều phải thỏa mãn quy tắc RLS (ví dụ: Kỹ sư không thể cập nhật cột chữ ký nghiệm thu của Quản đốc).
