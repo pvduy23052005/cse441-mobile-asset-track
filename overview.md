@@ -57,84 +57,83 @@ Dưới đây là danh sách các User Stories đặc tả các tính năng cố
 ### 3.1. Biểu đồ Use Case tổng thể
 
 ```mermaid
-leftToRightDirection
-actor Operator as "Công nhân Vận hành"
-actor ME as "Kỹ sư Cơ điện"
-actor Supervisor as "Quản đốc Phân xưởng"
+flowchart LR
+    subgraph Actors["Tác nhân Nguồn"]
+        Operator["Công nhân Vận hành"]
+        ME["Kỹ sư Cơ điện (ME)"]
+        Supervisor["Quản đốc Phân xưởng"]
+    end
 
-rectangle "Hệ thống AssetTrack" {
-    usecase UC_ScanQR as "Quét QR & Xem lý lịch máy"
-    usecase UC_LogHours as "Cập nhật số giờ chạy"
-    usecase UC_CreateSOS as "Tạo phiếu SOS báo hỏng"
-    usecase UC_ClaimSOS as "Tiếp nhận phiếu sửa chữa SOS"
-    usecase UC_ExecutePM as "Thực hiện PM Checklist"
-    usecase UC_LogParts as "Khai báo vật tư thay thế"
-    usecase UC_SignOff as "Nghiệm thu & Ký tên điện tử"
-    usecase UC_ApproveParts as "Phê duyệt vật tư"
-    usecase UC_ViewDashboard as "Xem Dashboard Downtime"
-    usecase UC_ConfigPM as "Cài đặt mốc giờ bảo trì"
-}
+    subgraph System["Hệ thống AssetTrack"]
+        UC_ScanQR["Quét QR & Xem lý lịch máy"]
+        UC_LogHours["Cập nhật số giờ chạy"]
+        UC_CreateSOS["Tạo phiếu SOS báo hỏng"]
+        UC_ClaimSOS["Tiếp nhận phiếu sửa chữa SOS"]
+        UC_ExecutePM["Thực hiện PM Checklist"]
+        UC_LogParts["Khai báo vật tư thay thế"]
+        UC_SignOff["Nghiệm thu & Ký tên điện tử"]
+        UC_ApproveParts["Phê duyệt vật tư"]
+        UC_ViewDashboard["Xem Dashboard Downtime"]
+        UC_ConfigPM["Cài đặt mốc giờ bảo trì"]
+    end
 
-Operator --> UC_ScanQR
-Operator --> UC_LogHours
-Operator --> UC_CreateSOS
+    Operator --> UC_ScanQR
+    Operator --> UC_LogHours
+    Operator --> UC_CreateSOS
 
-ME --> UC_ScanQR
-ME --> UC_ClaimSOS
-ME --> UC_ExecutePM
-ME --> UC_LogParts
+    ME --> UC_ScanQR
+    ME --> UC_ClaimSOS
+    ME --> UC_ExecutePM
+    ME --> UC_LogParts
 
-Supervisor --> UC_SignOff
-Supervisor --> UC_ApproveParts
-Supervisor --> UC_ViewDashboard
-Supervisor --> UC_ConfigPM
+    Supervisor --> UC_SignOff
+    Supervisor --> UC_ApproveParts
+    Supervisor --> UC_ViewDashboard
+    Supervisor --> UC_ConfigPM
 ```
 
 ### 3.2. Biểu đồ Hoạt động (Activity Diagrams)
 
 #### A. Quy trình Xử lý Sự cố khẩn cấp (Breakdown SOS Workflow)
 ```mermaid
-skinparam ArchimateJustification center
-start
-:Operator quét mã QR trên thân máy;
-:Hệ thống hiển thị Hộ chiếu thiết bị;
-:Operator chọn "Báo lỗi SOS", điền mô tả & chụp hình lỗi;
-:Hệ thống tạo phiếu SOS (Trạng thái: Pending);
-:Hệ thống chuyển trạng thái máy sang "Repairing";
-:Hệ thống gửi Push Notification tới ME;
-:ME Engineer nhận việc & tiến hành sửa chữa (Trạng thái: In Progress);
-:ME hoàn thành sửa chữa, cập nhật vật tư tiêu hao;
-:ME chụp ảnh bàn giao, chuyển trạng thái phiếu sang "Completed";
-:Quản đốc (Supervisor) kiểm tra hiện trường;
-:Quản đốc ký tên điện tử nghiệm thu trên màn hình;
-:Hệ thống lưu chữ ký, chuyển trạng thái phiếu sang "Approved";
-:Hệ thống tự động chuyển trạng thái máy về "Active";
-stop
+flowchart TD
+    A([Bắt đầu]) --> B[Operator quét mã QR trên thân máy]
+    B --> C[Hệ thống hiển thị Hộ chiếu thiết bị]
+    C --> D["Operator chọn 'Báo lỗi SOS', điền mô tả & chụp hình lỗi"]
+    D --> E["Hệ thống tạo phiếu SOS (Trạng thái: Pending)"]
+    E --> F["Hệ thống chuyển trạng thái máy sang 'Repairing'"]
+    F --> G[Hệ thống gửi Push Notification tới ME]
+    G --> H["ME Engineer nhận việc & tiến hành sửa chữa (Trạng thái: In Progress)"]
+    H --> I[ME hoàn thành sửa chữa, cập nhật vật tư tiêu hao]
+    I --> J["ME chụp ảnh bàn giao, chuyển trạng thái phiếu sang 'Completed'"]
+    J --> K[Quản đốc Supervisor kiểm tra hiện trường]
+    K --> L[Quản đốc ký tên điện tử nghiệm thu trên màn hình]
+    L --> M["Hệ thống lưu chữ ký, chuyển trạng thái phiếu sang 'Approved'"]
+    M --> N["Hệ thống tự động chuyển trạng thái máy về 'Active'"]
+    N --> O([Kết thúc])
 ```
 
 #### B. Quy trình Bảo trì Định kỳ (Preventive Maintenance Workflow)
 ```mermaid
-start
-:Hệ thống theo dõi số giờ máy chạy;
-if (Số giờ chạy >= Mốc cấu hình bảo trì?) then (yes)
-  :Hệ thống tự động tạo PM Checklist (Trạng thái: Pending);
-  :Hệ thống chuyển trạng thái máy sang "Maintenance";
-  :Hệ thống phân công task cho ME;
-  :ME mở danh sách checklist cần làm;
-  repeat
-    :ME thực hiện hạng mục bảo dưỡng;
-    :ME tích chọn hoàn thành hạng mục;
-  backward:Cần hoàn thành tất cả hạng mục;
-  until (Hoàn tất 100% Checklist?)
-  :ME chụp ảnh linh kiện mới làm bằng chứng;
-  :ME bấm "Hoàn thành" (Trạng thái: Completed);
-  :Quản đốc kiểm tra & ký tên nghiệm thu;
-  :Hệ thống lưu chữ ký, cập nhật trạng thái phiếu sang "Approved";
-  :Hệ thống cập nhật thời điểm bảo trì gần nhất và chuyển máy về "Active";
-else (no)
-  :Tiếp tục chạy máy & theo dõi số giờ;
-endif
-stop
+flowchart TD
+    A([Bắt đầu]) --> B[Hệ thống theo dõi số giờ máy chạy]
+    B --> C{Số giờ chạy >= Mốc cấu hình bảo trì?}
+    C -- Có --> D["Hệ thống tự động tạo PM Checklist (Trạng thái: Pending)"]
+    D --> E["Hệ thống chuyển trạng thái máy sang 'Maintenance'"]
+    E --> F[Hệ thống phân công task cho ME]
+    F --> G[ME mở danh sách checklist cần làm]
+    G --> H[ME thực hiện hạng mục bảo dưỡng]
+    H --> I[ME tích chọn hoàn thành hạng mục]
+    I --> J{Hoàn tất 100% Checklist?}
+    J -- Chưa --> H
+    J -- Rồi --> K[ME chụp ảnh linh kiện mới làm bằng chứng]
+    K --> L["ME bấm 'Hoàn thành' (Trạng thái: Completed)"]
+    L --> M[Quản đốc kiểm tra & ký tên nghiệm thu]
+    M --> N["Hệ thống lưu chữ ký, cập nhật trạng thái phiếu sang 'Approved'"]
+    N --> O["Hệ thống cập nhật thời điểm bảo trì gần nhất và chuyển máy về 'Active'"]
+    O --> P([Kết thúc])
+    C -- Không --> Q[Tiếp tục chạy máy & theo dõi số giờ]
+    Q --> P
 ```
 
 ---

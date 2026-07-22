@@ -26,37 +26,39 @@ Tài liệu này trình bày chi tiết về mặt phân tích và thiết kế 
 ### 2.1. Biểu đồ Use Case (Use Case Diagram)
 
 ```mermaid
-leftToRightDirection
-actor Operator as "Công nhân Vận hành"
-actor ME as "Kỹ sư Cơ điện"
-actor Supervisor as "Quản đốc Phân xưởng"
+flowchart LR
+    subgraph Actors["Tác nhân Nguồn"]
+        Operator["Công nhân Vận hành"]
+        ME["Kỹ sư Cơ điện (ME)"]
+        Supervisor["Quản đốc Phân xưởng"]
+    end
 
-rectangle "Hệ thống AssetTrack" {
-    usecase UC_ScanQR as "Quét QR & Xem lý lịch máy"
-    usecase UC_LogHours as "Cập nhật số giờ chạy"
-    usecase UC_CreateSOS as "Tạo phiếu SOS báo hỏng"
-    usecase UC_ClaimSOS as "Tiếp nhận phiếu sửa chữa SOS"
-    usecase UC_ExecutePM as "Thực hiện PM Checklist"
-    usecase UC_LogParts as "Khai báo vật tư thay thế"
-    usecase UC_SignOff as "Nghiệm thu & Ký tên điện tử"
-    usecase UC_ApproveParts as "Phê duyệt vật tư"
-    usecase UC_ViewDashboard as "Xem Dashboard Downtime"
-    usecase UC_ConfigPM as "Cài đặt mốc giờ bảo trì"
-}
+    subgraph System["Hệ thống AssetTrack"]
+        UC_ScanQR["Quét QR & Xem lý lịch máy"]
+        UC_LogHours["Cập nhật số giờ chạy"]
+        UC_CreateSOS["Tạo phiếu SOS báo hỏng"]
+        UC_ClaimSOS["Tiếp nhận phiếu sửa chữa SOS"]
+        UC_ExecutePM["Thực hiện PM Checklist"]
+        UC_LogParts["Khai báo vật tư thay thế"]
+        UC_SignOff["Nghiệm thu & Ký tên điện tử"]
+        UC_ApproveParts["Phê duyệt vật tư"]
+        UC_ViewDashboard["Xem Dashboard Downtime"]
+        UC_ConfigPM["Cài đặt mốc giờ bảo trì"]
+    end
 
-Operator --> UC_ScanQR
-Operator --> UC_LogHours
-Operator --> UC_CreateSOS
+    Operator --> UC_ScanQR
+    Operator --> UC_LogHours
+    Operator --> UC_CreateSOS
 
-ME --> UC_ScanQR
-ME --> UC_ClaimSOS
-ME --> UC_ExecutePM
-ME --> UC_LogParts
+    ME --> UC_ScanQR
+    ME --> UC_ClaimSOS
+    ME --> UC_ExecutePM
+    ME --> UC_LogParts
 
-Supervisor --> UC_SignOff
-Supervisor --> UC_ApproveParts
-Supervisor --> UC_ViewDashboard
-Supervisor --> UC_ConfigPM
+    Supervisor --> UC_SignOff
+    Supervisor --> UC_ApproveParts
+    Supervisor --> UC_ViewDashboard
+    Supervisor --> UC_ConfigPM
 ```
 
 ### 2.2. Đặc tả Use Case tiêu biểu (Use Case Specification - SOS Breakdown Workflow)
@@ -203,7 +205,6 @@ graph TD
         FCM[Firebase Cloud Messaging - FCM]
     end
 
-    %% Kết nối
     UI --> Riverpod
     Riverpod --> Scanner
     Riverpod --> SigCanvas
