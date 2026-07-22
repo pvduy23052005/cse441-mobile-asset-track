@@ -69,8 +69,3 @@ gantt
     section Chung (Cả 2 Thành viên)
     Tích hợp Flutter + Supabase & Test:joint_1, after backend_4, 7d
 ```
-
----
-
-## 5. Tài liệu liên quan
-- Chi tiết cấu trúc dữ liệu và tập lệnh SQL: [database_schema.md](file:///Users/macbook/Documents/hk6/mobile/project/database_schema.md)
