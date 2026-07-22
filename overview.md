@@ -182,64 +182,115 @@ graph TD
     FCM -->|Push Notification| Client_App
 ```
 
-### 4.2. Sơ đồ Quan hệ Thực thể (ERD)
+### 4.2. Sơ đồ Thực thể Lớp (UML Class Diagram)
 
 ```mermaid
-erDiagram
-    profiles ||--o{ work_orders : "reporter/assignee/supervisor"
-    profiles ||--o{ pm_checklists : "assignee/supervisor"
-    machines ||--o{ work_orders : "belongs to"
-    machines ||--o{ pm_checklists : "belongs to"
-    pm_checklists ||--|{ pm_checklist_items : "contains"
+classDiagram
+    direction TB
 
-    profiles {
-        uuid id PK
-        text full_name
-        text role
-        timestamp created_at
+    class UserRole {
+        <<enumeration>>
+        OPERATOR
+        ME_ENGINEER
+        SUPERVISOR
     }
-    machines {
-        uuid id PK
-        text code
-        text name
-        jsonb specifications
-        text status
-        numeric running_hours
-        timestamp last_maintenance
+
+    class MachineStatus {
+        <<enumeration>>
+        ACTIVE
+        REPAIRING
+        MAINTENANCE
+        INACTIVE
     }
-    work_orders {
-        uuid id PK
-        uuid machine_id FK
-        uuid reporter_id FK
-        uuid assignee_id FK
-        uuid supervisor_id FK
-        text severity
-        text description
-        text image_url
-        text status
-        timestamp downtime_start
-        timestamp downtime_end
-        text supervisor_signature_url
+
+    class TaskStatus {
+        <<enumeration>>
+        PENDING
+        ASSIGNED
+        IN_PROGRESS
+        COMPLETED
+        APPROVED
     }
-    pm_checklists {
-        uuid id PK
-        uuid machine_id FK
-        uuid assignee_id FK
-        uuid supervisor_id FK
-        numeric scheduled_hours
-        text status
-        text supervisor_signature_url
-        timestamp completed_at
+
+    class SeverityLevel {
+        <<enumeration>>
+        LOW
+        MEDIUM
+        HIGH
+        CRITICAL
     }
-    pm_checklist_items {
-        uuid id PK
-        uuid pm_checklist_id FK
-        text task_description
-        boolean is_checked
-        text photo_url
-        timestamp checked_at
+
+    class UserProfile {
+        +UUID id
+        +String fullName
+        +UserRole role
+        +DateTime createdAt
+        +login()
+        +updateProfile()
     }
+
+    class Machine {
+        +UUID id
+        +String code
+        +String name
+        +Map specifications
+        +MachineStatus status
+        +double runningHours
+        +DateTime lastMaintenance
+        +DateTime createdAt
+        +updateRunningHours()
+        +changeStatus()
+    }
+
+    class WorkOrder {
+        +UUID id
+        +UUID machineId
+        +UUID reporterId
+        +UUID assigneeId
+        +UUID supervisorId
+        +SeverityLevel severity
+        +String description
+        +String imageUrl
+        +TaskStatus status
+        +DateTime downtimeStart
+        +DateTime downtimeEnd
+        +String supervisorSignatureUrl
+        +claim()
+        +complete()
+        +approve()
+    }
+
+    class PmChecklist {
+        +UUID id
+        +UUID machineId
+        +UUID assigneeId
+        +UUID supervisorId
+        +double scheduledHours
+        +TaskStatus status
+        +String supervisorSignatureUrl
+        +DateTime completedAt
+        +execute()
+        +approve()
+    }
+
+    class PmChecklistItem {
+        +UUID id
+        +UUID pmChecklistId
+        +String taskDescription
+        +boolean isChecked
+        +String photoUrl
+        +DateTime checkedAt
+        +toggleCheck()
+        +uploadProofPhoto()
+    }
+
+    UserProfile "1" -- "0..*" WorkOrder : "báo lỗi / tiếp nhận / nghiệm thu"
+    UserProfile "1" -- "0..*" PmChecklist : "thực hiện / nghiệm thu"
+    Machine "1" -- "0..*" WorkOrder : "phát sinh sự cố"
+    Machine "1" -- "0..*" PmChecklist : "bảo trì định kỳ"
+    PmChecklist "1" *-- "1..*" PmChecklistItem : "bao gồm các hạng mục"
 ```
+
 
 ### 4.3. Biểu đồ Tuần tự tiêu biểu: Luồng SOS & Nghiệm thu
 
@@ -308,33 +359,41 @@ sequenceDiagram
 
 ---
 
-### 5.2. Phân công công việc (Task Assignment)
+### 5.2. Phân công công việc (Task Assignment - Mô hình Full-stack Cộng tác)
 
-| Vai trò | Thành viên phụ trách | Nhiệm vụ chi tiết |
-| :--- | :--- | :--- |
-| **Developer A (Frontend - Flutter)** | **Thành viên 1** | • Thiết lập cấu trúc dự án Flutter, cấu hình Router, State Management (Riverpod).<br>• Tích hợp thư viện quét QR `mobile_scanner` và canvas chữ ký `signature`.<br>• Code toàn bộ UI/UX các màn hình: Machine Passport, Form SOS, PM Checklist, Canvas ký nghiệm thu và Dashboard.<br>• Tích hợp gọi API kết nối dữ liệu từ Supabase Client SDK. |
-| **Developer B (Backend/Database)** | **Thành viên 2** | • Thiết kế cơ sở dữ liệu trên Supabase PostgreSQL.<br>• Thiết lập RLS Policies bảo mật dữ liệu ở mức DB.<br>• Viết các Trigger tự động cập nhật trạng thái máy khi Work Order đổi trạng thái, Trigger tự động đồng bộ auth user sang profile.<br>• Thiết lập Storage Buckets để chứa hình ảnh và cấu hình quyền hạn upload.<br>• Cài đặt Cloud Messaging (FCM) kết nối với database trigger để đẩy thông báo. |
+Cả **2 thành viên** đều đóng vai trò **Full-stack Developer**, tham gia vào toàn bộ quá trình phát triển (từ thiết kế Database, viết mã Flutter, tích hợp Supabase API đến kiểm thử). Công việc được phân chia linh hoạt theo **Module tính năng (Feature-based)** để cả hai cùng nắm toàn bộ hệ thống:
+
+| Module / Tính năng | Thành viên Chủ trì | Thành viên Phối hợp | Công việc thực hiện |
+| :--- | :--- | :--- | :--- |
+| **Module 1: Auth, Máy móc & QR Passport** | **Thành viên 1** | **Thành viên 2** | • *Thành viên 1:* Thiết lập cấu trúc dự án Flutter, làm UI Machine Passport và tích hợp `mobile_scanner`.<br>• *Thành viên 2:* Khởi tạo Supabase DB, tạo bảng `machines`, `profiles` và cài đặt Auth RLS. |
+| **Module 2: SOS Breakdown & Push Notification** | **Thành viên 2** | **Thành viên 1** | • *Thành viên 2:* Tạo bảng `work_orders`, viết DB Trigger & Edge Function gọi Firebase FCM đẩy thông báo.<br>• *Thành viên 1:* Code UI Form báo SOS, tích hợp camera chụp ảnh sự cố và lắng nghe FCM notification. |
+| **Module 3: PM Checklist & Bằng chứng bảo trì** | **Thành viên 1** | **Thành viên 2** | • *Thành viên 1:* Code UI checklist tương tác, tích hợp `image_picker` chụp ảnh linh kiện mới/cũ.<br>• *Thành viên 2:* Tạo bảng `pm_checklists`, `pm_checklist_items`, cài đặt Supabase Storage Bucket `work-order-images`. |
+| **Module 4: Ký nghiệm thu & Dashboard Downtime** | **Thành viên 2** | **Thành viên 1** | • *Thành viên 2:* Làm màn hình ký tên nghiệm thu (`signature` canvas), thiết lập Storage Bucket `signatures`.<br>• *Thành viên 1:* Code màn hình Dashboard hiển thị biểu đồ thống kê Downtime (`fl_chart`) và gọi các hàm SQL Aggregate. |
 
 ---
 
-### 5.3. Lịch trình phát triển (Roadmap 5 Tuần)
+### 5.3. Lịch trình phát triển (Roadmap 5 Tuần - Đồng phát triển)
 
-- **Tuần 1: Khởi động & Cơ sở dữ liệu**
-  - *Dev A:* Khởi tạo Flutter project, thiết lập theme nhà máy (Industrial Theme - màu tối, điểm nhấn cam/vàng neon), cấu hình điều hướng.
-  - *Dev B:* Tạo Project Supabase, chạy mã DDL tạo bảng, tạo trigger đồng bộ User Profile, bật RLS.
-- **Tuần 2: Quét QR & Machine Passport (Operator)**
-  - *Dev A:* Làm màn hình quét QR camera, màn hình Machine Passport xem chi tiết thiết bị, lịch sử sửa chữa.
-  - *Dev B:* Nhập dữ liệu thiết bị mẫu, tạo API/RPC lấy thông tin máy qua ID giải mã từ mã QR.
-- **Tuần 3: SOS Breakdown & Push Notification**
-  - *Dev A:* Làm Form báo lỗi SOS, tích hợp camera chụp ảnh đính kèm lỗi, tích hợp Push Notification.
-  - *Dev B:* Tạo bảng Work Orders, viết trigger khi tạo phiếu SOS thì chuyển trạng thái máy sang `repairing`, viết Edge Function kết nối FCM để gửi push notification tới ME.
-- **Tuần 4: PM Checklist & Nghiệm thu chữ ký số**
-  - *Dev A:* Làm giao diện checklist bảo dưỡng định kỳ, tích hợp canvas vẽ chữ ký, upload ảnh chữ ký.
-  - *Dev B:* Tạo bảng PM Checklist, cấu hình Supabase Storage để lưu ảnh sự cố và ảnh chữ ký.
-- **Tuần 5: Dashboard & Tích hợp & Kiểm thử**
-  - *Dev A:* Thiết kế Dashboard thống kê Downtime (sử dụng gói vẽ biểu đồ `fl_chart`), tích hợp toàn bộ các tính năng.
-  - *Dev B:* Viết các hàm SQL Aggregate để tính toán thời gian dừng máy trung bình và tỷ lệ hỏng hóc phục vụ Dashboard.
-  - *Cả hai:* Chạy thử nghiệm thực tế với mã QR in giấy, sửa lỗi và đóng gói ứng dụng (APK/IPA).
+Cả 2 thành viên cùng làm việc song song và thực hiện Code Review lẫn nhau trong tất cả các tuần:
+
+- **Tuần 1: Khởi động hệ thống & Thiết lập Nền tảng**
+  - *Cả 2 thành viên:* Thống nhất API Contract / cấu hình Supabase.
+  - *Thành viên 1:* Khởi tạo Flutter Project, cài đặt Riverpod, cấu hình Theme nhà máy.
+  - *Thành viên 2:* Tạo Supabase Project, viết mã DDL khởi tạo bảng, thiết lập RLS Policies & Triggers.
+- **Tuần 2: Hoàn thiện Module 1 (QR Code & Machine Passport)**
+  - *Thành viên 1:* Code màn hình quét QR bằng camera, hiển thị Hộ chiếu thiết bị & Form báo số giờ chạy máy.
+  - *Thành viên 2:* Nhập dữ liệu máy móc mẫu vào Supabase, viết RPC Function xử lý mã QR và đồng bộ số giờ chạy.
+- **Tuần 3: Hoàn thiện Module 2 (Breakdown SOS & Push Notification)**
+  - *Thành viên 1:* Làm Form tạo phiếu SOS khẩn cấp, tích hợp chụp hình đính kèm lỗi và màn hình danh sách sự cố.
+  - *Thành viên 2:* Viết Trigger tự động đổi trạng thái máy sang `repairing`, triển khai Edge Function gọi FCM gửi thông báo đẩy đến kỹ sư ME.
+- **Tuần 4: Hoàn thiện Module 3 (PM Checklist & Chữ ký nghiệm thu)**
+  - *Thành viên 1:* Thiết kế UI danh sách Checklist bảo dưỡng bắt buộc, xử lý upload ảnh linh kiện làm bằng chứng.
+  - *Thành viên 2:* Làm màn hình Canvas ký tên nghiệm thu điện tử cho Quản đốc, xử lý lưu trữ file chữ ký vào Supabase Storage và đổi trạng thái máy về `active`.
+- **Tuần 5: Dashboard Downtime, Tích hợp & Kiểm thử toàn diện**
+  - *Thành viên 1:* Hoàn thiện màn hình Dashboard thống kê tỷ lệ máy chạy/hỏng và tổng giờ Downtime.
+  - *Thành viên 2:* Viết các câu lệnh SQL truy vấn tổng hợp dữ liệu Downtime phục vụ Dashboard.
+  - *Cả 2 thành viên:* Kiểm thử toàn bộ các luồng nghiệp vụ trên thiết bị thật với mã QR in giấy, sửa lỗi và đóng gói ứng dụng (APK/IPA).
+
 
 ---
 
