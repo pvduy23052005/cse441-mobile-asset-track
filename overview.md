@@ -1,9 +1,12 @@
-# AssetTrack - Hệ thống Quản lý Thiết bị & Bảo trì Phòng ngừa Nhà máy
+# AssetTrack - Hệ thống Quản lý Thiết bị & Bảo trì Phòng ngừa Nhà máy (Flutter + Supabase)
 
 ## 1. Tổng quan Dự án (Project Overview)
 - **Tên dự án:** AssetTrack
 - **Mục tiêu:** Giảm thiểu thời gian dừng máy ngoài ý muốn (Downtime) bằng cách số hóa lý lịch máy móc (Machine Passport) qua mã QR, quản lý quy trình bảo trì định kỳ (Preventive Maintenance) và xử lý sự cố khẩn cấp (Breakdown SOS) thời gian thực.
-- **Mô hình nhân sự:** **1 Developer (Solo Project)** -> Cần ưu tiên các giải pháp công nghệ nhanh, tích hợp sẵn, dễ triển khai để rút ngắn thời gian thiết lập hạ tầng.
+- **Mô hình nhân sự:** **2 Developers**
+  - **Developer A (Frontend):** Flutter Mobile App.
+  - **Developer B (Backend/Database):** Quản trị database Supabase, viết DB triggers, RLS Policies và cấu hình Storage.
+- **Công nghệ cốt lõi:** **Flutter** kết hợp **Supabase (PostgreSQL BaaS)**.
 
 ---
 
@@ -29,40 +32,45 @@
 
 ---
 
-## 3. Kiến trúc & Công nghệ Đề xuất (Tối ưu cho Solo Dev)
+## 3. Kiến trúc & Hệ sinh thái Flutter + Supabase
 
-Do phát triển một mình, bạn nên sử dụng mô hình **Serverless / Backend-as-a-Service (BaaS)** để tập trung hoàn toàn vào Product Logic:
+Việc chọn Supabase giúp nhóm 2 người đẩy nhanh tiến độ vượt bậc vì các tính năng backend đã được xây dựng sẵn và tối ưu cho Flutter:
 
-| Thành phần | Công nghệ đề xuất | Lý do lựa chọn |
+| Thành phần | Công nghệ / Gói thư viện | Vai trò |
 | :--- | :--- | :--- |
-| **Mobile App** | **React Native (Expo)** hoặc **Flutter** | • Phát triển chéo sân cho cả Android & iOS.<br>• Expo hỗ trợ sẵn các thư viện quét QR (Camera), chọn ảnh linh kiện, và ký tên điện tử (`react-native-signature-canvas`). |
-| **Backend & DB** | **Supabase** hoặc **Firebase** | • Tích hợp sẵn Database (PostgreSQL/Firestore), Xác thực người dùng (Auth), Storage lưu trữ ảnh linh kiện & ảnh chữ ký.<br>• Có sẵn Realtime Database để đẩy thông báo/cập nhật trạng thái máy tức thời. |
-| **Notification** | **Firebase Cloud Messaging (FCM)** | • Gửi thông báo khẩn cấp từ máy công nhân đến máy kỹ sư bảo trì tức thời. |
-| **QR Code** | **Mã QR dạng URI** | • Mã hóa đường dẫn chứa ID của máy (e.g. `assettrack://machine/{machine_id}`) để khi quét sẽ tự động điều hướng trực tiếp đến trang Machine Passport tương ứng. |
+| **Mobile Client** | **Flutter SDK** | Viết ứng dụng chạy trên cả Android và iOS. |
+| **State Management** | **Flutter Riverpod** | Quản lý state logic chặt chẽ, dễ tích hợp với luồng Stream của Supabase. |
+| **Backend & Database** | **Supabase (PostgreSQL)** | • Cơ sở dữ liệu quan hệ lưu trữ dữ liệu thiết bị, phân hệ người dùng.<br>• Quản lý xác thực người dùng (Auth) liên kết trực tiếp với bảng `profiles`. |
+| **Bảo mật dữ liệu** | **Row-Level Security (RLS)** | Phân quyền truy cập ở cấp độ dòng (Ví dụ: Kỹ sư ME chỉ sửa được task được giao, Quản đốc mới được phép phê duyệt và ký tên). |
+| **Lưu trữ file (Storage)** | **Supabase Storage** | Lưu trữ tệp hình ảnh sự cố và ảnh chữ ký nghiệm thu dưới dạng các Buckets. |
+| **Quét QR Code** | **`mobile_scanner`** | Quét nhanh mã QR dán trên thân máy. |
+| **Chữ ký điện tử** | **`signature`** | Vẽ và trích xuất chữ ký của Quản đốc dạng hình ảnh PNG. |
+| **Chọn & Chụp ảnh** | **`image_picker`** | Chụp hình ảnh linh kiện hỏng/linh kiện thay thế. |
+| **Thông báo đẩy** | **Firebase Cloud Messaging (FCM)** | Supabase Database Trigger gọi Edge Function để đẩy thông báo qua FCM khi có Work Order mới. |
 
 ---
 
-## 4. Kế hoạch Triển khai Rút gọn (Roadmap cho 1 người)
+## 4. Kế hoạch Phát triển Song song (Roadmap 5 Tuần)
 
 ```mermaid
 gantt
-    title Kế hoạch phát triển AssetTrack (6 Tuần)
+    title Kế hoạch phát triển song song AssetTrack (5 Tuần)
     dateFormat  YYYY-MM-DD
-    section Phase 1: Database & Cơ sở
-    Thiết kế DB & API/BaaS           :active, des1, 2026-07-22, 7d
-    UI Machine Passport & Quét QR   : des2, after des1, 7d
-    section Phase 2: Core Workflows
-    SOS Breakdown & Push Noti       : des3, after des2, 7d
-    PM Checklist & Upload Hình ảnh  : des4, after des3, 7d
-    section Phase 3: Approval & Reporting
-    Digital Signature (Quản đốc)    : des5, after des4, 5d
-    Dashboard Thống kê Downtime     : des6, after des5, 5d
-    section Phase 4: Deploy & Test
-    Testing toàn bộ & Đóng gói App : des7, after des6, 7d
+    section Developer A (Frontend - Flutter)
+    UI Prototype & Navigation       :active, frontend_1, 2026-07-22, 7d
+    Tích hợp Quét QR & Camera UI    :frontend_2, after frontend_1, 7d
+    Tích hợp SOS & PM Checklist UI  :frontend_3, after frontend_2, 7d
+    Ký tên điện tử & Dashboard UI   :frontend_4, after frontend_3, 7d
+    section Developer B (Backend & Supabase)
+    Thiết kế DB Schema & RLS        :active, backend_1, 2026-07-22, 7d
+    Auth & API/RPC cho Machine      :backend_2, after backend_1, 7d
+    DB Triggers, Storage & FCM Noti :backend_3, after backend_2, 7d
+    Trực quan hóa dữ liệu Dashboard :backend_4, after backend_3, 7d
+    section Chung (Cả 2 Thành viên)
+    Tích hợp Flutter + Supabase & Test:joint_1, after backend_4, 7d
 ```
 
-### Chi tiết các bước:
-1. **Tuần 1-2 (Thiết kế DB & QR Passport):** Xây dựng cấu trúc bảng cho Thiết bị, Phiếu sửa chữa, Người dùng. Tạo trang thông tin máy cơ bản hỗ trợ quét QR bằng camera điện thoại.
-2. **Tuần 3-4 (Luồng SOS & PM Checklist):** Hiện thực hóa luồng công nhân báo hỏng đẩy thông báo tới kỹ sư ME. Xây dựng form checklist bảo dưỡng có nút chụp ảnh.
-3. **Tuần 5 (Ký tên & Dashboard):** Tích hợp canvas ký tên trực quan trên điện thoại. Xây dựng màn hình Dashboard đơn giản thống kê số giờ máy chạy & tỷ lệ máy hỏng.
-4. **Tuần 6 (Đóng gói & Kiểm thử):** Thử nghiệm thực tế với QR giấy tự in, chụp ảnh tải lên storage, ký nhận bàn giao và sửa các lỗi phát sinh.
+---
+
+## 5. Tài liệu liên quan
+- Chi tiết cấu trúc dữ liệu và tập lệnh SQL: [database_schema.md](file:///Users/macbook/Documents/hk6/mobile/project/database_schema.md)
