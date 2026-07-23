@@ -8,16 +8,21 @@ import {
   CheckCircle2,
   Clock,
   ChevronLeft,
+  Eye,
 } from 'lucide-react';
 
-import { WorkOrder, PMChecklist, PMChecklistItem } from '../../types';
-import { initialWorkOrders, initialPMChecklists } from '../../data/mockData';
+import { WorkOrder, PMChecklist, PMChecklistItem, SparePartItem } from '../../types';
+import { initialWorkOrders, initialPMChecklists, initialThresholdConfig } from '../../data/mockData';
 import { PMChecklistModal } from '../../components/PMChecklistModal';
+import { WorkOrderDetailModal } from '../../components/WorkOrderDetailModal';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 export default function MEEngineerPage() {
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>(initialWorkOrders);
   const [checklists, setChecklists] = useState<PMChecklist[]>(initialPMChecklists);
   const [selectedChecklist, setSelectedChecklist] = useState<PMChecklist | null>(null);
+  const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrder | null>(null);
   const [activeTab, setActiveTab] = useState<'SOS' | 'PM'>('SOS');
 
   const handleClaimWorkOrder = (woId: string) => {
@@ -30,16 +35,33 @@ export default function MEEngineerPage() {
     );
   };
 
-  const handleCompleteWorkOrder = (woId: string) => {
+  const handleCompleteWorkOrder = (woId: string, usedParts?: SparePartItem[]) => {
     setWorkOrders((prev) =>
-      prev.map((wo) => (wo.id === woId ? { ...wo, status: 'COMPLETED' } : wo))
+      prev.map((wo) => (wo.id === woId ? { ...wo, status: 'COMPLETED', usedSpareParts: usedParts || wo.usedSpareParts } : wo))
     );
+  };
+
+  const handleAddSparePartToWO = (woId: string, part: SparePartItem) => {
+    setWorkOrders((prev) =>
+      prev.map((wo) => {
+        if (wo.id === woId) {
+          const updated = [...(wo.usedSpareParts || []), part];
+          return { ...wo, usedSpareParts: updated };
+        }
+        return wo;
+      })
+    );
+    if (selectedWorkOrder?.id === woId) {
+      setSelectedWorkOrder((prev) =>
+        prev ? { ...prev, usedSpareParts: [...(prev.usedSpareParts || []), part] } : null
+      );
+    }
   };
 
   const handleCompletePMChecklist = (
     pmId: string,
     items: PMChecklistItem[],
-    spareParts: { name: string; quantity: number }[]
+    spareParts: SparePartItem[]
   ) => {
     setChecklists((prev) =>
       prev.map((pm) => (pm.id === pmId ? { ...pm, status: 'COMPLETED', items } : pm))
@@ -117,42 +139,63 @@ export default function MEEngineerPage() {
           {activeTab === 'SOS' && (
             <div className="space-y-3">
               {workOrders.map((wo) => (
-                <div key={wo.id} className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
+                <div
+                  key={wo.id}
+                  onClick={() => setSelectedWorkOrder(wo)}
+                  className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3 cursor-pointer hover:border-cyan-300 transition"
+                >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-black text-rose-700">{wo.code}</span>
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                      wo.severity === 'CRITICAL' ? 'bg-rose-100 text-rose-800 border-rose-200' : 'bg-orange-100 text-orange-800 border-orange-200'
-                    }`}>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-black text-rose-700">{wo.code}</span>
+                      <Eye className="w-3.5 h-3.5 text-slate-400" />
+                    </div>
+                    <Badge variant={wo.severity === 'CRITICAL' ? 'destructive' : 'maintenance'}>
                       Nghiêm trọng: {wo.severity}
-                    </span>
+                    </Badge>
                   </div>
 
                   <div>
                     <h3 className="text-sm font-extrabold text-slate-900">{wo.machineName}</h3>
-                    <p className="text-xs text-slate-600 mt-1 leading-snug font-medium">{wo.description}</p>
+                    <p className="text-xs text-slate-600 mt-1 leading-snug font-medium line-clamp-2">{wo.description}</p>
                   </div>
 
                   {wo.imageUrl && (
                     <img src={wo.imageUrl} alt="Hiện trạng lỗi" className="w-full h-32 object-cover rounded-xl border border-slate-200" />
                   )}
 
-                  <div className="pt-2">
+                  {wo.rejectionReason && (
+                    <div className="p-2 rounded-lg bg-rose-100 border border-rose-300 text-rose-800 text-[11px] font-bold">
+                      ⚠️ Supervisor từ chối nghiệm thu: {wo.rejectionReason}
+                    </div>
+                  )}
+
+                  <div className="pt-1">
                     {wo.status === 'PENDING' && (
-                      <button
-                        onClick={() => handleClaimWorkOrder(wo.id)}
-                        className="w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 transition shadow-xs"
+                      <Button
+                        variant="cyan"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleClaimWorkOrder(wo.id);
+                        }}
+                        className="w-full"
                       >
                         <Wrench className="w-4 h-4" /> Bấm Tiếp Nhận Sửa Chữa
-                      </button>
+                      </Button>
                     )}
 
-                    {wo.status === 'IN_PROGRESS' && (
-                      <button
-                        onClick={() => handleCompleteWorkOrder(wo.id)}
-                        className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 transition shadow-xs"
+                    {(wo.status === 'IN_PROGRESS' || wo.status === 'REJECTED') && (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCompleteWorkOrder(wo.id);
+                        }}
+                        className="w-full"
                       >
                         <CheckCircle2 className="w-4 h-4" /> Hoàn Thành & Gửi Nghiệm Thu
-                      </button>
+                      </Button>
                     )}
 
                     {wo.status === 'COMPLETED' && (
@@ -179,12 +222,14 @@ export default function MEEngineerPage() {
                   <p className="text-xs text-slate-600 font-medium">Tổng số hạng mục kiểm tra: {pm.items.length} công việc</p>
 
                   <div className="pt-2">
-                    <button
+                    <Button
+                      variant="amber"
+                      size="sm"
                       onClick={() => setSelectedChecklist(pm)}
-                      className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs flex items-center justify-center gap-2 transition shadow-xs"
+                      className="w-full"
                     >
                       <Wrench className="w-4 h-4" /> Mở Danh Sách PM Checklist
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -196,7 +241,18 @@ export default function MEEngineerPage() {
           checklist={selectedChecklist}
           isOpen={!!selectedChecklist}
           onClose={() => setSelectedChecklist(null)}
+          costApprovalThreshold={initialThresholdConfig.costApprovalThreshold}
           onCompletePM={handleCompletePMChecklist}
+        />
+
+        <WorkOrderDetailModal
+          workOrder={selectedWorkOrder}
+          isOpen={!!selectedWorkOrder}
+          onClose={() => setSelectedWorkOrder(null)}
+          costApprovalThreshold={initialThresholdConfig.costApprovalThreshold}
+          onClaimWorkOrder={handleClaimWorkOrder}
+          onCompleteWorkOrder={handleCompleteWorkOrder}
+          onAddSparePartToWO={handleAddSparePartToWO}
         />
 
       </div>

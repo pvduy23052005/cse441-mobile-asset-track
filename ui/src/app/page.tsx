@@ -20,6 +20,7 @@ import {
   XCircle,
   Sliders,
   Sparkles,
+  Eye,
 } from 'lucide-react';
 
 import {
@@ -52,6 +53,7 @@ import { SOSFormModal } from '../components/SOSFormModal';
 import { PMChecklistModal } from '../components/PMChecklistModal';
 import { DigitalSignoffModal } from '../components/DigitalSignoffModal';
 import { ThresholdConfigModal } from '../components/ThresholdConfigModal';
+import { WorkOrderDetailModal } from '../components/WorkOrderDetailModal';
 import { DashboardView } from '../components/DashboardView';
 
 import { Button } from '@/components/ui/button';
@@ -80,6 +82,7 @@ export default function AssetTrackMobileApp() {
   const [sosMachine, setSosMachine] = useState<Machine | null>(null);
   const [pmModalChecklist, setPmModalChecklist] = useState<PMChecklist | null>(null);
   const [isThresholdModalOpen, setIsThresholdModalOpen] = useState(false);
+  const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrder | null>(null);
 
   const [signoffData, setSignoffData] = useState<{
     isOpen: boolean;
@@ -242,13 +245,60 @@ export default function AssetTrackMobileApp() {
           : wo
       )
     );
+    if (selectedWorkOrder?.id === woId) {
+      setSelectedWorkOrder((prev) => prev ? { ...prev, status: 'IN_PROGRESS', assigneeName: 'Kỹ Sư ME Trần Minh Đức' } : null);
+    }
   };
 
   // Complete WO after repair
-  const handleCompleteWorkOrder = (woId: string) => {
+  const handleCompleteWorkOrder = (woId: string, usedParts?: SparePartItem[]) => {
     setWorkOrders((prev) =>
-      prev.map((wo) => (wo.id === woId ? { ...wo, status: 'COMPLETED' } : wo))
+      prev.map((wo) => (wo.id === woId ? { ...wo, status: 'COMPLETED', usedSpareParts: usedParts || wo.usedSpareParts } : wo))
     );
+  };
+
+  // Add spare part to Work Order
+  const handleAddSparePartToWO = (woId: string, part: SparePartItem) => {
+    setWorkOrders((prev) =>
+      prev.map((wo) => {
+        if (wo.id === woId) {
+          const updatedParts = [...(wo.usedSpareParts || []), part];
+          return { ...wo, usedSpareParts: updatedParts };
+        }
+        return wo;
+      })
+    );
+
+    if (selectedWorkOrder?.id === woId) {
+      setSelectedWorkOrder((prev) =>
+        prev
+          ? {
+              ...prev,
+              usedSpareParts: [...(prev.usedSpareParts || []), part],
+            }
+          : null
+      );
+    }
+
+    // If requires Supervisor approval (cost >= threshold)
+    if (part.requiresApproval) {
+      const targetWO = workOrders.find((w) => w.id === woId);
+      const newSpr: SparePartRequest = {
+        id: `spr-${Date.now()}`,
+        workOrderId: woId,
+        machineCode: targetWO?.machineCode || 'MC-101',
+        machineName: targetWO?.machineName || 'Thiết bị',
+        requestedBy: 'Trần Minh Đức (ME)',
+        partName: part.name,
+        quantity: part.quantity,
+        unitPrice: part.unitPrice,
+        totalCost: part.totalCost,
+        reason: `Sửa chữa sự cố phiếu ${targetWO?.code}`,
+        status: 'PENDING',
+        createdAt: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+      };
+      setSparePartRequests((sPrev) => [newSpr, ...sPrev]);
+    }
   };
 
   // 6 & 7 & 8. PM Checklist & Spare Parts Logging (Feature 6, 7, 8 / US-05, US-06, US-07)
@@ -277,18 +327,6 @@ export default function AssetTrackMobileApp() {
           createdAt: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
         };
         setSparePartRequests((sPrev) => [newSpr, ...sPrev]);
-
-        setNotifications((nPrev) => [
-          {
-            id: `noti-${Date.now()}`,
-            title: 'ĐỀ XUẤT PHỤ TÙNG ĐẮT TIỀN',
-            message: `Kỹ sư ME đề xuất thay ${sp.name} (${sp.totalCost.toLocaleString('vi-VN')}đ) - Yêu cầu Quản đốc duyệt!`,
-            type: 'APPROVAL',
-            timestamp: 'Vừa xong',
-            read: false,
-          },
-          ...nPrev,
-        ]);
       }
     });
 
@@ -497,13 +535,20 @@ export default function AssetTrackMobileApp() {
                     </CardHeader>
                     <CardContent className="p-4 pt-1 space-y-2">
                       {workOrders.map((wo) => (
-                        <div key={wo.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+                        <div
+                          key={wo.id}
+                          onClick={() => setSelectedWorkOrder(wo)}
+                          className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer border border-slate-200 text-xs space-y-1 transition"
+                        >
                           <div className="flex items-center justify-between">
                             <span className="font-mono font-black text-rose-700">{wo.code}</span>
                             <div className="flex items-center gap-1.5">
                               {wo.status === 'PENDING' && (
                                 <button
-                                  onClick={() => handleCancelWorkOrder(wo.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCancelWorkOrder(wo.id);
+                                  }}
                                   className="px-2 py-0.5 text-[10px] font-bold text-slate-500 hover:text-rose-700 underline"
                                 >
                                   Hủy báo nhầm
@@ -535,17 +580,27 @@ export default function AssetTrackMobileApp() {
                   {/* Emergency Work Orders Feed */}
                   <Card>
                     <CardHeader className="p-4 pb-2">
-                      <CardTitle className="text-xs font-extrabold uppercase tracking-wider text-rose-700 flex items-center gap-1.5">
-                        <AlertTriangle className="w-4 h-4 text-rose-600 animate-pulse" />
-                        Phiếu Sự Cố SOS Cần Xử Lý ({workOrders.filter((w) => w.status !== 'APPROVED').length})
-                      </CardTitle>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-xs font-extrabold uppercase tracking-wider text-rose-700 flex items-center gap-1.5">
+                          <AlertTriangle className="w-4 h-4 text-rose-600 animate-pulse" />
+                          Phiếu Sự Cố SOS Cần Xử Lý ({workOrders.filter((w) => w.status !== 'APPROVED').length})
+                        </CardTitle>
+                        <span className="text-[10px] text-cyan-700 font-bold">Chạm để xem chi tiết phiếu</span>
+                      </div>
                     </CardHeader>
 
                     <CardContent className="p-4 pt-1 space-y-3">
                       {workOrders.filter((w) => w.status !== 'APPROVED').map((wo) => (
-                        <div key={wo.id} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                        <div
+                          key={wo.id}
+                          onClick={() => setSelectedWorkOrder(wo)}
+                          className="p-3.5 rounded-2xl bg-slate-50 hover:bg-slate-100/80 cursor-pointer border border-slate-200 space-y-2 transition shadow-xs"
+                        >
                           <div className="flex items-center justify-between">
-                            <span className="font-mono text-xs font-black text-rose-700">{wo.code}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-xs font-black text-rose-700">{wo.code}</span>
+                              <Eye className="w-3.5 h-3.5 text-slate-400" />
+                            </div>
                             <Badge variant={wo.severity === 'CRITICAL' ? 'destructive' : 'maintenance'}>
                               Nghiêm trọng: {wo.severity}
                             </Badge>
@@ -553,7 +608,7 @@ export default function AssetTrackMobileApp() {
 
                           <div>
                             <div className="text-xs font-extrabold text-slate-900">{wo.machineName}</div>
-                            <p className="text-xs text-slate-600 leading-snug mt-0.5">{wo.description}</p>
+                            <p className="text-xs text-slate-600 leading-snug mt-0.5 line-clamp-2">{wo.description}</p>
                           </div>
 
                           {wo.imageUrl && (
@@ -566,12 +621,15 @@ export default function AssetTrackMobileApp() {
                             </div>
                           )}
 
-                          <div className="pt-1">
+                          <div className="pt-1 flex gap-2">
                             {wo.status === 'PENDING' && (
                               <Button
                                 variant="cyan"
                                 size="sm"
-                                onClick={() => handleClaimWorkOrder(wo.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleClaimWorkOrder(wo.id);
+                                }}
                                 className="w-full"
                               >
                                 <Wrench className="w-4 h-4" /> Bấm Tiếp Nhận Sửa Chữa
@@ -581,14 +639,17 @@ export default function AssetTrackMobileApp() {
                               <Button
                                 variant="default"
                                 size="sm"
-                                onClick={() => handleCompleteWorkOrder(wo.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCompleteWorkOrder(wo.id);
+                                }}
                                 className="w-full"
                               >
                                 <CheckCircle2 className="w-4 h-4" /> Hoàn Thành & Gửi Nghiệm Thu
                               </Button>
                             )}
                             {wo.status === 'COMPLETED' && (
-                              <div className="text-xs text-amber-700 font-bold flex items-center justify-center gap-1 p-2 rounded-xl bg-amber-50 border border-amber-200">
+                              <div className="w-full text-xs text-amber-700 font-bold flex items-center justify-center gap-1 p-2 rounded-xl bg-amber-50 border border-amber-200">
                                 <Clock className="w-3.5 h-3.5" /> Đã xong - Đang chờ Quản Đốc ký
                               </div>
                             )}
@@ -684,13 +745,17 @@ export default function AssetTrackMobileApp() {
               <h2 className="text-xs font-extrabold text-slate-600 uppercase tracking-wider">Danh Sách Tất Cả Nhiệm Vụ</h2>
               <div className="space-y-2">
                 {workOrders.map((wo) => (
-                  <div key={wo.id} className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs text-xs space-y-1">
+                  <div
+                    key={wo.id}
+                    onClick={() => setSelectedWorkOrder(wo)}
+                    className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs text-xs space-y-1 cursor-pointer hover:border-cyan-300 transition"
+                  >
                     <div className="flex items-center justify-between">
                       <span className="font-mono font-black text-rose-700">{wo.code}</span>
                       <Badge variant="secondary">{wo.status}</Badge>
                     </div>
                     <div className="font-bold text-slate-900">{wo.machineName}</div>
-                    <p className="text-slate-500 text-[11px]">{wo.description}</p>
+                    <p className="text-slate-500 text-[11px] line-clamp-1">{wo.description}</p>
                   </div>
                 ))}
               </div>
@@ -735,6 +800,16 @@ export default function AssetTrackMobileApp() {
           onClose={() => setPmModalChecklist(null)}
           costApprovalThreshold={thresholdConfig.costApprovalThreshold}
           onCompletePM={handleCompletePMChecklist}
+        />
+
+        <WorkOrderDetailModal
+          workOrder={selectedWorkOrder}
+          isOpen={!!selectedWorkOrder}
+          onClose={() => setSelectedWorkOrder(null)}
+          costApprovalThreshold={thresholdConfig.costApprovalThreshold}
+          onClaimWorkOrder={handleClaimWorkOrder}
+          onCompleteWorkOrder={handleCompleteWorkOrder}
+          onAddSparePartToWO={handleAddSparePartToWO}
         />
 
         <DigitalSignoffModal
