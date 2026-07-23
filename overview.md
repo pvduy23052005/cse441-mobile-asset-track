@@ -50,7 +50,7 @@ Trong các dây chuyền sản xuất công nghiệp, máy móc hỏng hóc đ�
 | **NFR-03** | Hiệu năng quét mã | Camera nhận diện và decode mã QR trong **< 1.5 giây** trong điều kiện ánh sáng nhà máy bình thường. |
 | **NFR-04** | Dung lượng ảnh | Mỗi ảnh đính kèm (sự cố, linh kiện, chữ ký) không vượt quá **5MB**; app tự nén trước khi upload. |
 | **NFR-05** | Tính khả dụng UI | Giao diện tối ưu cho màn hình cảm ứng ≥ 5 inch; các nút hành động quan trọng có kích thước tối thiểu **48×48dp** để dễ thao tác khi đeo găng tay. |
-| **NFR-06** | Offline & Tự đồng bộ | App lưu dữ liệu Machine Passport vào local cache để xem khi mất mạng. Các thao tác ghi (nhập giờ chạy, tạo phiếu SOS) khi mất mạng được lưu vào **local queue** (SQLite); khi có mạng trở lại app **tự động upload** theo thứ tự và xóa khỏi queue. App hiển thị banner "Đang offline — dữ liệu sẽ được đồng bộ khi có mạng". **Xử lý conflict:** nếu 2 lần nhập giờ chạy cho cùng 1 máy bị conflict, bản có timestamp muộn hơn thắng (last-write-wins). |
+| **NFR-06** | Offline & Tự đồng bộ | App lưu dữ liệu Machine Passport vào local cache để xem khi mất mạng. Các thao tác ghi (nhập giờ chạy, tạo phiếu SOS) khi mất mạng được lưu vào **local queue** (SQLite); khi có mạng trở lại app **tự động upload** theo thứ tự và xóa khỏi queue. App hiển thị banner "Đang offline — dữ liệu sẽ được đồng bộ khi có mạng".<br><br>**① Xử lý ảnh offline:** Ảnh đính kèm khi tạo phiếu SOS offline được lưu vào app storage dưới dạng file (`path_provider`); SQLite queue chỉ lưu đường dẫn local. Khi có mạng, app upload ảnh lên Supabase Storage trước, nhận URL, sau đó mới tạo Work Order kèm URL đó. Nếu upload ảnh thất bại giữa chừng, toàn bộ phiếu giữ lại trong queue và retry lần sau.<br><br>**② Resume queue khi khởi động lại app:** SQLite là persistent storage (không mất khi tắt app/mất pin). App **đọc lại queue ngay khi khởi động** — không chỉ lắng nghe event "có mạng trở lại" — để tiếp tục đồng bộ các phiếu chưa hoàn thành. Idempotency đảm bảo bằng cột `client_generated_id` (UUID do app tạo) có `UNIQUE constraint` tại Supabase, tránh tạo phiếu trùng khi retry.<br><br>**③ Cảnh báo SOS offline:** Push notification tới ME **chỉ gửi được sau khi phiếu đã đồng bộ lên Supabase** — tức là nếu Operator tạo SOS lúc mất mạng, ME sẽ không nhận được notification ngay (không đạt NFR-02 trong trường hợp này). App hiển thị **banner cảnh báo đỏ** khi tạo SOS offline: *"⚠️ Không có mạng — Phiếu SOS sẽ chỉ được gửi tới kỹ sư sau khi kết nối trở lại. Hãy thông báo trực tiếp nếu sự cố nghiêm trọng."*<br><br>**Xử lý conflict:** last-write-wins — bản có timestamp muộn hơn thắng. |
 
 ---
 
@@ -69,7 +69,8 @@ Trong các dây chuyền sản xuất công nghiệp, máy móc hỏng hóc đ�
 | **US-09** | Supervisor | Phê duyệt / từ chối đề xuất thay linh kiện đắt tiền | Kiểm soát chi phí sửa chữa phân xưởng. | • Hiển thị cảnh báo màu đỏ nếu đơn giá vượt hạn mức cấu hình.<br>• Lưu rõ tên Supervisor, thời điểm và lý do từ chối (nếu có). |
 | **US-10** | Supervisor | Xem Dashboard thống kê Downtime | Giám sát hiệu suất và thời gian dừng máy toàn phân xưởng. | • Biểu đồ tròn tỷ lệ máy Active/Repairing/Maintenance.<br>• Thống kê tổng giờ Downtime tích lũy theo ngày/tuần/tháng.<br>• Danh sách top 5 máy có Downtime cao nhất. |
 | **US-11** | Supervisor | Cấu hình mốc giờ bảo dưỡng định kỳ **và ngưỡng duyệt chi phí linh kiện** | Tự động hóa việc tạo PM Checklist và kiểm soát chi phí thay thế. | • Cấu hình được nhiều mốc giờ (500h, 1000h, 2000h) cho từng model máy.<br>• Hệ thống tự sinh PM Checklist khi số giờ chạy vượt mốc.<br>• Cấu hình được ngưỡng giá trị linh kiện (VD: 2.000.000đ); đề xuất vượt ngưỡng mới yêu cầu duyệt, dưới ngưỡng ME tự ghi nhận không cần duyệt.<br>• Chỉ Supervisor của phân xưởng đó mới chỉnh được cấu hình — RLS kiểm tra `workshop_id` khớp. |
-| **US-12** | ME Engineer | Xem danh sách toàn bộ phiếu công việc đang mở | Quản lý và ưu tiên xử lý các sự cố theo mức độ nghiêm trọng. | • Hiển thị danh sách Work Order lọc theo trạng thái (Pending / In Progress / Completed).<br>• Sắp xếp theo mức độ nghiêm trọng và thời gian tạo phiếu. |
+| **US-12** | ME Engineer | Xem danh sách toàn bộ phiếu công việc đang mở | Quản lý và ưu tiên xử lý các sự cố theo mức độ nghiêm trọng. | • Hiển thị danh sách Work Order lọc theo 4 tab: Tất cả / Chờ (Pending) / Đang xử lý (In Progress) / Hoàn thành (Completed).<br>• Sắp xếp theo mức độ nghiêm trọng và thời gian tạo phiếu. |
+| **US-13** | Operator / Supervisor | Hủy phiếu SOS đã báo nhầm | Tránh ME mất thời gian xử lý sự cố không có thật. | • Chỉ hủy được khi phiếu còn ở trạng thái `Pending` (chưa có ME tiếp nhận).<br>• Trạng thái máy tự động về `Active` sau khi hủy.<br>• Lưu lý do hủy và tên người hủy để audit. |
 
 ---
 
@@ -130,7 +131,7 @@ Trong các dây chuyền sản xuất công nghiệp, máy móc hỏng hóc đ�
 ```
 ┌─────────────────────────────────┐
 │  Công việc của tôi              │
-│  [Tất cả] [Chờ] [Đang xử lý]  │  ← Tab filter
+│  [Tất cả][Chờ][Xử lý][Xong]  │  ← Tab filter
 ├─────────────────────────────────┤
 │  🔴 CRITICAL - MC-102           │
 │  Áp suất giảm đột ngột          │
@@ -196,10 +197,11 @@ Trong các dây chuyền sản xuất công nghiệp, máy móc hỏng hóc đ�
 │  │                          │  │
 │  └──────────────────────────┘  │
 ├─────────────────────────────────┤
-│  [Xóa chữ ký]  [✓ Xác nhận & Chạy máy] │
+│[Xóa chữ ký] [✗ Từ chối] [✓ Xác nhận] │
 └─────────────────────────────────┘
 ```
-- Nút "Xác nhận & Chạy máy" màu xanh lá, disabled khi canvas chữ ký trống.
+- Nút "Xác nhận" màu xanh lá, disabled khi canvas chữ ký trống.
+- Nút "Từ chối" màu đỏ — mở dialog nhập lý do từ chối trước khi gửi; phiếu chuyển về `REJECTED` → ME tiếp tục sửa lại.
 - Hiển thị tổng Downtime để Supervisor nắm bối cảnh trước khi ký.
 
 ### F. Màn hình Dashboard Downtime (Supervisor)
@@ -233,6 +235,87 @@ Trong các dây chuyền sản xuất công nghiệp, máy móc hỏng hóc đ�
 ```
 - Biểu đồ tròn (Pie Chart) tỷ lệ trạng thái máy; Bar Chart Downtime theo giờ trong ngày.
 - Danh sách sự cố đang mở tap vào chuyển trực tiếp sang phiếu để ký nghiệm thu.
+
+### G. Popup Nhập giờ chạy máy (Operator)
+```
+┌─────────────────────────────────┐
+│     Cập nhật giờ chạy máy      │
+│         MC-102                  │
+├─────────────────────────────────┤
+│  Chỉ số giờ lần trước: 463h    │
+│                                 │
+│  Chỉ số giờ hiện tại           │
+│  ┌──────────────────────────┐  │
+│  │         475              │  │  ← Chỉ nhận số > 463
+│  └──────────────────────────┘  │
+│  ⚠ Phải lớn hơn chỉ số trước  │  ← Hiện khi nhập sai
+├─────────────────────────────────┤
+│  Ca làm việc                   │
+│  ○ Đầu ca    ● Cuối ca         │
+├─────────────────────────────────┤
+│    [Hủy]    [Lưu giờ chạy]    │
+└─────────────────────────────────┘
+```
+- Validation real-time: nút "Lưu" disabled nếu giá trị ≤ chỉ số lần trước.
+- Lưu log: timestamp + tên Operator nhập vào bảng `running_hours_log`.
+
+### H. Màn hình Duyệt đề xuất linh kiện (Supervisor)
+```
+┌─────────────────────────────────┐
+│  ←  Đề xuất linh kiện          │
+│     Work Order: MC-102 / SOS   │
+├─────────────────────────────────┤
+│  KỸ SƯ ĐỀ XUẤT                │
+│  Nguyễn Văn A — 10:25 hôm nay  │
+├─────────────────────────────────┤
+│  CHI TIẾT ĐỀ XUẤT              │
+│  Linh kiện: Van điều áp PN-16  │
+│  Số lượng: 1 cái               │
+│  Đơn giá: 3.500.000đ           │
+│  ⚠ Vượt ngưỡng duyệt 2.000.000đ│  ← Cảnh báo đỏ
+│                                 │
+│  Lý do: Van bị rò rỉ áp suất,  │
+│  không thể bịt kín bằng gioăng │
+├─────────────────────────────────┤
+│  Lý do từ chối (nếu từ chối)   │
+│  ┌──────────────────────────┐  │
+│  │                          │  │
+│  └──────────────────────────┘  │
+├─────────────────────────────────┤
+│  [✗ Từ chối]  [✓ Phê duyệt]   │
+└─────────────────────────────────┘
+```
+- Cảnh báo màu đỏ tự động khi đơn giá vượt `costApprovalThreshold` trong `WorkshopConfig`.
+- Lưu `approvedBy` hoặc `rejectionReason` + tên Supervisor sau khi xử lý.
+
+### I. Màn hình Cấu hình ngưỡng hệ thống (Supervisor)
+```
+┌─────────────────────────────────┐
+│  ←  Cấu hình hệ thống          │
+│     Phân xưởng A               │
+├─────────────────────────────────┤
+│  MỐC BẢO TRÌ ĐỊNH KỲ          │
+│  Model: Máy dập thủy lực       │
+│  ┌─────────────────────────┐   │
+│  │ Mốc 1:  500  h  [Xóa]  │   │
+│  │ Mốc 2: 1000  h  [Xóa]  │   │
+│  │ Mốc 3: 2000  h  [Xóa]  │   │
+│  │ [+ Thêm mốc giờ]        │   │
+│  └─────────────────────────┘   │
+├─────────────────────────────────┤
+│  NGƯỠNG DUYỆT CHI PHÍ LINH KIỆN│
+│  Đề xuất vượt ngưỡng này       │
+│  yêu cầu Supervisor phê duyệt  │
+│  ┌──────────────────────────┐  │
+│  │     2.000.000  đ         │  │
+│  └──────────────────────────┘  │
+│  Dưới ngưỡng: ME tự ghi nhận   │
+├─────────────────────────────────┤
+│         [Lưu cấu hình]         │
+└─────────────────────────────────┘
+```
+- Chỉ Supervisor của phân xưởng đó mới thấy và chỉnh được màn hình này (RLS theo `workshop_id`).
+- Thay đổi mốc giờ có hiệu lực với các lần nhập giờ chạy tiếp theo, không ảnh hưởng phiếu đang mở.
 
 ---
 

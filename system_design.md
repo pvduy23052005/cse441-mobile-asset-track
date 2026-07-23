@@ -15,9 +15,12 @@ Tài liệu này tập trung chuyên sâu vào các sơ đồ mô hình hóa ph�
 * **FR-6 (Giám sát & Thống kê):** Quản đốc phải xem được thời gian dừng máy (Downtime) và trạng thái phân xưởng thời gian thực thông qua dashboard.
 
 ### 1.2. Yêu cầu Phi Chức năng (Non-functional Requirements - NFR)
-* **NFR-1 (Bảo mật & Phân quyền):** Ràng buộc truy cập dữ liệu bằng Row-Level Security (RLS) trên Supabase; tài khoản phải được xác thực.
-* **NFR-2 (Thời gian thực):** Thông báo đẩy về sự cố SOS phải được gửi đi trong vòng dưới 3 giây kể từ khi công nhân gửi yêu cầu.
-* **NFR-3 (Tính khả dụng):** Giao diện quét mã QR và ký tên phải được tối ưu hóa cho màn hình cảm ứng di động (Mobile-friendly).
+* **NFR-1 (Bảo mật & Phân quyền):** Ràng buộc truy cập dữ liệu bằng Row-Level Security (RLS) trên Supabase; mỗi role chỉ đọc/ghi trong phạm vi quyền hạn. Mỗi Supervisor chỉ thấy dữ liệu thuộc `workshop_id` mà họ phụ trách.
+* **NFR-2 (Thời gian thực):** Thông báo đẩy về sự cố SOS phải được gửi đi trong vòng **< 3 giây** kể từ khi Operator gửi yêu cầu.
+* **NFR-3 (Hiệu năng quét mã):** Camera nhận diện và decode mã QR trong **< 1.5 giây** trong điều kiện ánh sáng nhà máy bình thường.
+* **NFR-4 (Dung lượng ảnh):** Mỗi ảnh đính kèm không vượt quá **5MB**; app tự nén trước khi upload.
+* **NFR-5 (Tính khả dụng UI):** Giao diện tối ưu cho màn hình cảm ứng ≥ 5 inch; các nút hành động quan trọng có kích thước tối thiểu **48×48dp**.
+* **NFR-6 (Offline & Tự đồng bộ):** Thao tác ghi khi mất mạng lưu vào SQLite local queue; khi có mạng app tự upload theo thứ tự. Ảnh offline lưu vào app storage dưới dạng file, SQLite chỉ lưu đường dẫn. App đọc lại queue khi khởi động. SOS tạo offline sẽ không gửi notification ngay — chỉ gửi sau khi đồng bộ xong.
 
 ---
 
@@ -40,10 +43,12 @@ flowchart LR
         UC_ClaimSOS["Tiếp nhận phiếu sửa chữa SOS"]
         UC_ExecutePM["Thực hiện PM Checklist"]
         UC_LogParts["Khai báo vật tư thay thế"]
+        UC_SubmitSpareParts["Gửi đề xuất linh kiện đắt tiền"]
+        UC_ViewWorkOrderList["Xem danh sách Work Order"]
         UC_SignOff["Nghiệm thu & Ký tên điện tử"]
-        UC_ApproveParts["Phê duyệt vật tư"]
+        UC_ApproveParts["Phê duyệt đề xuất linh kiện"]
         UC_ViewDashboard["Xem Dashboard Downtime"]
-        UC_ConfigPM["Cài đặt mốc giờ bảo trì"]
+        UC_ConfigPM["Cài đặt mốc giờ & ngưỡng chi phí"]
     end
 
     Operator --> UC_ScanQR
@@ -54,6 +59,8 @@ flowchart LR
     ME --> UC_ClaimSOS
     ME --> UC_ExecutePM
     ME --> UC_LogParts
+    ME --> UC_SubmitSpareParts
+    ME --> UC_ViewWorkOrderList
 
     Supervisor --> UC_SignOff
     Supervisor --> UC_ApproveParts
@@ -68,7 +75,7 @@ flowchart LR
 | **Tên Use Case** | Tạo phiếu SOS và Nghiệm thu sửa chữa (SOS Breakdown & Sign-off Flow) |
 | **Tác nhân** | Operator (Người tạo), ME Engineer (Người sửa), Supervisor (Người nghiệm thu) |
 | **Tiền điều kiện** | Máy móc đã được dán mã QR; Người dùng đã đăng nhập vào hệ thống với đúng vai trò. |
-| **Luồng sự kiện chính** | 1. **Operator** quét mã QR trên máy, chọn "Báo lỗi khẩn cấp SOS".<br>2. **Operator** điền mô tả sự cố, chụp ảnh hiện trạng lỗi và bấm gửi.<br>3. Hệ thống lưu Work Order ở trạng thái `pending` và đổi trạng thái máy sang `repairing`.<br>4. Hệ thống kích hoạt Trigger gửi thông báo push notification đến các **ME Engineer**.<br>5. **ME Engineer** bấm tiếp nhận phiếu (trạng thái chuyển sang `in_progress`).<br>6. **ME Engineer** sửa máy xong, khai báo vật tư đã thay thế, chụp ảnh máy đã sửa, bấm hoàn thành (`completed`).<br>7. **Supervisor** kiểm tra máy, mở app và thực hiện ký tên điện tử lên màn hình cảm ứng để phê duyệt (`approved`).<br>8. Trạng thái máy tự động cập nhật về `active` (Hoạt động). |
+| **Luồng sự kiện chính** | 1. **Operator** quét mã QR trên máy, chọn "Báo lỗi khẩn cấp SOS".<br>2. **Operator** điền mô tả sự cố, chụp ảnh hiện trạng lỗi và bấm gửi.<br>3. Hệ thống lưu Work Order ở trạng thái `pending` và đổi trạng thái máy sang `repairing`.<br>4. Hệ thống kích hoạt Trigger gửi thông báo push notification đến các **ME Engineer**.<br>5. **ME Engineer** bấm tiếp nhận phiếu — DB thực hiện `UPDATE ... WHERE status='pending'`; nếu 2 ME bấm cùng lúc, chỉ 1 người thắng (race condition handled), người còn lại thấy thông báo "Phiếu đã được tiếp nhận" (trạng thái chuyển sang `in_progress`).<br>6. **ME Engineer** sửa máy xong, khai báo vật tư đã thay thế, chụp ảnh máy đã sửa, bấm hoàn thành (`completed`).<br>7. **Supervisor** kiểm tra máy, mở app và thực hiện ký tên điện tử lên màn hình cảm ứng để phê duyệt (`approved`).<br>8. Trạng thái máy tự động cập nhật về `active` (Hoạt động). |
 | **Hậu điều kiện** | Phiếu sửa chữa được lưu trữ vĩnh viễn kèm ảnh chữ ký của Quản đốc; Máy móc trở lại sản xuất. |
 
 ---
@@ -81,17 +88,27 @@ flowchart TD
     A([Bắt đầu]) --> B[Operator quét mã QR trên thân máy]
     B --> C[Hệ thống hiển thị Hộ chiếu thiết bị]
     C --> D["Operator chọn 'Báo lỗi SOS', điền mô tả & chụp hình lỗi"]
-    D --> E["Hệ thống tạo phiếu SOS (Trạng thái: Pending)"]
-    E --> F["Hệ thống chuyển trạng thái máy sang 'Repairing'"]
-    F --> G[Hệ thống gửi Push Notification tới ME]
-    G --> H["ME Engineer nhận việc & tiến hành sửa chữa (Trạng thái: In Progress)"]
-    H --> I[ME hoàn thành sửa chữa, cập nhật vật tư tiêu hao]
-    I --> J["ME chụp ảnh bàn giao, chuyển trạng thái phiếu sang 'Completed'"]
-    J --> K[Quản đốc Supervisor kiểm tra hiện trường]
-    K --> L[Quản đốc ký tên điện tử nghiệm thu trên màn hình]
-    L --> M["Hệ thống lưu chữ ký, chuyển trạng thái phiếu sang 'Approved'"]
-    M --> N["Hệ thống tự động chuyển trạng thái máy về 'Active'"]
-    N --> O([Kết thúc])
+    D --> E{Có kết nối mạng?}
+    E -- Có --> F["Hệ thống tạo phiếu SOS (Trạng thái: Pending)"]
+    E -- Không --> E2["Lưu vào SQLite offline queue (hiển thị banner cảnh báo đỏ)"]
+    E2 --> E3{Có mạng trở lại?}
+    E3 -- Có --> F
+    F --> G["Hệ thống chuyển trạng thái máy sang 'Repairing'"]
+    G --> H[Hệ thống gửi Push Notification tới ME]
+    H --> I{ME tiếp nhận phiếu}
+    I -- Không ai nhận --> I
+    I -- ME bấm Tiếp nhận --> J["ME tiến hành sửa chữa (Trạng thái: In Progress)"]
+    J --> K[ME hoàn thành sửa chữa, cập nhật vật tư tiêu hao]
+    K --> L["ME chụp ảnh bàn giao, chuyển trạng thái phiếu sang 'Completed'"]
+    L --> M{Supervisor xét nghiệm thu}
+    M -- Ký nghiệm thu --> N["Hệ thống lưu chữ ký, chuyển sang 'Approved'"]
+    M -- Từ chối kèm lý do --> O["Phiếu về 'Rejected' → lưu rejection_reason"]
+    O --> J
+    N --> P["Hệ thống tự động chuyển trạng thái máy về 'Active'"]
+    P --> Q([Kết thúc])
+    D --> R{Báo nhầm / Hủy?}
+    R -- Hủy phiếu khi còn Pending --> S["Trạng thái: Cancelled — Máy về Active"]
+    S --> Q
 ```
 
 ### 3.2. Quy trình Bảo trì Định kỳ (Preventive Maintenance Workflow)
@@ -101,7 +118,7 @@ flowchart TD
     B --> C{Số giờ chạy >= Mốc cấu hình bảo trì?}
     C -- Có --> D["Hệ thống tự động tạo PM Checklist (Trạng thái: Pending)"]
     D --> E["Hệ thống chuyển trạng thái máy sang 'Maintenance'"]
-    E --> F[Hệ thống phân công task cho ME]
+    E --> F[Hệ thống đưa PM vào danh sách chờ — ME tự chọn tiếp nhận]
     F --> G[ME mở danh sách checklist cần làm]
     G --> H[ME thực hiện hạng mục bảo dưỡng]
     H --> I[ME tích chọn hoàn thành hạng mục]
@@ -135,8 +152,8 @@ sequenceDiagram
 
     OP->>App: Quét mã QR & Chọn Báo lỗi SOS
     OP->>App: Nhập mô tả, chọn độ nghiêm trọng & chụp ảnh lỗi
-    App->>DB: INSERT INTO work_orders (status: 'pending')
-    Note over DB: Thay đổi trạng thái máy sang 'repairing'
+    App->>DB: INSERT INTO work_orders (status: 'pending', client_generated_id: uuid)
+    Note over DB: Trigger đổi trạng thái máy sang 'repairing'
     DB-->>App: Xác nhận tạo thành công (201 Created)
     App-->>OP: Hiển thị "Đã gửi yêu cầu thành công"
 
@@ -145,10 +162,12 @@ sequenceDiagram
     Trigger->>FCM: Gửi Push Payload (Tiêu đề: Máy X gặp sự cố SOS!)
     deactivate Trigger
     FCM->>ME: Đẩy Notification thời gian thực tới điện thoại ME
-    ME->>App: Nhấn Notification -> Xem chi tiết sự cố
+    ME->>App: Nhấn Notification → Xem chi tiết sự cố
+    App->>DB: UPDATE work_orders SET status='in_progress', assignee_id=me_id WHERE status='pending'
+    Note over DB: Nếu 0 row affected → ME khác đã tiếp nhận trước (race condition handled)
 ```
 
-### 4.2. Luồng Sửa chữa & Thực thi PM Checklist
+### 4.2. Luồng Tiếp nhận & Sửa chữa SOS (ME Engineer)
 
 ```mermaid
 sequenceDiagram
@@ -158,20 +177,44 @@ sequenceDiagram
     participant DB as Supabase DB
     participant Store as Supabase Storage
 
-    ME->>App: Xem danh sách công việc & Chọn "Tiếp nhận"
-    App->>DB: UPDATE work_orders/pm_checklists (status: 'in_progress')
-    ME->>App: Tiến hành bảo trì & tích chọn checklist
-    ME->>App: Chụp ảnh linh kiện mới thay thế
-    App->>Store: Upload ảnh linh kiện
+    ME->>App: Xem danh sách Work Order & Chọn "Tiếp nhận"
+    App->>DB: UPDATE work_orders SET status='in_progress' WHERE status='pending'
+    DB-->>App: Cập nhật thành công — ghi nhận claimed_at
+    ME->>App: Tiến hành sửa chữa & cập nhật vật tư tiêu hao
+    ME->>App: Chụp ảnh máy đã sửa làm bằng chứng
+    App->>Store: Upload ảnh bằng chứng
     Store-->>App: Trả về Image URL
-    ME->>App: Báo cáo vật tư tiêu hao & Chọn "Hoàn thành"
-    App->>DB: UPDATE pm_checklist_items (is_checked: true, photo_url: url)
-    App->>DB: UPDATE work_orders (status: 'completed', downtime_end: now())
+    ME->>App: Chọn "Hoàn thành"
+    App->>DB: UPDATE work_orders SET status='completed', downtime_end=now()
     DB-->>App: Ghi nhận dữ liệu thành công
     App-->>ME: Hiển thị "Đang đợi Quản đốc nghiệm thu"
 ```
 
-### 4.3. Luồng Nghiệm thu và Ký tên điện tử (Digital Sign-off)
+### 4.3. Luồng Thực thi PM Checklist (ME Engineer)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor ME as ME Engineer
+    participant App as Flutter Mobile App
+    participant DB as Supabase DB
+    participant Store as Supabase Storage
+
+    Note over DB: Hệ thống tự sinh PM khi running_hours >= scheduled_hours
+    ME->>App: Xem danh sách Work Order & Chọn phiếu PM
+    App->>DB: UPDATE pm_checklists SET status='in_progress'
+    ME->>App: Tick từng hạng mục checklist
+    ME->>App: Chụp ảnh linh kiện mới thay thế (bắt buộc với mục có photo_required)
+    App->>Store: Upload ảnh linh kiện
+    Store-->>App: Trả về Image URL
+    App->>DB: UPDATE pm_checklist_items SET is_checked=true, photo_url=url
+    ME->>App: Chọn "Hoàn thành" (chỉ active khi 100% checklist đã tích)
+    App->>DB: UPDATE pm_checklists SET status='completed'
+    DB-->>App: Ghi nhận dữ liệu thành công
+    App-->>ME: Hiển thị "Đang đợi Quản đốc nghiệm thu"
+```
+
+### 4.4. Luồng Nghiệm thu và Ký tên điện tử (Digital Sign-off)
 
 ```mermaid
 sequenceDiagram
@@ -181,15 +224,23 @@ sequenceDiagram
     participant Store as Supabase Storage
     participant DB as Supabase DB
 
-    SV->>App: Mở danh sách chờ nghiệm thu -> Chọn phiếu
+    SV->>App: Mở danh sách chờ nghiệm thu → Chọn phiếu
+    SV->>App: Xem tóm tắt: máy, kỹ sư, vật tư đã thay, tổng downtime
     SV->>App: Vẽ chữ ký tay trực tiếp lên màn hình cảm ứng
-    SV->>App: Xác nhận nghiệm thu
-    App->>Store: Upload ảnh chữ ký (Format PNG)
-    Store-->>App: Trả về Signature Image URL
-    App->>DB: UPDATE work_orders SET status = 'approved', signature_url = url
-    Note over DB: SQL Trigger tự động đổi trạng thái máy về 'active' (Hoạt động)
-    DB-->>App: Cập nhật cơ sở dữ liệu thành công
-    App-->>SV: Báo cáo: "Thiết bị đã hoạt động trở lại"
+    alt Supervisor chấp nhận
+        SV->>App: Xác nhận nghiệm thu
+        App->>Store: Upload ảnh chữ ký (PNG ≥ 300×150px)
+        Store-->>App: Trả về Signature Image URL
+        App->>DB: UPDATE work_orders SET status='approved', signature_url=url
+        Note over DB: Trigger tự động đổi trạng thái máy về 'active'
+        DB-->>App: Cập nhật thành công
+        App-->>SV: "Thiết bị đã hoạt động trở lại"
+    else Supervisor từ chối
+        SV->>App: Bấm "Từ chối" & nhập lý do
+        App->>DB: UPDATE work_orders SET status='rejected', rejection_reason=reason, rejected_by=sv_id
+        DB-->>App: Cập nhật thành công
+        App-->>SV: "Đã gửi yêu cầu làm lại cho kỹ sư"
+    end
 ```
 
 ---
@@ -203,9 +254,10 @@ stateDiagram-v2
     [*] --> Active : Nhập máy mới vào hệ thống
     Active --> Repairing : Operator báo lỗi khẩn cấp SOS
     Active --> Maintenance : Đến mốc số giờ chạy máy tự động sinh PM
-    Repairing --> Active : Sửa xong & Quản đốc ký nghiệm thu
-    Maintenance --> Active : Bảo trì xong & Quản đốc ký nghiệm thu
-    Active --> Inactive : Ngừng hoạt động (Thanh lý/Hỏng nặng)
+    Repairing --> Active : Sửa xong & Supervisor ký nghiệm thu (Approved)
+    Maintenance --> Active : Bảo trì xong & Supervisor ký nghiệm thu (Approved)
+    Repairing --> Active : Phiếu SOS bị hủy (Cancelled)
+    Active --> Inactive : Ngừng hoạt động (Thanh lý / Hỏng nặng)
     Repairing --> Inactive : Đánh giá không thể sửa chữa
     Inactive --> [*]
 ```
@@ -215,11 +267,15 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     [*] --> Pending : Operator tạo phiếu SOS / Hệ thống tự sinh PM
-    Pending --> Assigned : Đã phân công cho ME cụ thể
-    Assigned --> In_Progress : ME bấm "Tiếp nhận" công việc
-    In_Progress --> Completed : ME hoàn thành sửa/bảo trì & chụp ảnh linh kiện
-    Completed --> Approved : Quản đốc ký tên điện tử nghiệm thu
+    Pending --> In_Progress : ME bấm "Tiếp nhận" (optimistic lock)
+    Pending --> Cancelled : Operator/Supervisor hủy khi chưa có ME nhận
+    In_Progress --> Pending : ME trả lại phiếu (chưa có người khác nhận)
+    In_Progress --> Completed : ME hoàn thành & chụp ảnh bằng chứng
+    Completed --> Approved : Supervisor ký nghiệm thu
+    Completed --> Rejected : Supervisor từ chối kèm lý do
+    Rejected --> In_Progress : ME tiếp tục sửa lại
     Approved --> [*]
+    Cancelled --> [*]
 ```
 
 ---
@@ -248,10 +304,11 @@ classDiagram
     class TaskStatus {
         <<enumeration>>
         PENDING
-        ASSIGNED
         IN_PROGRESS
         COMPLETED
         APPROVED
+        REJECTED
+        CANCELLED
     }
 
     class SeverityLevel {
@@ -266,6 +323,7 @@ classDiagram
         +UUID id
         +String fullName
         +UserRole role
+        +UUID workshopId
         +DateTime createdAt
         +login()
         +updateProfile()
@@ -278,6 +336,7 @@ classDiagram
         +Map specifications
         +MachineStatus status
         +double runningHours
+        +UUID workshopId
         +DateTime lastMaintenance
         +DateTime createdAt
         +updateRunningHours()
@@ -286,6 +345,7 @@ classDiagram
 
     class WorkOrder {
         +UUID id
+        +UUID clientGeneratedId
         +UUID machineId
         +UUID reporterId
         +UUID assigneeId
@@ -297,9 +357,14 @@ classDiagram
         +DateTime downtimeStart
         +DateTime downtimeEnd
         +String supervisorSignatureUrl
+        +String rejectionReason
+        +UUID rejectedBy
+        +DateTime cancelledAt
         +claim()
         +complete()
         +approve()
+        +reject()
+        +cancel()
     }
 
     class PmChecklist {
@@ -310,9 +375,11 @@ classDiagram
         +double scheduledHours
         +TaskStatus status
         +String supervisorSignatureUrl
+        +String rejectionReason
         +DateTime completedAt
         +execute()
         +approve()
+        +reject()
     }
 
     class PmChecklistItem {
@@ -320,10 +387,45 @@ classDiagram
         +UUID pmChecklistId
         +String taskDescription
         +boolean isChecked
+        +boolean photoRequired
         +String photoUrl
         +DateTime checkedAt
         +toggleCheck()
         +uploadProofPhoto()
+    }
+
+    class SparePartLog {
+        +UUID id
+        +UUID workOrderId
+        +UUID pmChecklistId
+        +String partName
+        +int quantity
+        +String unit
+        +DateTime loggedAt
+        +UUID loggedBy
+    }
+
+    class SparePartsRequest {
+        +UUID id
+        +UUID workOrderId
+        +UUID requestedBy
+        +String partName
+        +double unitPrice
+        +String reason
+        +String status
+        +UUID approvedBy
+        +String rejectionReason
+        +DateTime createdAt
+    }
+
+    class WorkshopConfig {
+        +UUID id
+        +UUID workshopId
+        +String machineModel
+        +List pmThresholdHours
+        +double costApprovalThreshold
+        +DateTime updatedAt
+        +UUID updatedBy
     }
 
     UserProfile "1" -- "0..*" WorkOrder : "báo lỗi / tiếp nhận / nghiệm thu"
@@ -331,6 +433,10 @@ classDiagram
     Machine "1" -- "0..*" WorkOrder : "phát sinh sự cố"
     Machine "1" -- "0..*" PmChecklist : "bảo trì định kỳ"
     PmChecklist "1" *-- "1..*" PmChecklistItem : "bao gồm các hạng mục"
+    WorkOrder "1" -- "0..*" SparePartLog : "ghi nhận vật tư"
+    PmChecklist "1" -- "0..*" SparePartLog : "ghi nhận vật tư"
+    WorkOrder "1" -- "0..*" SparePartsRequest : "đề xuất linh kiện"
+    Machine "1" -- "1" WorkshopConfig : "cấu hình theo model"
 ```
 
 ---
@@ -345,15 +451,17 @@ graph TD
         Scanner[mobile_scanner SDK]
         SigCanvas[signature Canvas SDK]
         ClientSDK[Supabase Flutter Client SDK]
+        SQLiteQ[SQLite - Offline Queue]
+        LocalFS[Local File Storage - path_provider]
     end
 
     subgraph Supabase_BaaS ["Hệ thống Backend (Supabase)"]
         Auth[Xác thực người dùng - Auth]
         DB[(Cơ sở dữ liệu PostgreSQL)]
-        RLS[Chính sách bảo mật RLS]
-        Storage[Supabase Storage - Lưu trữ ảnh & Chữ ký]
+        RLS[Chính sách bảo mật RLS theo workshop_id]
+        Storage[Supabase Storage - Ảnh & Chữ ký]
         Triggers[DB Triggers / Webhooks]
-        EdgeFunc[Edge Functions - Dịch vụ trung gian]
+        EdgeFunc[Edge Functions]
     end
 
     subgraph External_Services ["Dịch vụ bên thứ ba"]
@@ -364,6 +472,9 @@ graph TD
     Riverpod --> Scanner
     Riverpod --> SigCanvas
     Riverpod --> ClientSDK
+    Riverpod --> SQLiteQ
+    SQLiteQ -->|Lưu ảnh path| LocalFS
+    SQLiteQ -->|Sync khi có mạng| ClientSDK
 
     ClientSDK -->|HTTPS / WSS| Auth
     ClientSDK -->|SQL Query| RLS
