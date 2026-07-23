@@ -486,3 +486,316 @@ graph TD
     EdgeFunc -->|Send Payload| FCM
     FCM -->|Push Notification| Client_App
 ```
+
+---
+
+## 8. Thiết kế Cơ sở Dữ liệu Quan hệ (Relational Database Design)
+
+### 8.1. Mô hình Thực thể Quan hệ (ERD)
+
+```mermaid
+erDiagram
+    profiles {
+        uuid id PK
+        text full_name
+        text role
+        uuid workshop_id FK
+        timestamptz created_at
+    }
+
+    workshops {
+        uuid id PK
+        text name
+        text location
+        timestamptz created_at
+    }
+
+    machines {
+        uuid id PK
+        text code UK
+        text name
+        jsonb specifications
+        text status
+        float8 running_hours
+        uuid workshop_id FK
+        timestamptz last_maintenance_at
+        timestamptz created_at
+    }
+
+    workshop_configs {
+        uuid id PK
+        uuid workshop_id FK
+        text machine_model
+        int4[] pm_threshold_hours
+        float8 cost_approval_threshold
+        uuid updated_by FK
+        timestamptz updated_at
+    }
+
+    work_orders {
+        uuid id PK
+        uuid client_generated_id UK
+        uuid machine_id FK
+        uuid reporter_id FK
+        uuid assignee_id FK
+        uuid supervisor_id FK
+        text severity
+        text description
+        text image_url
+        text status
+        timestamptz downtime_start
+        timestamptz downtime_end
+        timestamptz claimed_at
+        text supervisor_signature_url
+        text rejection_reason
+        uuid rejected_by FK
+        timestamptz cancelled_at
+        text cancellation_reason
+        timestamptz created_at
+    }
+
+    pm_checklists {
+        uuid id PK
+        uuid machine_id FK
+        uuid assignee_id FK
+        uuid supervisor_id FK
+        float8 scheduled_hours
+        text status
+        text supervisor_signature_url
+        text rejection_reason
+        timestamptz completed_at
+        timestamptz created_at
+    }
+
+    pm_checklist_items {
+        uuid id PK
+        uuid pm_checklist_id FK
+        text task_description
+        bool is_checked
+        bool photo_required
+        text photo_url
+        timestamptz checked_at
+    }
+
+    spare_part_logs {
+        uuid id PK
+        uuid work_order_id FK
+        uuid pm_checklist_id FK
+        text part_name
+        int4 quantity
+        text unit
+        uuid logged_by FK
+        timestamptz logged_at
+    }
+
+    spare_parts_requests {
+        uuid id PK
+        uuid work_order_id FK
+        uuid requested_by FK
+        text part_name
+        float8 unit_price
+        text reason
+        text status
+        uuid approved_by FK
+        text rejection_reason
+        timestamptz created_at
+    }
+
+    running_hours_log {
+        uuid id PK
+        uuid machine_id FK
+        float8 hours_value
+        text shift
+        uuid logged_by FK
+        timestamptz logged_at
+    }
+
+    profiles ||--o{ work_orders : "báo lỗi / tiếp nhận / nghiệm thu"
+    profiles ||--o{ pm_checklists : "thực hiện / nghiệm thu"
+    profiles ||--o{ spare_part_logs : "ghi nhận vật tư"
+    profiles ||--o{ spare_parts_requests : "đề xuất linh kiện"
+    profiles ||--o{ running_hours_log : "nhập giờ chạy"
+    profiles }o--|| workshops : "thuộc phân xưởng"
+    workshops ||--o{ machines : "có máy móc"
+    workshops ||--o{ workshop_configs : "cấu hình"
+    machines ||--o{ work_orders : "phát sinh sự cố"
+    machines ||--o{ pm_checklists : "bảo trì định kỳ"
+    machines ||--o{ running_hours_log : "theo dõi giờ chạy"
+    pm_checklists ||--|{ pm_checklist_items : "bao gồm hạng mục"
+    work_orders ||--o{ spare_part_logs : "ghi nhận vật tư"
+    pm_checklists ||--o{ spare_part_logs : "ghi nhận vật tư"
+    work_orders ||--o{ spare_parts_requests : "đề xuất linh kiện"
+```
+
+---
+
+### 8.2. Mô tả Chi tiết Từng Bảng
+
+#### Bảng `profiles` — Hồ sơ người dùng
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `id` | `uuid` | PK, default `auth.uid()` | ID người dùng, liên kết với Supabase Auth |
+| `full_name` | `text` | NOT NULL | Họ tên đầy đủ |
+| `role` | `text` | NOT NULL, CHECK IN ('operator','me_engineer','supervisor') | Vai trò trong hệ thống |
+| `workshop_id` | `uuid` | FK → workshops.id | Phân xưởng phụ trách |
+| `created_at` | `timestamptz` | default now() | Thời điểm tạo |
+
+---
+
+#### Bảng `workshops` — Phân xưởng
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `id` | `uuid` | PK, default gen_random_uuid() | ID phân xưởng |
+| `name` | `text` | NOT NULL | Tên phân xưởng |
+| `location` | `text` | | Vị trí / địa chỉ |
+| `created_at` | `timestamptz` | default now() | Thời điểm tạo |
+
+---
+
+#### Bảng `machines` — Máy móc
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `id` | `uuid` | PK | ID máy |
+| `code` | `text` | UNIQUE, NOT NULL | Mã máy in trên QR (e.g. MC-102) |
+| `name` | `text` | NOT NULL | Tên máy |
+| `specifications` | `jsonb` | | Thông số kỹ thuật (công suất, áp suất...) |
+| `status` | `text` | NOT NULL, CHECK IN ('active','repairing','maintenance','inactive') | Trạng thái hiện tại |
+| `running_hours` | `float8` | default 0 | Tổng số giờ chạy tích lũy |
+| `workshop_id` | `uuid` | FK → workshops.id | Thuộc phân xưởng nào |
+| `last_maintenance_at` | `timestamptz` | | Thời điểm bảo trì gần nhất |
+| `created_at` | `timestamptz` | default now() | |
+
+---
+
+#### Bảng `workshop_configs` — Cấu hình ngưỡng phân xưởng
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `id` | `uuid` | PK | |
+| `workshop_id` | `uuid` | FK → workshops.id | Phân xưởng áp dụng |
+| `machine_model` | `text` | NOT NULL | Model máy (e.g. "Máy dập thủy lực") |
+| `pm_threshold_hours` | `int4[]` | NOT NULL | Danh sách mốc giờ PM (e.g. {500,1000,2000}) |
+| `cost_approval_threshold` | `float8` | default 2000000 | Ngưỡng giá trị linh kiện cần duyệt (VNĐ) |
+| `updated_by` | `uuid` | FK → profiles.id | Supervisor cuối cùng chỉnh sửa |
+| `updated_at` | `timestamptz` | default now() | |
+
+---
+
+#### Bảng `work_orders` — Phiếu sửa chữa SOS
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `id` | `uuid` | PK | |
+| `client_generated_id` | `uuid` | UNIQUE, NOT NULL | UUID do app tạo offline, tránh tạo trùng khi retry |
+| `machine_id` | `uuid` | FK → machines.id | Máy bị sự cố |
+| `reporter_id` | `uuid` | FK → profiles.id | Operator tạo phiếu |
+| `assignee_id` | `uuid` | FK → profiles.id, nullable | ME tiếp nhận |
+| `supervisor_id` | `uuid` | FK → profiles.id, nullable | Supervisor nghiệm thu |
+| `severity` | `text` | NOT NULL, CHECK IN ('low','medium','high','critical') | Mức độ nghiêm trọng |
+| `description` | `text` | NOT NULL | Mô tả sự cố |
+| `image_url` | `text` | | URL ảnh hiện trạng lỗi |
+| `status` | `text` | NOT NULL, CHECK IN ('pending','in_progress','completed','approved','rejected','cancelled') | Trạng thái phiếu |
+| `downtime_start` | `timestamptz` | | Thời điểm máy bắt đầu dừng |
+| `downtime_end` | `timestamptz` | | Thời điểm máy chạy lại |
+| `claimed_at` | `timestamptz` | | Thời điểm ME tiếp nhận (tính MTTR) |
+| `supervisor_signature_url` | `text` | | URL ảnh chữ ký PNG |
+| `rejection_reason` | `text` | | Lý do từ chối nghiệm thu |
+| `rejected_by` | `uuid` | FK → profiles.id, nullable | Supervisor từ chối |
+| `cancelled_at` | `timestamptz` | | Thời điểm hủy phiếu |
+| `cancellation_reason` | `text` | | Lý do hủy |
+| `created_at` | `timestamptz` | default now() | |
+
+---
+
+#### Bảng `pm_checklists` — Phiếu bảo trì định kỳ
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `id` | `uuid` | PK | |
+| `machine_id` | `uuid` | FK → machines.id | Máy cần bảo trì |
+| `assignee_id` | `uuid` | FK → profiles.id, nullable | ME thực hiện |
+| `supervisor_id` | `uuid` | FK → profiles.id, nullable | Supervisor nghiệm thu |
+| `scheduled_hours` | `float8` | NOT NULL | Mốc giờ kích hoạt bảo trì (e.g. 500) |
+| `status` | `text` | NOT NULL, CHECK IN ('pending','in_progress','completed','approved','rejected','cancelled') | |
+| `supervisor_signature_url` | `text` | | URL chữ ký nghiệm thu |
+| `rejection_reason` | `text` | | Lý do từ chối |
+| `completed_at` | `timestamptz` | | |
+| `created_at` | `timestamptz` | default now() | |
+
+---
+
+#### Bảng `pm_checklist_items` — Hạng mục checklist bảo trì
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `id` | `uuid` | PK | |
+| `pm_checklist_id` | `uuid` | FK → pm_checklists.id, ON DELETE CASCADE | Thuộc phiếu PM nào |
+| `task_description` | `text` | NOT NULL | Mô tả hạng mục (e.g. "Thay dầu bôi trơn") |
+| `is_checked` | `bool` | default false | Đã hoàn thành chưa |
+| `photo_required` | `bool` | default false | Bắt buộc chụp ảnh minh chứng |
+| `photo_url` | `text` | | URL ảnh linh kiện đã thay |
+| `checked_at` | `timestamptz` | | Thời điểm tích hoàn thành |
+
+---
+
+#### Bảng `spare_part_logs` — Log vật tư đã sử dụng
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `id` | `uuid` | PK | |
+| `work_order_id` | `uuid` | FK → work_orders.id, nullable | Thuộc phiếu SOS nào |
+| `pm_checklist_id` | `uuid` | FK → pm_checklists.id, nullable | Thuộc phiếu PM nào |
+| `part_name` | `text` | NOT NULL | Tên vật tư / linh kiện |
+| `quantity` | `int4` | NOT NULL, CHECK > 0 | Số lượng |
+| `unit` | `text` | NOT NULL | Đơn vị (cái, lít, kg...) |
+| `logged_by` | `uuid` | FK → profiles.id | ME ghi nhận |
+| `logged_at` | `timestamptz` | default now() | |
+
+> **Ghi chú:** `work_order_id` và `pm_checklist_id` chỉ một trong hai được điền, cái còn lại là NULL. CHECK (`work_order_id` IS NOT NULL OR `pm_checklist_id` IS NOT NULL).
+
+---
+
+#### Bảng `spare_parts_requests` — Đề xuất linh kiện đắt tiền
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `id` | `uuid` | PK | |
+| `work_order_id` | `uuid` | FK → work_orders.id | Thuộc phiếu SOS nào |
+| `requested_by` | `uuid` | FK → profiles.id | ME gửi đề xuất |
+| `part_name` | `text` | NOT NULL | Tên linh kiện |
+| `unit_price` | `float8` | NOT NULL, CHECK > 0 | Đơn giá (VNĐ) |
+| `reason` | `text` | NOT NULL | Lý do cần thay thế |
+| `status` | `text` | NOT NULL, CHECK IN ('pending_approval','approved','rejected') | |
+| `approved_by` | `uuid` | FK → profiles.id, nullable | Supervisor phê duyệt |
+| `rejection_reason` | `text` | | Lý do từ chối |
+| `created_at` | `timestamptz` | default now() | |
+
+---
+
+#### Bảng `running_hours_log` — Lịch sử nhập giờ chạy máy
+| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `id` | `uuid` | PK | |
+| `machine_id` | `uuid` | FK → machines.id | Máy được nhập giờ |
+| `hours_value` | `float8` | NOT NULL, CHECK > 0 | Chỉ số giờ tại thời điểm nhập |
+| `shift` | `text` | CHECK IN ('start','end') | Đầu ca hay cuối ca |
+| `logged_by` | `uuid` | FK → profiles.id | Operator nhập |
+| `logged_at` | `timestamptz` | default now() | |
+
+> **Ghi chú:** Mỗi lần nhập, `hours_value` phải lớn hơn lần nhập gần nhất của cùng máy. Kiểm tra bằng DB Trigger hoặc RPC Function trước khi INSERT.
+
+---
+
+### 8.3. Tóm tắt Quan hệ Giữa Các Bảng
+
+| Bảng con | Khóa ngoại | Bảng cha | Loại quan hệ |
+| :--- | :--- | :--- | :--- |
+| `profiles` | `workshop_id` | `workshops` | N-1 (nhiều người thuộc 1 phân xưởng) |
+| `machines` | `workshop_id` | `workshops` | N-1 |
+| `workshop_configs` | `workshop_id` | `workshops` | N-1 |
+| `work_orders` | `machine_id` | `machines` | N-1 |
+| `work_orders` | `reporter_id`, `assignee_id`, `supervisor_id`, `rejected_by` | `profiles` | N-1 |
+| `pm_checklists` | `machine_id` | `machines` | N-1 |
+| `pm_checklists` | `assignee_id`, `supervisor_id` | `profiles` | N-1 |
+| `pm_checklist_items` | `pm_checklist_id` | `pm_checklists` | N-1 (CASCADE DELETE) |
+| `spare_part_logs` | `work_order_id` | `work_orders` | N-1 (nullable) |
+| `spare_part_logs` | `pm_checklist_id` | `pm_checklists` | N-1 (nullable) |
+| `spare_part_logs` | `logged_by` | `profiles` | N-1 |
+| `spare_parts_requests` | `work_order_id` | `work_orders` | N-1 |
+| `spare_parts_requests` | `requested_by`, `approved_by` | `profiles` | N-1 |
+| `running_hours_log` | `machine_id` | `machines` | N-1 |
+| `running_hours_log` | `logged_by` | `profiles` | N-1 |
