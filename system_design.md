@@ -333,6 +333,7 @@ classDiagram
         +UUID id
         +String code
         +String name
+        +String model
         +Map specifications
         +MachineStatus status
         +double runningHours
@@ -346,13 +347,14 @@ classDiagram
     class WorkOrder {
         +UUID id
         +UUID clientGeneratedId
+        +UUID workshopId
         +UUID machineId
         +UUID reporterId
         +UUID assigneeId
         +UUID supervisorId
         +SeverityLevel severity
         +String description
-        +String imageUrl
+        +List imageUrls
         +TaskStatus status
         +DateTime downtimeStart
         +DateTime downtimeEnd
@@ -360,6 +362,8 @@ classDiagram
         +String rejectionReason
         +UUID rejectedBy
         +DateTime cancelledAt
+        +String cancellationReason
+        +UUID cancelledBy
         +claim()
         +complete()
         +approve()
@@ -369,6 +373,7 @@ classDiagram
 
     class PmChecklist {
         +UUID id
+        +UUID workshopId
         +UUID machineId
         +UUID assigneeId
         +UUID supervisorId
@@ -376,6 +381,7 @@ classDiagram
         +TaskStatus status
         +String supervisorSignatureUrl
         +String rejectionReason
+        +UUID rejectedBy
         +DateTime completedAt
         +execute()
         +approve()
@@ -408,6 +414,7 @@ classDiagram
     class SparePartsRequest {
         +UUID id
         +UUID workOrderId
+        +UUID pmChecklistId
         +UUID requestedBy
         +String partName
         +double unitPrice
@@ -514,6 +521,7 @@ erDiagram
         uuid id PK
         text code UK
         text name
+        text model
         jsonb specifications
         text status
         float8 running_hours
@@ -535,13 +543,13 @@ erDiagram
     work_orders {
         uuid id PK
         uuid client_generated_id UK
+        uuid workshop_id FK
         uuid machine_id FK
         uuid reporter_id FK
         uuid assignee_id FK
         uuid supervisor_id FK
         text severity
         text description
-        text image_url
         text status
         timestamptz downtime_start
         timestamptz downtime_end
@@ -551,11 +559,13 @@ erDiagram
         uuid rejected_by FK
         timestamptz cancelled_at
         text cancellation_reason
+        uuid cancelled_by FK
         timestamptz created_at
     }
 
     pm_checklists {
         uuid id PK
+        uuid workshop_id FK
         uuid machine_id FK
         uuid assignee_id FK
         uuid supervisor_id FK
@@ -563,6 +573,7 @@ erDiagram
         text status
         text supervisor_signature_url
         text rejection_reason
+        uuid rejected_by FK
         timestamptz completed_at
         timestamptz created_at
     }
@@ -591,6 +602,7 @@ erDiagram
     spare_parts_requests {
         uuid id PK
         uuid work_order_id FK
+        uuid pm_checklist_id FK
         uuid requested_by FK
         text part_name
         float8 unit_price
@@ -603,6 +615,7 @@ erDiagram
 
     running_hours_log {
         uuid id PK
+        uuid client_generated_id UK
         uuid machine_id FK
         float8 hours_value
         text shift
@@ -618,6 +631,8 @@ erDiagram
     profiles }o--|| workshops : "thuộc phân xưởng"
     workshops ||--o{ machines : "có máy móc"
     workshops ||--o{ workshop_configs : "cấu hình"
+    workshops ||--o{ work_orders : "phụ trách"
+    workshops ||--o{ pm_checklists : "phụ trách"
     machines ||--o{ work_orders : "phát sinh sự cố"
     machines ||--o{ pm_checklists : "bảo trì định kỳ"
     machines ||--o{ running_hours_log : "theo dõi giờ chạy"
@@ -625,6 +640,7 @@ erDiagram
     work_orders ||--o{ spare_part_logs : "ghi nhận vật tư"
     pm_checklists ||--o{ spare_part_logs : "ghi nhận vật tư"
     work_orders ||--o{ spare_parts_requests : "đề xuất linh kiện"
+    pm_checklists ||--o{ spare_parts_requests : "đề xuất linh kiện"
 ```
 
 ---
@@ -658,6 +674,7 @@ erDiagram
 | `id` | `uuid` | PK | ID máy |
 | `code` | `text` | UNIQUE, NOT NULL | Mã máy in trên QR (e.g. MC-102) |
 | `name` | `text` | NOT NULL | Tên máy |
+| `model` | `text` | NOT NULL | Model máy (liên kết với workshop_configs.machine_model) |
 | `specifications` | `jsonb` | | Thông số kỹ thuật (công suất, áp suất...) |
 | `status` | `text` | NOT NULL, CHECK IN ('active','repairing','maintenance','inactive') | Trạng thái hiện tại |
 | `running_hours` | `float8` | default 0 | Tổng số giờ chạy tích lũy |
@@ -685,13 +702,14 @@ erDiagram
 | :--- | :--- | :--- | :--- |
 | `id` | `uuid` | PK | |
 | `client_generated_id` | `uuid` | UNIQUE, NOT NULL | UUID do app tạo offline, tránh tạo trùng khi retry |
+| `workshop_id` | `uuid` | FK → workshops.id | Phân xưởng quản lý (phục vụ RLS trực tiếp theo NFR-01) |
 | `machine_id` | `uuid` | FK → machines.id | Máy bị sự cố |
 | `reporter_id` | `uuid` | FK → profiles.id | Operator tạo phiếu |
 | `assignee_id` | `uuid` | FK → profiles.id, nullable | ME tiếp nhận |
 | `supervisor_id` | `uuid` | FK → profiles.id, nullable | Supervisor nghiệm thu |
 | `severity` | `text` | NOT NULL, CHECK IN ('low','medium','high','critical') | Mức độ nghiêm trọng |
 | `description` | `text` | NOT NULL | Mô tả sự cố |
-| `image_url` | `text` | | URL ảnh hiện trạng lỗi |
+| `image_urls` | `text[]` | default '{}' | Mảng URL ảnh hiện trạng lỗi (tối đa 5 ảnh, enforce ở app layer) |
 | `status` | `text` | NOT NULL, CHECK IN ('pending','in_progress','completed','approved','rejected','cancelled') | Trạng thái phiếu |
 | `downtime_start` | `timestamptz` | | Thời điểm máy bắt đầu dừng |
 | `downtime_end` | `timestamptz` | | Thời điểm máy chạy lại |
@@ -701,6 +719,7 @@ erDiagram
 | `rejected_by` | `uuid` | FK → profiles.id, nullable | Supervisor từ chối |
 | `cancelled_at` | `timestamptz` | | Thời điểm hủy phiếu |
 | `cancellation_reason` | `text` | | Lý do hủy |
+| `cancelled_by` | `uuid` | FK → profiles.id, nullable | Người hủy phiếu (Operator / Supervisor) |
 | `created_at` | `timestamptz` | default now() | |
 
 ---
@@ -709,6 +728,7 @@ erDiagram
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
 | :--- | :--- | :--- | :--- |
 | `id` | `uuid` | PK | |
+| `workshop_id` | `uuid` | FK → workshops.id | Phân xưởng quản lý (phục vụ RLS trực tiếp theo NFR-01) |
 | `machine_id` | `uuid` | FK → machines.id | Máy cần bảo trì |
 | `assignee_id` | `uuid` | FK → profiles.id, nullable | ME thực hiện |
 | `supervisor_id` | `uuid` | FK → profiles.id, nullable | Supervisor nghiệm thu |
@@ -716,6 +736,7 @@ erDiagram
 | `status` | `text` | NOT NULL, CHECK IN ('pending','in_progress','completed','approved','rejected','cancelled') | |
 | `supervisor_signature_url` | `text` | | URL chữ ký nghiệm thu |
 | `rejection_reason` | `text` | | Lý do từ chối |
+| `rejected_by` | `uuid` | FK → profiles.id, nullable | Supervisor từ chối |
 | `completed_at` | `timestamptz` | | |
 | `created_at` | `timestamptz` | default now() | |
 
@@ -754,7 +775,8 @@ erDiagram
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
 | :--- | :--- | :--- | :--- |
 | `id` | `uuid` | PK | |
-| `work_order_id` | `uuid` | FK → work_orders.id | Thuộc phiếu SOS nào |
+| `work_order_id` | `uuid` | FK → work_orders.id, nullable | Thuộc phiếu SOS nào (nếu có) |
+| `pm_checklist_id` | `uuid` | FK → pm_checklists.id, nullable | Thuộc phiếu PM nào (nếu có) |
 | `requested_by` | `uuid` | FK → profiles.id | ME gửi đề xuất |
 | `part_name` | `text` | NOT NULL | Tên linh kiện |
 | `unit_price` | `float8` | NOT NULL, CHECK > 0 | Đơn giá (VNĐ) |
@@ -764,12 +786,15 @@ erDiagram
 | `rejection_reason` | `text` | | Lý do từ chối |
 | `created_at` | `timestamptz` | default now() | |
 
+> **Ghi chú:** `work_order_id` và `pm_checklist_id` chỉ một trong hai được điền. CHECK (`work_order_id` IS NOT NULL OR `pm_checklist_id` IS NOT NULL).
+
 ---
 
 #### Bảng `running_hours_log` — Lịch sử nhập giờ chạy máy
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
 | :--- | :--- | :--- | :--- |
 | `id` | `uuid` | PK | |
+| `client_generated_id` | `uuid` | UNIQUE, NOT NULL | UUID do app tạo offline (chống tạo trùng log khi retry sync) |
 | `machine_id` | `uuid` | FK → machines.id | Máy được nhập giờ |
 | `hours_value` | `float8` | NOT NULL, CHECK > 0 | Chỉ số giờ tại thời điểm nhập |
 | `shift` | `text` | CHECK IN ('start','end') | Đầu ca hay cuối ca |
@@ -787,15 +812,18 @@ erDiagram
 | `profiles` | `workshop_id` | `workshops` | N-1 (nhiều người thuộc 1 phân xưởng) |
 | `machines` | `workshop_id` | `workshops` | N-1 |
 | `workshop_configs` | `workshop_id` | `workshops` | N-1 |
+| `work_orders` | `workshop_id` | `workshops` | N-1 (hỗ trợ RLS theo NFR-01) |
 | `work_orders` | `machine_id` | `machines` | N-1 |
-| `work_orders` | `reporter_id`, `assignee_id`, `supervisor_id`, `rejected_by` | `profiles` | N-1 |
+| `work_orders` | `reporter_id`, `assignee_id`, `supervisor_id`, `rejected_by`, `cancelled_by` | `profiles` | N-1 |
+| `pm_checklists` | `workshop_id` | `workshops` | N-1 (hỗ trợ RLS theo NFR-01) |
 | `pm_checklists` | `machine_id` | `machines` | N-1 |
-| `pm_checklists` | `assignee_id`, `supervisor_id` | `profiles` | N-1 |
+| `pm_checklists` | `assignee_id`, `supervisor_id`, `rejected_by` | `profiles` | N-1 |
 | `pm_checklist_items` | `pm_checklist_id` | `pm_checklists` | N-1 (CASCADE DELETE) |
 | `spare_part_logs` | `work_order_id` | `work_orders` | N-1 (nullable) |
 | `spare_part_logs` | `pm_checklist_id` | `pm_checklists` | N-1 (nullable) |
 | `spare_part_logs` | `logged_by` | `profiles` | N-1 |
-| `spare_parts_requests` | `work_order_id` | `work_orders` | N-1 |
+| `spare_parts_requests` | `work_order_id` | `work_orders` | N-1 (nullable) |
+| `spare_parts_requests` | `pm_checklist_id` | `pm_checklists` | N-1 (nullable) |
 | `spare_parts_requests` | `requested_by`, `approved_by` | `profiles` | N-1 |
 | `running_hours_log` | `machine_id` | `machines` | N-1 |
 | `running_hours_log` | `logged_by` | `profiles` | N-1 |
