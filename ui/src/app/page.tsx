@@ -2,25 +2,16 @@
 
 import React, { useState } from 'react';
 import {
-  Activity,
-  AlertTriangle,
+  Wrench,
   CheckCircle2,
   Clock,
   Cpu,
-  FileSignature,
-  HardHat,
-  PlusCircle,
   QrCode,
-  ShieldCheck,
-  Wrench,
   ChevronRight,
-  Send,
-  Zap,
   WifiOff,
-  XCircle,
+  AlertTriangle,
+  FileSignature,
   Sliders,
-  Sparkles,
-  Eye,
 } from 'lucide-react';
 
 import {
@@ -217,7 +208,6 @@ export default function AssetTrackMobileApp() {
     setWorkOrders((prev) =>
       prev.map((wo) => {
         if (wo.id === woId && wo.status === 'PENDING') {
-          // Restore machine status to ACTIVE
           setMachines((mPrev) =>
             mPrev.map((m) => (m.id === wo.machineId ? { ...m, status: 'ACTIVE' } : m))
           );
@@ -280,7 +270,6 @@ export default function AssetTrackMobileApp() {
       );
     }
 
-    // If requires Supervisor approval (cost >= threshold)
     if (part.requiresApproval) {
       const targetWO = workOrders.find((w) => w.id === woId);
       const newSpr: SparePartRequest = {
@@ -301,7 +290,7 @@ export default function AssetTrackMobileApp() {
     }
   };
 
-  // 6 & 7 & 8. PM Checklist & Spare Parts Logging (Feature 6, 7, 8 / US-05, US-06, US-07)
+  // 6 & 7 & 8. PM Checklist & Spare Parts Logging
   const handleCompletePMChecklist = (
     pmId: string,
     items: any[],
@@ -309,7 +298,6 @@ export default function AssetTrackMobileApp() {
   ) => {
     const targetPM = checklists.find((p) => p.id === pmId);
 
-    // If any spare part requires Supervisor approval (cost >= threshold)
     spareParts.forEach((sp) => {
       if (sp.requiresApproval) {
         const newSpr: SparePartRequest = {
@@ -528,8 +516,7 @@ export default function AssetTrackMobileApp() {
                   {/* Active SOS Tracker */}
                   <Card>
                     <CardHeader className="p-4 pb-2">
-                      <CardTitle className="text-xs font-extrabold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-                        <AlertTriangle className="w-4 h-4 text-rose-600" />
+                      <CardTitle className="text-xs font-extrabold uppercase tracking-wider text-slate-600">
                         Theo Dõi Phiếu Báo Lỗi SOS ({workOrders.length})
                       </CardTitle>
                     </CardHeader>
@@ -581,11 +568,10 @@ export default function AssetTrackMobileApp() {
                   <Card>
                     <CardHeader className="p-4 pb-2">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-xs font-extrabold uppercase tracking-wider text-rose-700 flex items-center gap-1.5">
-                          <AlertTriangle className="w-4 h-4 text-rose-600 animate-pulse" />
+                        <CardTitle className="text-xs font-extrabold uppercase tracking-wider text-rose-700">
                           Phiếu Sự Cố SOS Cần Xử Lý ({workOrders.filter((w) => w.status !== 'APPROVED').length})
                         </CardTitle>
-                        <span className="text-[10px] text-cyan-700 font-bold">Chạm để xem chi tiết phiếu</span>
+                        <span className="text-[10px] text-cyan-700 font-bold">Chạm xem chi tiết</span>
                       </div>
                     </CardHeader>
 
@@ -597,10 +583,7 @@ export default function AssetTrackMobileApp() {
                           className="p-3.5 rounded-2xl bg-slate-50 hover:bg-slate-100/80 cursor-pointer border border-slate-200 space-y-2 transition shadow-xs"
                         >
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono text-xs font-black text-rose-700">{wo.code}</span>
-                              <Eye className="w-3.5 h-3.5 text-slate-400" />
-                            </div>
+                            <span className="font-mono text-xs font-black text-rose-700">{wo.code}</span>
                             <Badge variant={wo.severity === 'CRITICAL' ? 'destructive' : 'maintenance'}>
                               Nghiêm trọng: {wo.severity}
                             </Badge>
@@ -662,8 +645,7 @@ export default function AssetTrackMobileApp() {
                   {/* PM Checklists Feed */}
                   <Card>
                     <CardHeader className="p-4 pb-2">
-                      <CardTitle className="text-xs font-extrabold uppercase tracking-wider text-amber-700 flex items-center gap-1.5">
-                        <Wrench className="w-4 h-4 text-amber-600" />
+                      <CardTitle className="text-xs font-extrabold uppercase tracking-wider text-amber-700">
                         Nhiệm Vụ Bảo Trì Định Kỳ (PM Checklist)
                       </CardTitle>
                     </CardHeader>
@@ -739,26 +721,211 @@ export default function AssetTrackMobileApp() {
             </div>
           )}
 
-          {/* TAB: TASKS LIST */}
+          {/* TAB: TASKS LIST - TAILORED SPECIFICALLY PER USER ROLE (TÁC NHÂN KHÁC NHAU) */}
           {activeTab === 'TASKS' && (
-            <div className="space-y-3">
-              <h2 className="text-xs font-extrabold text-slate-600 uppercase tracking-wider">Danh Sách Tất Cả Nhiệm Vụ</h2>
-              <div className="space-y-2">
-                {workOrders.map((wo) => (
-                  <div
-                    key={wo.id}
-                    onClick={() => setSelectedWorkOrder(wo)}
-                    className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs text-xs space-y-1 cursor-pointer hover:border-cyan-300 transition"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono font-black text-rose-700">{wo.code}</span>
-                      <Badge variant="secondary">{wo.status}</Badge>
-                    </div>
-                    <div className="font-bold text-slate-900">{wo.machineName}</div>
-                    <p className="text-slate-500 text-[11px] line-clamp-1">{wo.description}</p>
+            <div className="space-y-4">
+              
+              {/* OPERATOR SPECIFIC TASKS */}
+              {currentRole === 'OPERATOR' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xs font-extrabold text-slate-600 uppercase tracking-wider">
+                      Nhiệm Vụ Công Nhân (Operator Tasks)
+                    </h2>
+                    <Badge variant="secondary">Công nhân: Nguyễn Văn Nam</Badge>
                   </div>
-                ))}
-              </div>
+
+                  {/* Task 1: Declare Running Hours */}
+                  <Card>
+                    <CardHeader className="p-3.5 pb-2">
+                      <CardTitle className="text-xs font-bold text-slate-800">
+                        1. Khai báo giờ máy chạy ca này ({machines.length} máy)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3.5 pt-0 space-y-2">
+                      {machines.map((m) => (
+                        <div key={m.id} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
+                          <div>
+                            <div className="font-bold text-slate-900">{m.code} - {m.name}</div>
+                            <span className="text-[11px] text-slate-500">Giờ hiện tại: {m.runningHours}h</span>
+                          </div>
+                          <Button size="sm" variant="default" onClick={() => setPassportMachine(m)} className="h-7 text-[11px]">
+                            Nhập Giờ Ca
+                          </Button>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+
+                  {/* Task 2: Track Submitted SOS */}
+                  <Card>
+                    <CardHeader className="p-3.5 pb-2">
+                      <CardTitle className="text-xs font-bold text-slate-800">
+                        2. Phiếu báo sự cố SOS đã tạo ({workOrders.length})
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3.5 pt-0 space-y-2">
+                      {workOrders.map((wo) => (
+                        <div
+                          key={wo.id}
+                          onClick={() => setSelectedWorkOrder(wo)}
+                          className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer border border-slate-200 text-xs space-y-1"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono font-bold text-rose-700">{wo.code}</span>
+                            <Badge variant={wo.status === 'PENDING' ? 'maintenance' : 'active'}>{wo.status}</Badge>
+                          </div>
+                          <p className="font-bold text-slate-900">{wo.machineName}</p>
+                          <p className="text-slate-500 text-[11px] line-clamp-1">{wo.description}</p>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* ME ENGINEER SPECIFIC TASKS */}
+              {currentRole === 'ME_ENGINEER' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xs font-extrabold text-slate-600 uppercase tracking-wider">
+                      Nhiệm Vụ Kỹ Sư Cơ Điện (ME Tasks)
+                    </h2>
+                    <Badge variant="secondary">Kỹ sư: Trần Minh Đức</Badge>
+                  </div>
+
+                  {/* Task 1: Pending SOS work orders */}
+                  <Card>
+                    <CardHeader className="p-3.5 pb-2">
+                      <CardTitle className="text-xs font-bold text-slate-800">
+                        1. Sự cố SOS khẩn cấp cần sửa chữa ({workOrders.filter((w) => w.status !== 'APPROVED').length})
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3.5 pt-0 space-y-2">
+                      {workOrders.filter((w) => w.status !== 'APPROVED').map((wo) => (
+                        <div
+                          key={wo.id}
+                          onClick={() => setSelectedWorkOrder(wo)}
+                          className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer border border-slate-200 text-xs space-y-1"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono font-bold text-rose-700">{wo.code}</span>
+                            <Badge variant="destructive">{wo.severity}</Badge>
+                          </div>
+                          <p className="font-bold text-slate-900">{wo.machineName}</p>
+                          <p className="text-slate-500 text-[11px] line-clamp-1">{wo.description}</p>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+
+                  {/* Task 2: PM Checklists */}
+                  <Card>
+                    <CardHeader className="p-3.5 pb-2">
+                      <CardTitle className="text-xs font-bold text-slate-800">
+                        2. Đợt bảo trì định kỳ PM Checklist ({checklists.length})
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3.5 pt-0 space-y-2">
+                      {checklists.map((pm) => (
+                        <div key={pm.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs flex items-center justify-between">
+                          <div>
+                            <div className="font-bold text-slate-900">{pm.code} - {pm.machineName}</div>
+                            <span className="text-[11px] text-slate-500">Mốc {pm.scheduledHours}h máy chạy</span>
+                          </div>
+                          <Button size="sm" variant="amber" onClick={() => setPmModalChecklist(pm)} className="h-7 text-[11px]">
+                            Làm PM
+                          </Button>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* SUPERVISOR SPECIFIC TASKS */}
+              {currentRole === 'SUPERVISOR' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xs font-extrabold text-slate-600 uppercase tracking-wider">
+                      Nhiệm Vụ Quản Đốc (Supervisor Tasks)
+                    </h2>
+                    <Badge variant="secondary">Quản đốc: Lê Hoàng</Badge>
+                  </div>
+
+                  {/* Task 1: Pending Sign-off Approvals */}
+                  <Card>
+                    <CardHeader className="p-3.5 pb-2">
+                      <CardTitle className="text-xs font-bold text-slate-800">
+                        1. Duyệt & Ký tên nghiệm thu điện tử ({workOrders.filter((w) => w.status === 'COMPLETED').length + checklists.filter((p) => p.status === 'COMPLETED').length})
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3.5 pt-0 space-y-2">
+                      {workOrders.filter((w) => w.status === 'COMPLETED').map((wo) => (
+                        <div key={wo.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs flex items-center justify-between">
+                          <div>
+                            <div className="font-bold text-slate-900">SOS: {wo.code} - {wo.machineName}</div>
+                            <span className="text-[11px] text-slate-500">Kỹ sư hoàn thành: {wo.assigneeName || 'ME Engineer'}</span>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="amber"
+                            onClick={() => setSignoffData({ isOpen: true, itemCode: wo.code, title: `Nghiệm Thu Phiếu SOS: ${wo.code}`, subtitle: `Ký xác nhận bàn giao máy ${wo.machineCode}` })}
+                            className="h-7 text-[11px]"
+                          >
+                            Ký Tên
+                          </Button>
+                        </div>
+                      ))}
+
+                      {checklists.filter((p) => p.status === 'COMPLETED').map((pm) => (
+                        <div key={pm.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs flex items-center justify-between">
+                          <div>
+                            <div className="font-bold text-slate-900">PM: {pm.code} - {pm.machineName}</div>
+                            <span className="text-[11px] text-slate-500">Mốc bảo trì: {pm.scheduledHours}h</span>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={() => setSignoffData({ isOpen: true, itemCode: pm.code, title: `Nghiệm Thu Bảo Trì: ${pm.code}`, subtitle: `Ký xác nhận hoàn tất PM mốc ${pm.scheduledHours}h` })}
+                            className="h-7 text-[11px]"
+                          >
+                            Ký Tên
+                          </Button>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+
+                  {/* Task 2: Pending Expensive Spare Parts Approvals */}
+                  <Card>
+                    <CardHeader className="p-3.5 pb-2">
+                      <CardTitle className="text-xs font-bold text-slate-800">
+                        2. Duyệt đề xuất linh kiện đắt tiền ({sparePartRequests.filter((s) => s.status === 'PENDING').length})
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3.5 pt-0 space-y-2">
+                      {sparePartRequests.filter((s) => s.status === 'PENDING').map((spr) => (
+                        <div key={spr.id} className="p-3 rounded-xl bg-rose-50/50 border border-rose-200 text-xs space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-slate-900">{spr.machineCode} - {spr.partName}</span>
+                            <span className="font-extrabold text-rose-700 font-mono">{spr.totalCost.toLocaleString('vi-VN')}đ</span>
+                          </div>
+                          <div className="flex gap-2 pt-1">
+                            <Button size="sm" variant="destructive" onClick={() => handleRejectSparePart(spr.id, 'Từ chối')} className="flex-1 h-7 text-[11px]">
+                              Từ Chối
+                            </Button>
+                            <Button size="sm" variant="default" onClick={() => handleApproveSparePart(spr.id)} className="flex-1 h-7 text-[11px]">
+                              Duyệt Vật Tư
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
             </div>
           )}
 

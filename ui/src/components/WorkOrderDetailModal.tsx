@@ -1,25 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import {
-  X,
-  Wrench,
-  AlertTriangle,
-  Clock,
-  User,
-  CheckCircle2,
-  PackagePlus,
-  ImageIcon,
-  ShieldAlert,
-  Calendar,
-  Tag,
-  DollarSign,
-  AlertCircle,
-} from 'lucide-react';
+import { X, Wrench, CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
 import { WorkOrder, SparePartItem } from '../types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface WorkOrderDetailModalProps {
   workOrder: WorkOrder | null;
@@ -123,20 +109,17 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
-                <div className="flex items-center gap-1.5 text-slate-600">
-                  <User className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Báo bởi: <strong className="text-slate-800">{workOrder.reporterName}</strong></span>
+                <div>
+                  <span className="text-slate-500">Báo bởi:</span> <strong className="text-slate-800">{workOrder.reporterName}</strong>
                 </div>
-                <div className="flex items-center gap-1.5 text-slate-600">
-                  <Clock className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Thời gian: <strong className="text-slate-800">{workOrder.downtimeStart}</strong></span>
+                <div>
+                  <span className="text-slate-500">Thời gian:</span> <strong className="text-slate-800">{workOrder.downtimeStart}</strong>
                 </div>
               </div>
 
               {workOrder.assigneeName && (
-                <div className="text-[11px] text-cyan-800 bg-cyan-50 p-2 rounded-lg border border-cyan-200 font-medium flex items-center gap-1.5">
-                  <Wrench className="w-3.5 h-3.5 text-cyan-600" />
-                  <span>Kỹ sư tiếp nhận: <strong>{workOrder.assigneeName}</strong></span>
+                <div className="text-[11px] text-cyan-800 bg-cyan-50 p-2 rounded-lg border border-cyan-200 font-medium">
+                  Kỹ sư tiếp nhận: <strong>{workOrder.assigneeName}</strong>
                 </div>
               )}
             </CardContent>
@@ -145,21 +128,21 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
           {/* Rejection Alert Banner if status is REJECTED */}
           {workOrder.status === 'REJECTED' && workOrder.rejectionReason && (
             <div className="p-3 rounded-2xl bg-rose-50 border border-rose-300 text-rose-900 text-xs font-medium space-y-1">
-              <div className="font-extrabold flex items-center gap-1 text-rose-700">
-                <AlertTriangle className="w-4 h-4" /> Quản đốc đã từ chối nghiệm thu!
+              <div className="font-extrabold text-rose-700">
+                Quản đốc đã từ chối nghiệm thu!
               </div>
               <p className="text-[11px] leading-snug">
-                Lý do: <strong>"{workOrder.rejectionReason}"</strong>. Vui lòng kiểm tra lại kỹ thuật và bấm gửi nghiệm thu lại sau khi sửa xong.
+                Lý do: <strong>"{workOrder.rejectionReason}"</strong>. Vui lòng kiểm tra kỹ thuật và gửi nghiệm thu lại sau khi sửa xong.
               </p>
             </div>
           )}
 
           {/* Failure Description */}
           <div>
-            <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-              <AlertCircle className="w-3.5 h-3.5 text-rose-600" /> Mô Tả Chi Tiết Sự Cố:
+            <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-1">
+              Mô Tả Chi Tiết Sự Cố:
             </h4>
-            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-800 leading-relaxed">
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-800 leading-relaxed font-medium">
               {workOrder.description}
             </div>
           </div>
@@ -167,8 +150,8 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
           {/* Failure Photo Attachment */}
           {workOrder.imageUrl && (
             <div>
-              <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <ImageIcon className="w-3.5 h-3.5 text-sky-600" /> Ảnh Minh Chứng Hiện Trạng Sự Cố:
+              <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-1">
+                Ảnh Minh Chứng Lỗi Hiện Trường:
               </h4>
               <div className="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-900">
                 <img
@@ -183,8 +166,8 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
           {/* Used Spare Parts Section (Feature 6 & 10) */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                <PackagePlus className="w-3.5 h-3.5 text-cyan-600" /> Linh Kiện Đã Khai Báo:
+              <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+                Linh Kiện Đã Khai Báo:
               </h4>
               {workOrder.status !== 'APPROVED' && (
                 <button
@@ -206,7 +189,7 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
                   placeholder="Tên phụ tùng (e.g. Vòng bi Spindle 7014C)"
                   value={partName}
                   onChange={(e) => setPartName(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-cyan-500"
+                  className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-cyan-500 font-medium"
                   required
                 />
                 <div className="flex gap-2">
@@ -224,7 +207,7 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
                     placeholder="Đơn giá (VND)"
                     value={partUnitPrice}
                     onChange={(e) => setPartUnitPrice(e.target.value)}
-                    className="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-mono"
+                    className="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-mono font-semibold"
                   />
                 </div>
 
@@ -308,14 +291,14 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
           )}
 
           {workOrder.status === 'COMPLETED' && (
-            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold text-center flex items-center justify-center gap-1.5">
-              <Clock className="w-4 h-4 text-amber-600" /> Đã hoàn thành sửa chữa — Đang chờ Quản đốc ký nghiệm thu!
+            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold text-center">
+              Đã hoàn thành sửa chữa — Đang chờ Quản đốc ký nghiệm thu!
             </div>
           )}
 
           {workOrder.status === 'APPROVED' && (
-            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold text-center flex items-center justify-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Đã được Quản đốc ký nghiệm thu & bàn giao về Active!
+            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold text-center">
+              Đã được Quản đốc ký nghiệm thu & bàn giao về Active!
             </div>
           )}
         </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Activity, Clock, Wrench, CheckCircle2, TrendingUp, AlertTriangle, FileSignature, Sliders, DollarSign, XCircle, ShieldAlert } from 'lucide-react';
+import { Sliders, FileSignature, CheckCircle2 } from 'lucide-react';
 import { Machine, WorkOrder, PMChecklist, SparePartRequest, SystemThresholdConfig } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -45,7 +45,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     <div className="space-y-4 pb-20">
       
       {/* Top Header Row with System Settings Button */}
-      <div className="flex items-center justify-between bg-white p-3 rounded-2xl border border-slate-200 shadow-xs">
+      <div className="flex items-center justify-between bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs">
         <div>
           <h2 className="text-xs font-black uppercase text-slate-900">{thresholdConfig.workshopName}</h2>
           <p className="text-[11px] text-slate-500 font-medium">
@@ -57,12 +57,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </Button>
       </div>
 
-      {/* Overview Stat Cards using shadcn Card */}
+      {/* Overview Stat Cards */}
       <div className="grid grid-cols-2 gap-2.5">
         <Card>
-          <CardHeader className="p-3.5 pb-1 flex flex-row items-center justify-between space-y-0">
-            <span className="text-xs text-slate-500 font-semibold">Máy Hoạt Động</span>
-            <Activity className="w-4 h-4 text-emerald-600" />
+          <CardHeader className="p-3.5 pb-1">
+            <span className="text-xs text-slate-500 font-bold uppercase">Máy Hoạt Động</span>
           </CardHeader>
           <CardContent className="p-3.5 pt-0">
             <div className="text-2xl font-black font-mono text-emerald-700">
@@ -75,9 +74,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </Card>
 
         <Card>
-          <CardHeader className="p-3.5 pb-1 flex flex-row items-center justify-between space-y-0">
-            <span className="text-xs text-slate-500 font-semibold">Đang Sửa/Bảo Trì</span>
-            <AlertTriangle className="w-4 h-4 text-rose-600" />
+          <CardHeader className="p-3.5 pb-1">
+            <span className="text-xs text-slate-500 font-bold uppercase">Đang Sửa / Bảo Trì</span>
           </CardHeader>
           <CardContent className="p-3.5 pt-0">
             <div className="text-2xl font-black font-mono text-rose-700">
@@ -90,9 +88,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </Card>
 
         <Card>
-          <CardHeader className="p-3.5 pb-1 flex flex-row items-center justify-between space-y-0">
-            <span className="text-xs text-slate-500 font-semibold">Tổng Downtime Ca</span>
-            <Clock className="w-4 h-4 text-sky-600" />
+          <CardHeader className="p-3.5 pb-1">
+            <span className="text-xs text-slate-500 font-bold uppercase">Tổng Downtime Ca</span>
           </CardHeader>
           <CardContent className="p-3.5 pt-0">
             <div className="text-xl font-black font-mono text-sky-700">1h 45m</div>
@@ -103,9 +100,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </Card>
 
         <Card>
-          <CardHeader className="p-3.5 pb-1 flex flex-row items-center justify-between space-y-0">
-            <span className="text-xs text-slate-500 font-semibold">Hiệu Suất OEE</span>
-            <TrendingUp className="w-4 h-4 text-amber-600" />
+          <CardHeader className="p-3.5 pb-1">
+            <span className="text-xs text-slate-500 font-bold uppercase">Hiệu Suất OEE</span>
           </CardHeader>
           <CardContent className="p-3.5 pt-0">
             <div className="text-xl font-black font-mono text-amber-700">94.2%</div>
@@ -120,12 +116,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {pendingSpareParts.length > 0 && (
         <Card className="border-rose-300 bg-rose-50/40">
           <CardHeader className="p-3.5 pb-2">
-            <div className="flex items-center gap-2 text-rose-800">
-              <ShieldAlert className="w-4 h-4 text-rose-600 animate-bounce" />
-              <CardTitle className="text-xs font-extrabold uppercase tracking-wider">
-                Đề Xuất Thay Linh Kiện Đắt Tiền Cần Duyệt ({pendingSpareParts.length})
-              </CardTitle>
-            </div>
+            <CardTitle className="text-xs font-extrabold uppercase tracking-wider text-rose-800">
+              Đề Xuất Thay Linh Kiện Đắt Tiền Cần Duyệt ({pendingSpareParts.length})
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-3.5 pt-0 space-y-2.5">
             {pendingSpareParts.map((spr) => {
@@ -146,8 +139,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </div>
 
                   {isOverThreshold && (
-                    <div className="p-2 rounded-lg bg-rose-100 text-rose-900 text-[10px] font-extrabold border border-rose-300 flex items-center gap-1">
-                      <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+                    <div className="p-2 rounded-lg bg-rose-100 text-rose-900 text-[10px] font-extrabold border border-rose-300">
                       Vượt ngưỡng duyệt chi phí ({(thresholdConfig.costApprovalThreshold / 1000000).toFixed(1)}Tr VNĐ)!
                     </div>
                   )}
@@ -162,7 +154,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       }}
                       className="flex-1 h-8 text-[11px]"
                     >
-                      <XCircle className="w-3.5 h-3.5" /> Từ Chối
+                      Từ Chối
                     </Button>
                     <Button
                       variant="default"
@@ -170,7 +162,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       onClick={() => onApproveSparePart(spr.id)}
                       className="flex-1 h-8 text-[11px]"
                     >
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Phê Duyệt
+                      Phê Duyệt
                     </Button>
                   </div>
                 </div>
@@ -183,19 +175,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* Pending Approval Section */}
       <Card>
         <CardHeader className="p-4 pb-2">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200">
-              <FileSignature className="w-4 h-4" />
-            </div>
-            <CardTitle className="text-xs font-extrabold uppercase tracking-wider text-slate-900">
-              Chờ Quản Đốc Ký Nghiệm Thu ({pendingApprovalsWO.length + pendingApprovalsPM.length})
-            </CardTitle>
-          </div>
+          <CardTitle className="text-xs font-extrabold uppercase tracking-wider text-slate-900">
+            Chờ Quản Đốc Ký Nghiệm Thu ({pendingApprovalsWO.length + pendingApprovalsPM.length})
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-4 pt-1 space-y-2">
           {pendingApprovalsWO.length === 0 && pendingApprovalsPM.length === 0 ? (
             <div className="py-6 text-center text-xs text-slate-500 border border-dashed border-slate-200 rounded-xl">
-              <CheckCircle2 className="w-6 h-6 text-emerald-600 mx-auto mb-1 opacity-80" />
               Không có phiếu nào đang chờ nghiệm thu!
             </div>
           ) : (
