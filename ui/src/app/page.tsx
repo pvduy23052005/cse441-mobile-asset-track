@@ -430,22 +430,6 @@ export default function AssetTrackMobileApp() {
           onOpenQR={() => setIsQRScannerOpen(true)}
         />
 
-        {/* Global Offline Network Simulation Banner (NFR-06) */}
-        {isGlobalOffline && (
-          <div className="bg-amber-500 text-white p-2.5 px-4 text-xs font-bold flex items-center justify-between shadow-xs">
-            <div className="flex items-center gap-2">
-              <WifiOff className="w-4 h-4 animate-pulse" />
-              <span>Đang Offline — Dữ liệu sẽ lưu vào Local Queue (SQLite)</span>
-            </div>
-            <button
-              onClick={() => setIsGlobalOffline(false)}
-              className="px-2 py-0.5 rounded bg-white text-amber-900 font-extrabold text-[10px]"
-            >
-              Bật Online
-            </button>
-          </div>
-        )}
-
         {/* Main Content Area */}
         <main className="flex-1 p-2.5 overflow-y-auto pb-16">
           
@@ -455,29 +439,6 @@ export default function AssetTrackMobileApp() {
               {/* OPERATOR ROLE HOME VIEW */}
               {currentRole === 'OPERATOR' && (
                 <div className="space-y-2.5">
-                  
-                  {/* Offline Simulation Toggle Bar */}
-                  <div className="flex items-center justify-between p-2 rounded-md bg-white border border-slate-200 shadow-xs text-xs">
-                    <span className="font-extrabold text-slate-700">Mạng Kết Nối:</span>
-                    <button
-                      onClick={() => setIsGlobalOffline(!isGlobalOffline)}
-                      className={`px-2.5 py-0.5 rounded text-[11px] font-black transition flex items-center gap-1 ${
-                        isGlobalOffline
-                          ? 'bg-amber-100 text-amber-900 border border-amber-300'
-                          : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
-                      }`}
-                    >
-                      {isGlobalOffline ? (
-                        <>
-                          <WifiOff className="w-3 h-3 text-amber-600" /> Offline Mode
-                        </>
-                      ) : (
-                        <>
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Online Sync
-                        </>
-                      )}
-                    </button>
-                  </div>
 
                   {/* Quick Action QR Banner */}
                   <div className="p-3 rounded-md bg-gradient-to-br from-emerald-600 to-teal-700 text-white shadow-xs relative overflow-hidden">
