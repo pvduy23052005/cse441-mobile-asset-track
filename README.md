@@ -1,6 +1,6 @@
 # AssetTrack - Hệ Thống Quản Lý Lý Lịch Thiết Bị & Bảo Trì Nhà Máy
 
-> 📱 **Ứng dụng di động quản lý lý lịch thiết bị, bảo trì phòng ngừa (PM) & báo sự cố khẩn cấp (SOS) cho nhà máy sản xuất.**
+> Ứng dụng di động quản lý lý lịch thiết bị, bảo trì phòng ngừa (PM) & báo sự cố khẩn cấp (SOS) cho nhà máy sản xuất.
 
 ---
 
@@ -17,17 +17,17 @@ Trong các nhà máy sản xuất công nghiệp, sự cố hỏng hóc máy mó
 
 ## 2. Các Tác Nhân Chính Trong Hệ Thống (Core Actors)
 
-1. 👷‍♂️ **Công nhân Vận hành (Operator):**
+1. **Công nhân Vận hành (Operator):**
    - Quét mã QR dán trên máy để tra cứu nhanh thông số kỹ thuật và "Hộ chiếu thiết bị".
    - Nhập chỉ số giờ máy chạy theo ca (Đầu ca / Cuối ca) làm căn cứ tính mốc bảo dưỡng.
    - Báo sự cố hỏng hóc khẩn cấp (Breakdown SOS) kèm ảnh chụp hiện trường dừng chuyền.
 
-2. 🛠️ **Kỹ sư Cơ điện (ME Engineer):**
+2. **Kỹ sư Cơ điện (ME Engineer):**
    - Nhận thông báo đẩy (Push Notification) khẩn cấp thời gian thực khi có sự cố SOS.
    - Bấm tiếp nhận phiếu sửa chữa, thực hiện PM Checklist bảo trì định kỳ kèm ảnh minh chứng bắt buộc.
    - Khai báo vật tư/phụ tùng thay thế và gửi đề xuất phụ tùng giá trị cao lên Quản đốc.
 
-3. 👨‍💼 **Quản đốc Phân xưởng (Supervisor):**
+3. **Quản đốc Phân xưởng (Supervisor):**
    - Giám sát thời gian dừng máy (Downtime), đo lường chỉ số hiệu suất OEE 94.2% toàn phân xưởng.
    - Phê duyệt đề xuất linh kiện đắt tiền vượt ngưỡng chi phí cấu hình.
    - Ký tên điện tử nghiệm thu trực tiếp trên màn hình cảm ứng để đưa máy về trạng thái hoạt động (`Active`) hoặc từ chối kèm lý do (`Rejected`).
@@ -36,27 +36,27 @@ Trong các nhà máy sản xuất công nghiệp, sự cố hỏng hóc máy mó
 
 ## 3. Công Nghệ Sử Dụng (Technology Stack)
 
-### 📱 **Mobile Application (Core App):**
+### Mobile Application (Core App):
 - **Framework:** [Flutter](https://flutter.dev/) (Dart) — Phát triển ứng dụng di động đa nền tảng (Android / iOS).
 - **State Management:** Riverpod.
 - **QR Code Scanner:** `mobile_scanner` (decode mã QR trong < 1.5s).
 - **Digital Signature:** `signature` Canvas SDK (xuất ảnh chữ ký PNG).
 - **Offline Storage & Sync:** SQLite (`sqflite`) lưu trữ Local Queue khi mất mạng, tự động đồng bộ khi có kết nối trở lại.
 
-### ⚡ **Backend & Infrastructure:**
+### Backend & Infrastructure:
 - **BaaS Platform:** [Supabase](https://supabase.com/) (PostgreSQL Database).
 - **Security:** Row-Level Security (RLS) phân quyền theo phân xưởng (`workshop_id`).
 - **Realtime & Cloud Functions:** Database Triggers, Edge Functions.
 - **Push Notification:** Firebase Cloud Messaging (FCM).
 
-### 🌐 **Web Mobile Demo:**
+### Web Mobile Demo:
 - **Framework:** Next.js 16 (App Router) + TypeScript + Tailwind CSS v4 + shadcn/ui (dùng cho bản trải nghiệm giao diện Web di động tại thư mục `ui/`).
 
 ---
 
 ## 4. Hướng Dẫn Cài Đặt Và Chạy Ứng Dụng (Installation & Setup Guide)
 
-### 📱 4.1. Chạy Ứng Dụng Di Động Flutter (Flutter Mobile App)
+### 4.1. Chạy Ứng Dụng Di Động Flutter (Flutter Mobile App)
 
 #### Yêu cầu tiền đề:
 - [Flutter SDK](https://docs.flutter.dev/get-started/install) ($\ge 3.19.0$)
@@ -80,7 +80,7 @@ flutter run
 
 ---
 
-### 🌐 4.2. Chạy Bản Trải Nghiệm Giao Diện Web Mobile (Next.js Demo)
+### 4.2. Chạy Bản Trải Nghiệm Giao Diện Web Mobile (Next.js Demo)
 
 #### Yêu cầu tiền đề:
 - Node.js ($\ge 18.x$)
@@ -99,3 +99,12 @@ npm run dev
 ```
 
 Trình duyệt tự động mở tại đường dẫn: **`http://localhost:3000`**
+
+---
+
+## 5. Tài Liệu Thiết Kế Chi Tiết (Project Documentation)
+
+- **Tóm tắt Quản lý Dự án:** [overview.md](file:///Users/macbook/Documents/hk6/mobile/project/overview.md)
+- **Đặc tả Thiết kế SAD (System Architecture Document):** [system_design.md](file:///Users/macbook/Documents/hk6/mobile/project/system_design.md)
+- **Thiết kế CSDL & Tập lệnh SQL:** [database_schema.md](file:///Users/macbook/Documents/hk6/mobile/project/database_schema.md)
+- **Hướng dẫn shadcn/ui:** [shadcn_ui_guide.md](file:///Users/macbook/Documents/hk6/mobile/project/shadcn_ui_guide.md)
