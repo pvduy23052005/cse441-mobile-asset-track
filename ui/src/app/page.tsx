@@ -408,6 +408,10 @@ export default function AssetTrackMobileApp() {
     );
   };
 
+
+
+  
+
   const handleBottomTabChange = (tab: 'HOME' | 'SCANNER' | 'TASKS' | 'MACHINES') => {
     if (tab === 'SCANNER') {
       setIsQRScannerOpen(true);
