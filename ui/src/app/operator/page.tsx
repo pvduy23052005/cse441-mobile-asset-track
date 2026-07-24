@@ -29,7 +29,14 @@ export default function OperatorPage() {
 
   const handleUpdateHours = (machineId: string, newHours: number) => {
     setMachines((prev) =>
-      prev.map((m) => (m.id === machineId ? { ...m, runningHours: newHours } : m))
+      prev.map((m) => {
+        if (m.id === machineId) {
+          const updated = { ...m, runningHours: newHours };
+          setPassportMachine(updated);
+          return updated;
+        }
+        return m;
+      })
     );
   };
 
@@ -202,6 +209,7 @@ export default function OperatorPage() {
           onUpdateHours={handleUpdateHours}
           onOpenSOS={(m) => setSosMachine(m)}
           pastWorkOrders={workOrders}
+          userRole="OPERATOR"
         />
 
         <SOSFormModal

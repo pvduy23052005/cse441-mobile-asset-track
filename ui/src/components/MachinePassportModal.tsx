@@ -14,6 +14,7 @@ interface MachinePassportModalProps {
   onOpenSOS: (machine: Machine) => void;
   pastWorkOrders?: WorkOrder[];
   pastChecklists?: PMChecklist[];
+  userRole?: 'OPERATOR' | 'ME_ENGINEER' | 'SUPERVISOR';
 }
 
 export const MachinePassportModal: React.FC<MachinePassportModalProps> = ({
@@ -24,6 +25,7 @@ export const MachinePassportModal: React.FC<MachinePassportModalProps> = ({
   onOpenSOS,
   pastWorkOrders = [],
   pastChecklists = [],
+  userRole = 'OPERATOR',
 }) => {
   const [activeTab, setActiveTab] = useState<'SPECS' | 'TROUBLESHOOT' | 'HISTORY'>('SPECS');
   const [showHoursPopup, setShowHoursPopup] = useState(false);
@@ -98,14 +100,16 @@ export const MachinePassportModal: React.FC<MachinePassportModalProps> = ({
               {machine.runningHours.toFixed(1)} <span className="text-xs text-slate-500 font-normal">Giờ</span>
             </div>
           </div>
-          <Button
-            size="sm"
-            variant="default"
-            onClick={() => setShowHoursPopup(true)}
-            className="h-8 rounded-xl font-bold"
-          >
-            <PlusCircle className="w-3.5 h-3.5" /> + Nhập Ca
-          </Button>
+          {userRole === 'OPERATOR' && (
+            <Button
+              size="sm"
+              variant="default"
+              onClick={() => setShowHoursPopup(true)}
+              className="h-8 rounded-xl font-bold"
+            >
+              <PlusCircle className="w-3.5 h-3.5" /> + Nhập Ca
+            </Button>
+          )}
         </div>
 
         {/* Hours Update Popup Form (US-02, Wireframe 5.G) */}
@@ -345,14 +349,16 @@ export const MachinePassportModal: React.FC<MachinePassportModalProps> = ({
 
         {/* Footer Actions (Wireframe 5.A: [Cập nhật giờ máy chạy] + [🚨 BÁO LỖI SOS KHẨN CẤP 🚨]) */}
         <div className="p-4 border-t border-slate-100 bg-white space-y-2">
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full h-11 text-xs font-extrabold border-slate-300 hover:bg-slate-50 text-slate-800"
-            onClick={() => setShowHoursPopup(true)}
-          >
-            <PlusCircle className="w-4 h-4 text-emerald-600" /> [Cập nhật giờ máy chạy]
-          </Button>
+          {userRole === 'OPERATOR' && (
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full h-11 text-xs font-extrabold border-slate-300 hover:bg-slate-50 text-slate-800"
+              onClick={() => setShowHoursPopup(true)}
+            >
+              <PlusCircle className="w-4 h-4 text-emerald-600" /> [Cập nhật giờ máy chạy]
+            </Button>
+          )}
 
           <Button
             variant="destructive"

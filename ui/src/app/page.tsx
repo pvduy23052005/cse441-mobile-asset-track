@@ -146,6 +146,7 @@ export default function AssetTrackMobileApp() {
               ...nPrev,
             ]);
           }
+          setPassportMachine(updated);
           return updated;
         }
         return m;
@@ -344,7 +345,21 @@ export default function AssetTrackMobileApp() {
       prev.map((pm) => {
         if (pm.code === code) {
           setMachines((mPrev) =>
-            mPrev.map((m) => (m.id === pm.machineId ? { ...m, status: 'ACTIVE' } : m))
+            mPrev.map((m) => {
+              if (m.id === pm.machineId) {
+                const sortedIntervals = [...thresholdConfig.pmIntervals].sort((a, b) => a - b);
+                const nextMoc = sortedIntervals.find((interval) => interval > m.runningHours)
+                  || (m.runningHours + (sortedIntervals[0] || 500));
+                return {
+                  ...m,
+                  status: 'ACTIVE',
+                  lastMaintenanceHours: m.runningHours,
+                  lastMaintenanceDate: new Date().toISOString().split('T')[0],
+                  nextMaintenanceHours: nextMoc,
+                };
+              }
+              return m;
+            })
           );
           return { ...pm, status: 'APPROVED', supervisorSignatureUrl: signatureUrl };
         }
@@ -380,6 +395,17 @@ export default function AssetTrackMobileApp() {
   // 12. Save System Threshold Config (Feature 12 / US-11)
   const handleSaveThresholdConfig = (newConfig: SystemThresholdConfig) => {
     setThresholdConfig(newConfig);
+    setMachines((prev) =>
+      prev.map((m) => {
+        const sortedIntervals = [...newConfig.pmIntervals].sort((a, b) => a - b);
+        const nextMoc = sortedIntervals.find((interval) => interval > m.runningHours)
+          || (m.runningHours + (sortedIntervals[0] || 500));
+        return {
+          ...m,
+          nextMaintenanceHours: nextMoc,
+        };
+      })
+    );
   };
 
   const handleBottomTabChange = (tab: 'HOME' | 'SCANNER' | 'TASKS' | 'MACHINES') => {
@@ -954,6 +980,7 @@ export default function AssetTrackMobileApp() {
           onOpenSOS={(m) => setSosMachine(m)}
           pastWorkOrders={workOrders}
           pastChecklists={checklists}
+          userRole={currentRole}
         />
 
         <SOSFormModal
