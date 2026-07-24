@@ -61,7 +61,7 @@ export const SOSFormModal: React.FC<SOSFormModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm p-0 sm:p-4">
-      <div className="w-full max-w-md bg-white border border-slate-200 rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300">
+      <div className="w-full max-w-md bg-white border border-slate-200 rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300">
         
         {/* Header */}
         <div className="p-4 bg-rose-50 border-b border-rose-100 flex items-center justify-between">
@@ -82,7 +82,7 @@ export const SOSFormModal: React.FC<SOSFormModalProps> = ({
 
         {/* Offline Mode Toggle Bar (NFR-06) */}
         <div className="px-4 pt-3">
-          <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-100 border border-slate-200">
+          <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-100 border border-slate-200">
             <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
               <WifiOff className={`w-4 h-4 ${isOffline ? 'text-amber-600' : 'text-slate-400'}`} />
               <span>Mô phỏng mất mạng (Offline Queue):</span>
@@ -100,7 +100,7 @@ export const SOSFormModal: React.FC<SOSFormModalProps> = ({
 
           {/* Offline Warning Banner (NFR-06 section 3) */}
           {isOffline && (
-            <div className="mt-2 p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-[11px] text-rose-800 font-medium leading-snug animate-in fade-in duration-200">
+            <div className="mt-2 p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-[11px] text-rose-800 font-medium leading-snug animate-in fade-in duration-200">
               ⚠️ <strong>Không có mạng:</strong> Phiếu SOS & Ảnh sẽ lưu vào Local Queue (SQLite). Notification sẽ chỉ gửi tới kỹ sư sau khi có kết nối trở lại. Hãy thông báo trực tiếp nếu sự cố nghiêm trọng!
             </div>
           )}
@@ -108,7 +108,7 @@ export const SOSFormModal: React.FC<SOSFormModalProps> = ({
 
         {/* Machine Badge */}
         <div className="px-4 pt-3">
-          <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
             <div>
               <span className="text-[11px] text-slate-500 font-medium block">Thiết Bị Sự Cố:</span>
               <span className="text-sm font-extrabold text-slate-900">{machine.name}</span>

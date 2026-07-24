@@ -15,50 +15,50 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   pendingTasksCount,
 }) => {
   return (
-    <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200/90 px-4 py-2 shadow-lg">
+    <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200/90 px-4 py-1.5 shadow-lg">
       <div className="max-w-md mx-auto flex items-center justify-around">
         
         {/* Home Tab */}
         <button
           onClick={() => onChangeTab('HOME')}
-          className={`flex flex-col items-center gap-1 transition ${
+          className={`flex flex-col items-center gap-0.5 transition ${
             activeTab === 'HOME' ? 'text-emerald-600 font-bold' : 'text-slate-400 hover:text-slate-700'
           }`}
         >
-          <Home className="w-5 h-5" />
-          <span className="text-[10px]">Trang Chủ</span>
+          <Home className="w-4 h-4" />
+          <span className="text-[9px]">Trang Chủ</span>
         </button>
 
         {/* Machines Tab */}
         <button
           onClick={() => onChangeTab('MACHINES')}
-          className={`flex flex-col items-center gap-1 transition ${
+          className={`flex flex-col items-center gap-0.5 transition ${
             activeTab === 'MACHINES' ? 'text-emerald-600 font-bold' : 'text-slate-400 hover:text-slate-700'
           }`}
         >
-          <Cpu className="w-5 h-5" />
-          <span className="text-[10px]">Máy Móc</span>
+          <Cpu className="w-4 h-4" />
+          <span className="text-[9px]">Máy Móc</span>
         </button>
 
         {/* Floating QR Scanner Button */}
         <button
           onClick={() => onChangeTab('SCANNER')}
-          className="relative -top-4 w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95 transition"
+          className="relative -top-3 w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-md shadow-emerald-500/30 hover:scale-105 active:scale-95 transition"
         >
-          <QrCode className="w-6 h-6 stroke-[2.5]" />
+          <QrCode className="w-5 h-5 stroke-[2.5]" />
         </button>
 
         {/* Tasks Tab */}
         <button
           onClick={() => onChangeTab('TASKS')}
-          className={`relative flex flex-col items-center gap-1 transition ${
+          className={`relative flex flex-col items-center gap-0.5 transition ${
             activeTab === 'TASKS' ? 'text-emerald-600 font-bold' : 'text-slate-400 hover:text-slate-700'
           }`}
         >
-          <ClipboardList className="w-5 h-5" />
-          <span className="text-[10px]">Nhiệm Vụ</span>
+          <ClipboardList className="w-4 h-4" />
+          <span className="text-[9px]">Nhiệm Vụ</span>
           {pendingTasksCount > 0 && (
-            <span className="absolute -top-1 right-1 w-4 h-4 rounded-full bg-rose-500 text-white font-bold text-[9px] flex items-center justify-center shadow-xs">
+            <span className="absolute -top-1 right-1 w-3.5 h-3.5 rounded-full bg-rose-500 text-white font-bold text-[8px] flex items-center justify-center shadow-xs">
               {pendingTasksCount}
             </span>
           )}

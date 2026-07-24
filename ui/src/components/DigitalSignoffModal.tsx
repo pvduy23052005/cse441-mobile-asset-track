@@ -129,12 +129,12 @@ export const DigitalSignoffModal: React.FC<DigitalSignoffModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm p-0 sm:p-4 transition-all">
-      <div className="w-full max-w-md bg-white border border-slate-200 rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[92vh] overflow-y-auto">
+      <div className="w-full max-w-md bg-white border border-slate-200 rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[92vh] overflow-y-auto">
         
         {/* Modal Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200">
+            <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
@@ -153,7 +153,7 @@ export const DigitalSignoffModal: React.FC<DigitalSignoffModalProps> = ({
         {!showRejectForm ? (
           <>
             {/* WORK SUMMARY SECTION (Wireframe 5.E / US-08) */}
-            <div className="my-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
+            <div className="my-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
               <div className="font-extrabold text-slate-800 uppercase tracking-wider text-[11px] border-b border-slate-200 pb-1.5 flex items-center justify-between">
                 <span className="flex items-center gap-1.5 text-emerald-800">
                   <Wrench className="w-4 h-4 text-emerald-600" /> TÓM TẮT CÔNG VIỆC SỬA CHỮA / BẢO TRÌ

@@ -62,10 +62,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   return (
-    <div className="space-y-4 pb-20">
+    <div className="space-y-3 pb-20">
       
       {/* Top Header Row with System Settings & Time Filter (Wireframe 5.F) */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+      <div className="bg-white p-3.5 rounded-md border border-slate-200 shadow-xs space-y-2.5">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xs font-black uppercase text-slate-900">{thresholdConfig.workshopName}</h2>
@@ -84,7 +84,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="flex gap-1.5">
             <button
               onClick={() => setTimeFilter('TODAY')}
-              className={`px-3 py-1 rounded-xl text-xs font-extrabold transition ${
+              className={`px-3 py-1 rounded text-xs font-extrabold transition ${
                 timeFilter === 'TODAY'
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -94,7 +94,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </button>
             <button
               onClick={() => setTimeFilter('7DAYS')}
-              className={`px-3 py-1 rounded-xl text-xs font-extrabold transition ${
+              className={`px-3 py-1 rounded text-xs font-extrabold transition ${
                 timeFilter === '7DAYS'
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -104,7 +104,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </button>
             <button
               onClick={() => setTimeFilter('30DAYS')}
-              className={`px-3 py-1 rounded-xl text-xs font-extrabold transition ${
+              className={`px-3 py-1 rounded text-xs font-extrabold transition ${
                 timeFilter === '30DAYS'
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -202,42 +202,42 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* Visual Downtime Bar Chart (Wireframe 5.F) */}
       <Card>
-        <CardHeader className="p-4 pb-2">
-          <CardTitle className="text-xs font-extrabold uppercase tracking-wider text-slate-900 flex items-center justify-between">
+        <CardHeader className="p-3 pb-1.5">
+          <CardTitle className="text-[11px] font-extrabold uppercase tracking-wider text-slate-900 flex items-center justify-between">
             <span>TỔNG DOWNTIME {timeFilter === 'TODAY' ? 'HÔM NAY' : timeFilter === '7DAYS' ? '7 NGÀY QUA' : '30 NGÀY QUA'}: 6h 40m</span>
             <span className="text-rose-600 font-mono">42% Ca</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-4 pt-1 space-y-3">
+        <CardContent className="p-3 pt-1 space-y-2">
           
           {/* Progress Bar Chart */}
           <div>
-            <div className="w-full bg-slate-100 h-4 rounded-full overflow-hidden flex border border-slate-200">
-              <div className="bg-rose-500 h-full text-[9px] text-white font-bold flex items-center justify-center" style={{ width: '42%' }}>
+            <div className="w-full bg-slate-100 h-3.5 rounded-full overflow-hidden flex border border-slate-200">
+              <div className="bg-rose-500 h-full text-[8px] text-white font-bold flex items-center justify-center" style={{ width: '42%' }}>
                 SOS (2h 35m)
               </div>
-              <div className="bg-amber-500 h-full text-[9px] text-white font-bold flex items-center justify-center" style={{ width: '25%' }}>
+              <div className="bg-amber-500 h-full text-[8px] text-white font-bold flex items-center justify-center" style={{ width: '25%' }}>
                 PM (1h 20m)
               </div>
               <div className="bg-slate-300 h-full" style={{ width: '33%' }} />
             </div>
-            <div className="flex justify-between text-[10px] text-slate-500 mt-1 font-semibold">
+            <div className="flex justify-between text-[9px] text-slate-500 mt-0.5 font-semibold">
               <span>0h</span>
               <span>2h</span>
               <span>4h</span>
               <span>6h</span>
-              <span>8h (Ca làm việc)</span>
+              <span>8h (Ca)</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-xs pt-1">
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-              <span className="text-[10px] text-slate-400 font-bold uppercase block">MTTR (Sửa trung bình)</span>
-              <span className="font-extrabold font-mono text-slate-900 text-sm">32 phút</span>
+          <div className="grid grid-cols-2 gap-2 text-[11px] pt-0.5">
+            <div className="p-2 rounded-md bg-slate-50 border border-slate-200">
+              <span className="text-[9px] text-slate-400 font-bold uppercase block">MTTR (Sửa TB)</span>
+              <span className="font-extrabold font-mono text-slate-900 text-xs">32 phút</span>
             </div>
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-              <span className="text-[10px] text-slate-400 font-bold uppercase block">MTBF (Thời gian chạy ổn định)</span>
-              <span className="font-extrabold font-mono text-emerald-700 text-sm">18.5 giờ</span>
+            <div className="p-2 rounded-md bg-slate-50 border border-slate-200">
+              <span className="text-[9px] text-slate-400 font-bold uppercase block">MTBF (Thời gian chạy ổn)</span>
+              <span className="font-extrabold font-mono text-emerald-700 text-xs">18.5 giờ</span>
             </div>
           </div>
 

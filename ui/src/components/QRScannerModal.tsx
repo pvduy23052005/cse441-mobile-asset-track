@@ -33,7 +33,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-sm bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+      <div className="relative w-full max-w-sm bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
         
         {/* Camera Header */}
         <div className="px-5 py-4 flex items-center justify-between border-b border-slate-100 bg-white">
@@ -66,7 +66,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
           )}
 
           {/* Scanner Reticle Frame */}
-          <div className="relative w-48 h-48 border-2 border-emerald-400/60 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+          <div className="relative w-48 h-48 border-2 border-emerald-400/60 rounded-xl flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.3)]">
             <div className="absolute -top-1 -left-1 w-5 h-5 border-t-4 border-l-4 border-emerald-400 rounded-tl-lg" />
             <div className="absolute -top-1 -right-1 w-5 h-5 border-t-4 border-r-4 border-emerald-400 rounded-tr-lg" />
             <div className="absolute -bottom-1 -left-1 w-5 h-5 border-b-4 border-l-4 border-emerald-400 rounded-bl-lg" />

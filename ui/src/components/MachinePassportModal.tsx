@@ -70,10 +70,10 @@ export const MachinePassportModal: React.FC<MachinePassportModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm p-0 sm:p-4">
-      <div className="w-full max-w-md bg-white border border-slate-200 rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom duration-300">
+      <div className="w-full max-w-md bg-white border border-slate-200 rounded-t-2xl sm:rounded-2xl max-h-[90vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom duration-300">
         
         {/* Header (Wireframe 5.A: Tên + Mã + Tag trạng thái) */}
-        <div className="p-5 border-b border-slate-100 bg-slate-50/60 flex items-start justify-between">
+        <div className="p-4 border-b border-slate-100 bg-slate-50/60 flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-xs font-extrabold border border-emerald-200">
@@ -93,7 +93,7 @@ export const MachinePassportModal: React.FC<MachinePassportModalProps> = ({
         </div>
 
         {/* Running hours quick bar */}
-        <div className="mx-5 my-3 p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/80 flex items-center justify-between shadow-xs">
+        <div className="mx-3.5 my-2.5 p-3 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/80 flex items-center justify-between shadow-xs">
           <div>
             <div className="text-[11px] text-slate-500 uppercase font-bold tracking-wider">Tổng Giờ Máy Chạy</div>
             <div className="text-2xl font-black font-mono text-emerald-700 flex items-baseline gap-1">
@@ -105,7 +105,7 @@ export const MachinePassportModal: React.FC<MachinePassportModalProps> = ({
               size="sm"
               variant="default"
               onClick={() => setShowHoursPopup(true)}
-              className="h-8 rounded-xl font-bold"
+              className="h-8 rounded-lg font-bold"
             >
               <PlusCircle className="w-3.5 h-3.5" /> + Nhập Ca
             </Button>

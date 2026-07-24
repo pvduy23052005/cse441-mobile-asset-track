@@ -98,7 +98,7 @@ export const PMChecklistModal: React.FC<PMChecklistModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm p-0 sm:p-4">
-      <div className="w-full max-w-md bg-white border border-slate-200 rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col animate-in slide-in-from-bottom duration-300">
+      <div className="w-full max-w-md bg-white border border-slate-200 rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col animate-in slide-in-from-bottom duration-300">
         
         {/* Header */}
         <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
@@ -133,7 +133,7 @@ export const PMChecklistModal: React.FC<PMChecklistModalProps> = ({
               {items.map((item) => (
                 <div
                   key={item.id}
-                  className={`p-3 rounded-2xl border transition ${
+                  className={`p-3 rounded-xl border transition ${
                     item.isChecked
                       ? 'bg-emerald-50/50 border-emerald-200'
                       : 'bg-slate-50 border-slate-200'

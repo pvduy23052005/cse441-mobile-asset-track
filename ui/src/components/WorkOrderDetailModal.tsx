@@ -102,16 +102,19 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-200">
-      <div className="w-full max-w-md bg-white border border-slate-200 rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col animate-in slide-in-from-bottom duration-300">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm p-0 sm:p-4">
+      <div className="w-full max-w-md bg-white border border-slate-200 rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col animate-in slide-in-from-bottom duration-300">
         
         {/* Header */}
-        <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-xs font-black text-rose-700 bg-rose-50 px-2 py-1 rounded-lg border border-rose-200">
-              {workOrder.code}
-            </span>
-            {getSeverityBadge(workOrder.severity)}
+        <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-mono text-xs font-extrabold border border-rose-200">
+                {workOrder.code}
+              </span>
+              {getSeverityBadge(workOrder.severity)}
+            </div>
+            <h2 className="font-extrabold text-slate-900 text-base">Chi Tiết Phiếu Báo Lỗi SOS</h2>
           </div>
           <button
             onClick={onClose}
@@ -126,7 +129,7 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
           
           {/* Race Condition Error Banner (US-04) */}
           {raceConditionError && (
-            <div className="p-3 rounded-2xl bg-rose-100 border border-rose-300 text-rose-900 text-xs font-extrabold flex items-center gap-2 animate-in shake">
+            <div className="p-3 rounded-xl bg-rose-100 border border-rose-300 text-rose-900 text-xs font-extrabold flex items-center gap-2 animate-in shake">
               <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
               <span>Phiếu đã được tiếp nhận bởi kỹ sư khác! Bạn không thể nhận trùng.</span>
             </div>

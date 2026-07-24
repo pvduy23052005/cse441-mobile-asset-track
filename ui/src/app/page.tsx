@@ -447,21 +447,21 @@ export default function AssetTrackMobileApp() {
         )}
 
         {/* Main Content Area */}
-        <main className="flex-1 p-4 overflow-y-auto pb-24">
+        <main className="flex-1 p-2.5 overflow-y-auto pb-16">
           
           {/* TAB: HOME / ROLE VIEW */}
           {activeTab === 'HOME' && (
             <>
               {/* OPERATOR ROLE HOME VIEW */}
               {currentRole === 'OPERATOR' && (
-                <div className="space-y-4">
+                <div className="space-y-2.5">
                   
                   {/* Offline Simulation Toggle Bar */}
-                  <div className="flex items-center justify-between p-3 rounded-2xl bg-white border border-slate-200 shadow-xs">
-                    <span className="text-xs font-extrabold text-slate-700">Mạng Kết Nối:</span>
+                  <div className="flex items-center justify-between p-2 rounded-md bg-white border border-slate-200 shadow-xs text-xs">
+                    <span className="font-extrabold text-slate-700">Mạng Kết Nối:</span>
                     <button
                       onClick={() => setIsGlobalOffline(!isGlobalOffline)}
-                      className={`px-3 py-1 rounded-xl text-xs font-black transition flex items-center gap-1.5 ${
+                      className={`px-2.5 py-0.5 rounded text-[11px] font-black transition flex items-center gap-1 ${
                         isGlobalOffline
                           ? 'bg-amber-100 text-amber-900 border border-amber-300'
                           : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
@@ -469,55 +469,55 @@ export default function AssetTrackMobileApp() {
                     >
                       {isGlobalOffline ? (
                         <>
-                          <WifiOff className="w-3.5 h-3.5 text-amber-600" /> Offline Mode
+                          <WifiOff className="w-3 h-3 text-amber-600" /> Offline Mode
                         </>
                       ) : (
                         <>
-                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Online Sync
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Online Sync
                         </>
                       )}
                     </button>
                   </div>
 
                   {/* Quick Action QR Banner */}
-                  <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white shadow-md relative overflow-hidden">
+                  <div className="p-3 rounded-md bg-gradient-to-br from-emerald-600 to-teal-700 text-white shadow-xs relative overflow-hidden">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-100 bg-white/20 px-2 py-0.5 rounded">
+                        <span className="text-[9px] font-extrabold uppercase tracking-wider text-emerald-100 bg-white/20 px-1.5 py-0.5 rounded-sm">
                           Thao tác công nhân
                         </span>
-                        <h2 className="text-base font-extrabold text-white mt-1">
+                        <h2 className="text-sm font-extrabold text-white mt-0.5">
                           Quét QR Hộ Chiếu Máy
                         </h2>
-                        <p className="text-xs text-emerald-50 mt-0.5">
+                        <p className="text-[11px] text-emerald-50 mt-0.5">
                           Xem thông số, lịch sử & báo lỗi khẩn cấp
                         </p>
                       </div>
                       <button
                         onClick={() => setIsQRScannerOpen(true)}
-                        className="p-3.5 rounded-2xl bg-white text-emerald-800 shadow-lg hover:scale-105 active:scale-95 transition font-extrabold"
+                        className="p-2.5 rounded-md bg-white text-emerald-800 shadow-md hover:scale-105 active:scale-95 transition font-extrabold"
                       >
-                        <QrCode className="w-6 h-6 stroke-[2.5]" />
+                        <QrCode className="w-5 h-5 stroke-[2.5]" />
                       </button>
                     </div>
                   </div>
 
                   {/* Machine Status List */}
                   <div>
-                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-2.5 flex items-center justify-between">
+                    <h3 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 mb-2 flex items-center justify-between">
                       <span>Danh Sách Máy Phụ Trách ({machines.length})</span>
-                      <span className="text-[10px] text-emerald-700 font-bold">Chạm để xem chi tiết</span>
+                      <span className="text-[10px] text-emerald-700 font-bold">Chạm xem chi tiết</span>
                     </h3>
 
-                    <div className="space-y-2.5">
+                    <div className="space-y-2">
                       {machines.map((m) => (
                         <div
                           key={m.id}
                           onClick={() => setPassportMachine(m)}
-                          className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs hover:border-emerald-300 transition cursor-pointer flex items-center justify-between"
+                          className="p-2.5 rounded-md bg-white border border-slate-200 shadow-xs hover:border-emerald-300 transition cursor-pointer flex items-center justify-between"
                         >
-                          <div className="flex items-center gap-3">
-                            <div className={`p-2.5 rounded-xl ${
+                          <div className="flex items-center gap-2.5">
+                            <div className={`p-2 rounded ${
                               m.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
                               m.status === 'REPAIRING' ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
                             }`}>
@@ -589,7 +589,7 @@ export default function AssetTrackMobileApp() {
 
               {/* ME ENGINEER ROLE HOME VIEW */}
               {currentRole === 'ME_ENGINEER' && (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {/* Emergency Work Orders Feed */}
                   <Card>
                     <CardHeader className="p-4 pb-2">
@@ -601,12 +601,12 @@ export default function AssetTrackMobileApp() {
                       </div>
                     </CardHeader>
 
-                    <CardContent className="p-4 pt-1 space-y-3">
+                    <CardContent className="p-3 pt-1 space-y-2">
                       {workOrders.filter((w) => w.status !== 'APPROVED').map((wo) => (
                         <div
                           key={wo.id}
                           onClick={() => setSelectedWorkOrder(wo)}
-                          className="p-3.5 rounded-2xl bg-slate-50 hover:bg-slate-100/80 cursor-pointer border border-slate-200 space-y-2 transition shadow-xs"
+                          className="p-2.5 rounded-md bg-slate-50 hover:bg-slate-100/80 cursor-pointer border border-slate-200 space-y-1.5 transition shadow-xs"
                         >
                           <div className="flex items-center justify-between">
                             <span className="font-mono text-xs font-black text-rose-700">{wo.code}</span>
@@ -617,20 +617,20 @@ export default function AssetTrackMobileApp() {
 
                           <div>
                             <div className="text-xs font-extrabold text-slate-900">{wo.machineName}</div>
-                            <p className="text-xs text-slate-600 leading-snug mt-0.5 line-clamp-2">{wo.description}</p>
+                            <p className="text-[11px] text-slate-600 leading-snug mt-0.5 line-clamp-2">{wo.description}</p>
                           </div>
 
                           {wo.imageUrl && (
-                            <img src={wo.imageUrl} alt="Lỗi" className="w-full h-28 object-cover rounded-xl border border-slate-200" />
+                            <img src={wo.imageUrl} alt="Lỗi" className="w-full h-20 object-cover rounded border border-slate-200" />
                           )}
 
                           {wo.rejectionReason && (
-                            <div className="p-2 rounded-lg bg-rose-100 border border-rose-300 text-rose-800 text-[11px] font-bold">
+                            <div className="p-1.5 rounded bg-rose-100 border border-rose-300 text-rose-800 text-[10px] font-bold">
                               ⚠️ Supervisor từ chối nghiệm thu: {wo.rejectionReason}
                             </div>
                           )}
 
-                          <div className="pt-1 flex gap-2">
+                          <div className="pt-0.5 flex gap-1.5">
                             {wo.status === 'PENDING' && (
                               <Button
                                 variant="cyan"
@@ -641,7 +641,7 @@ export default function AssetTrackMobileApp() {
                                 }}
                                 className="w-full"
                               >
-                                <Wrench className="w-4 h-4" /> Bấm Tiếp Nhận Sửa Chữa
+                                <Wrench className="w-3.5 h-3.5" /> Bấm Tiếp Nhận Sửa Chữa
                               </Button>
                             )}
                             {(wo.status === 'IN_PROGRESS' || wo.status === 'REJECTED') && (
@@ -654,12 +654,12 @@ export default function AssetTrackMobileApp() {
                                 }}
                                 className="w-full"
                               >
-                                <CheckCircle2 className="w-4 h-4" /> Hoàn Thành & Gửi Nghiệm Thu
+                                <CheckCircle2 className="w-3.5 h-3.5" /> Hoàn Thành & Gửi Nghiệm Thu
                               </Button>
                             )}
                             {wo.status === 'COMPLETED' && (
-                              <div className="w-full text-xs text-amber-700 font-bold flex items-center justify-center gap-1 p-2 rounded-xl bg-amber-50 border border-amber-200">
-                                <Clock className="w-3.5 h-3.5" /> Đã xong - Đang chờ Quản Đốc ký
+                              <div className="w-full text-[11px] text-amber-700 font-bold flex items-center justify-center gap-1 p-1.5 rounded bg-amber-50 border border-amber-200">
+                                <Clock className="w-3 h-3" /> Đã xong - Đang chờ Quản Đốc ký
                               </div>
                             )}
                           </div>
@@ -670,21 +670,21 @@ export default function AssetTrackMobileApp() {
 
                   {/* PM Checklists Feed */}
                   <Card>
-                    <CardHeader className="p-4 pb-2">
-                      <CardTitle className="text-xs font-extrabold uppercase tracking-wider text-amber-700">
+                    <CardHeader className="p-3 pb-1.5">
+                      <CardTitle className="text-[11px] font-extrabold uppercase tracking-wider text-amber-700">
                         Nhiệm Vụ Bảo Trì Định Kỳ (PM Checklist)
                       </CardTitle>
                     </CardHeader>
 
-                    <CardContent className="p-4 pt-1 space-y-2.5">
+                    <CardContent className="p-3 pt-1 space-y-2">
                       {checklists.map((pm) => (
-                        <div key={pm.id} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                        <div key={pm.id} className="p-2.5 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-between">
                           <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono text-xs font-bold text-amber-700">{pm.code}</span>
-                              <span className="text-xs font-extrabold text-slate-900">{pm.machineName}</span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono text-[11px] font-bold text-amber-700">{pm.code}</span>
+                              <span className="text-[11px] font-extrabold text-slate-900">{pm.machineName}</span>
                             </div>
-                            <span className="text-[11px] text-slate-500 font-medium block mt-0.5">Mốc số giờ: {pm.scheduledHours}h</span>
+                            <span className="text-[10px] text-slate-500 font-medium block mt-0.5">Mốc số giờ: {pm.scheduledHours}h</span>
                           </div>
 
                           <Button
@@ -723,24 +723,24 @@ export default function AssetTrackMobileApp() {
 
           {/* TAB: MACHINES LIST */}
           {activeTab === 'MACHINES' && (
-            <div className="space-y-3">
-              <h2 className="text-xs font-extrabold text-slate-600 uppercase tracking-wider">Tất Cả Thiết Bị Phân Xưởng</h2>
-              <div className="space-y-2.5">
+            <div className="space-y-2">
+              <h2 className="text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">Tất Cả Thiết Bị Phân Xưởng</h2>
+              <div className="space-y-2">
                 {machines.map((m) => (
                   <div
                     key={m.id}
                     onClick={() => setPassportMachine(m)}
-                    className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-between cursor-pointer hover:border-slate-300 transition"
+                    className="p-2.5 rounded-md bg-white border border-slate-200 shadow-xs flex items-center justify-between cursor-pointer hover:border-slate-300 transition"
                   >
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-black text-emerald-700">{m.code}</span>
-                        <span className="text-xs font-extrabold text-slate-900">{m.name}</span>
+                        <span className="font-mono text-[11px] font-black text-emerald-700">{m.code}</span>
+                        <span className="text-[11px] font-extrabold text-slate-900">{m.name}</span>
                       </div>
-                      <span className="text-[11px] text-slate-500 font-medium block mt-0.5">{m.location}</span>
-                      <span className="text-[11px] text-slate-600 font-mono mt-1 block font-semibold">Mốc bảo trì kế: {m.nextMaintenanceHours}h</span>
+                      <span className="text-[10px] text-slate-500 font-medium block mt-0.5">{m.location}</span>
+                      <span className="text-[10px] text-slate-600 font-mono mt-0.5 block font-semibold">Mốc bảo trì kế: {m.nextMaintenanceHours}h</span>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-slate-400" />
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
                   </div>
                 ))}
               </div>
@@ -753,29 +753,29 @@ export default function AssetTrackMobileApp() {
               
               {/* OPERATOR SPECIFIC TASKS */}
               {currentRole === 'OPERATOR' && (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xs font-extrabold text-slate-600 uppercase tracking-wider">
-                      Nhiệm Vụ Công Nhân (Operator Tasks)
+                    <h2 className="text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">
+                      Nhiệm Vụ Ca Làm Việc Công Nhân
                     </h2>
                     <Badge variant="secondary">Công nhân: Nguyễn Văn Nam</Badge>
                   </div>
 
                   {/* Task 1: Declare Running Hours */}
                   <Card>
-                    <CardHeader className="p-3.5 pb-2">
-                      <CardTitle className="text-xs font-bold text-slate-800">
+                    <CardHeader className="p-2.5 pb-1">
+                      <CardTitle className="text-[11px] font-bold text-slate-800">
                         1. Khai báo giờ máy chạy ca này ({machines.length} máy)
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-3.5 pt-0 space-y-2">
+                    <CardContent className="p-2.5 pt-0 space-y-1.5">
                       {machines.map((m) => (
-                        <div key={m.id} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
+                        <div key={m.id} className="p-2 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-between text-[11px]">
                           <div>
                             <div className="font-bold text-slate-900">{m.code} - {m.name}</div>
-                            <span className="text-[11px] text-slate-500">Giờ hiện tại: {m.runningHours}h</span>
+                            <span className="text-[10px] text-slate-500">Giờ hiện tại: {m.runningHours}h</span>
                           </div>
-                          <Button size="sm" variant="default" onClick={() => setPassportMachine(m)} className="h-7 text-[11px]">
+                          <Button size="sm" variant="default" onClick={() => setPassportMachine(m)} className="h-6 px-2 text-[10px]">
                             Nhập Giờ Ca
                           </Button>
                         </div>
@@ -785,24 +785,24 @@ export default function AssetTrackMobileApp() {
 
                   {/* Task 2: Track Submitted SOS */}
                   <Card>
-                    <CardHeader className="p-3.5 pb-2">
-                      <CardTitle className="text-xs font-bold text-slate-800">
+                    <CardHeader className="p-2.5 pb-1">
+                      <CardTitle className="text-[11px] font-bold text-slate-800">
                         2. Phiếu báo sự cố SOS đã tạo ({workOrders.length})
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-3.5 pt-0 space-y-2">
+                    <CardContent className="p-2.5 pt-0 space-y-1.5">
                       {workOrders.map((wo) => (
                         <div
                           key={wo.id}
                           onClick={() => setSelectedWorkOrder(wo)}
-                          className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer border border-slate-200 text-xs space-y-1"
+                          className="p-2 rounded-md bg-slate-50 hover:bg-slate-100 cursor-pointer border border-slate-200 text-[11px] space-y-0.5"
                         >
                           <div className="flex items-center justify-between">
                             <span className="font-mono font-bold text-rose-700">{wo.code}</span>
                             <Badge variant={wo.status === 'PENDING' ? 'maintenance' : 'active'}>{wo.status}</Badge>
                           </div>
                           <p className="font-bold text-slate-900">{wo.machineName}</p>
-                          <p className="text-slate-500 text-[11px] line-clamp-1">{wo.description}</p>
+                          <p className="text-slate-500 text-[10px] line-clamp-1">{wo.description}</p>
                         </div>
                       ))}
                     </CardContent>
@@ -812,9 +812,9 @@ export default function AssetTrackMobileApp() {
 
               {/* ME ENGINEER SPECIFIC TASKS */}
               {currentRole === 'ME_ENGINEER' && (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xs font-extrabold text-slate-600 uppercase tracking-wider">
+                    <h2 className="text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">
                       Nhiệm Vụ Kỹ Sư Cơ Điện (ME Tasks)
                     </h2>
                     <Badge variant="secondary">Kỹ sư: Trần Minh Đức</Badge>
@@ -822,24 +822,24 @@ export default function AssetTrackMobileApp() {
 
                   {/* Task 1: Pending SOS work orders */}
                   <Card>
-                    <CardHeader className="p-3.5 pb-2">
-                      <CardTitle className="text-xs font-bold text-slate-800">
+                    <CardHeader className="p-2.5 pb-1">
+                      <CardTitle className="text-[11px] font-bold text-slate-800">
                         1. Sự cố SOS khẩn cấp cần sửa chữa ({workOrders.filter((w) => w.status !== 'APPROVED').length})
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-3.5 pt-0 space-y-2">
+                    <CardContent className="p-2.5 pt-0 space-y-1.5">
                       {workOrders.filter((w) => w.status !== 'APPROVED').map((wo) => (
                         <div
                           key={wo.id}
                           onClick={() => setSelectedWorkOrder(wo)}
-                          className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer border border-slate-200 text-xs space-y-1"
+                          className="p-2 rounded-md bg-slate-50 hover:bg-slate-100 cursor-pointer border border-slate-200 text-[11px] space-y-0.5"
                         >
                           <div className="flex items-center justify-between">
                             <span className="font-mono font-bold text-rose-700">{wo.code}</span>
                             <Badge variant="destructive">{wo.severity}</Badge>
                           </div>
                           <p className="font-bold text-slate-900">{wo.machineName}</p>
-                          <p className="text-slate-500 text-[11px] line-clamp-1">{wo.description}</p>
+                          <p className="text-slate-500 text-[10px] line-clamp-1">{wo.description}</p>
                         </div>
                       ))}
                     </CardContent>
@@ -847,19 +847,19 @@ export default function AssetTrackMobileApp() {
 
                   {/* Task 2: PM Checklists */}
                   <Card>
-                    <CardHeader className="p-3.5 pb-2">
-                      <CardTitle className="text-xs font-bold text-slate-800">
+                    <CardHeader className="p-2.5 pb-1">
+                      <CardTitle className="text-[11px] font-bold text-slate-800">
                         2. Đợt bảo trì định kỳ PM Checklist ({checklists.length})
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-3.5 pt-0 space-y-2">
+                    <CardContent className="p-2.5 pt-0 space-y-1.5">
                       {checklists.map((pm) => (
-                        <div key={pm.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs flex items-center justify-between">
+                        <div key={pm.id} className="p-2 rounded-md bg-slate-50 border border-slate-200 text-[11px] flex items-center justify-between">
                           <div>
                             <div className="font-bold text-slate-900">{pm.code} - {pm.machineName}</div>
-                            <span className="text-[11px] text-slate-500">Mốc {pm.scheduledHours}h máy chạy</span>
+                            <span className="text-[10px] text-slate-500">Mốc {pm.scheduledHours}h máy chạy</span>
                           </div>
-                          <Button size="sm" variant="amber" onClick={() => setPmModalChecklist(pm)} className="h-7 text-[11px]">
+                          <Button size="sm" variant="amber" onClick={() => setPmModalChecklist(pm)} className="h-6 px-2 text-[10px]">
                             Làm PM
                           </Button>
                         </div>
@@ -871,9 +871,9 @@ export default function AssetTrackMobileApp() {
 
               {/* SUPERVISOR SPECIFIC TASKS */}
               {currentRole === 'SUPERVISOR' && (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xs font-extrabold text-slate-600 uppercase tracking-wider">
+                    <h2 className="text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">
                       Nhiệm Vụ Quản Đốc (Supervisor Tasks)
                     </h2>
                     <Badge variant="secondary">Quản đốc: Lê Hoàng</Badge>
@@ -881,23 +881,23 @@ export default function AssetTrackMobileApp() {
 
                   {/* Task 1: Pending Sign-off Approvals */}
                   <Card>
-                    <CardHeader className="p-3.5 pb-2">
-                      <CardTitle className="text-xs font-bold text-slate-800">
+                    <CardHeader className="p-2.5 pb-1">
+                      <CardTitle className="text-[11px] font-bold text-slate-800">
                         1. Duyệt & Ký tên nghiệm thu điện tử ({workOrders.filter((w) => w.status === 'COMPLETED').length + checklists.filter((p) => p.status === 'COMPLETED').length})
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-3.5 pt-0 space-y-2">
+                    <CardContent className="p-2.5 pt-0 space-y-1.5">
                       {workOrders.filter((w) => w.status === 'COMPLETED').map((wo) => (
-                        <div key={wo.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs flex items-center justify-between">
+                        <div key={wo.id} className="p-2 rounded-md bg-slate-50 border border-slate-200 text-[11px] flex items-center justify-between">
                           <div>
                             <div className="font-bold text-slate-900">SOS: {wo.code} - {wo.machineName}</div>
-                            <span className="text-[11px] text-slate-500">Kỹ sư hoàn thành: {wo.assigneeName || 'ME Engineer'}</span>
+                            <span className="text-[10px] text-slate-500">Kỹ sư hoàn thành: {wo.assigneeName || 'ME Engineer'}</span>
                           </div>
                           <Button
                             size="sm"
                             variant="amber"
                             onClick={() => setSignoffData({ isOpen: true, itemCode: wo.code, title: `Nghiệm Thu Phiếu SOS: ${wo.code}`, subtitle: `Ký xác nhận bàn giao máy ${wo.machineCode}` })}
-                            className="h-7 text-[11px]"
+                            className="h-6 px-2 text-[10px]"
                           >
                             Ký Tên
                           </Button>
@@ -905,16 +905,16 @@ export default function AssetTrackMobileApp() {
                       ))}
 
                       {checklists.filter((p) => p.status === 'COMPLETED').map((pm) => (
-                        <div key={pm.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs flex items-center justify-between">
+                        <div key={pm.id} className="p-2 rounded-md bg-slate-50 border border-slate-200 text-[11px] flex items-center justify-between">
                           <div>
                             <div className="font-bold text-slate-900">PM: {pm.code} - {pm.machineName}</div>
-                            <span className="text-[11px] text-slate-500">Mốc bảo trì: {pm.scheduledHours}h</span>
+                            <span className="text-[10px] text-slate-500">Mốc bảo trì: {pm.scheduledHours}h</span>
                           </div>
                           <Button
                             size="sm"
                             variant="default"
                             onClick={() => setSignoffData({ isOpen: true, itemCode: pm.code, title: `Nghiệm Thu Bảo Trì: ${pm.code}`, subtitle: `Ký xác nhận hoàn tất PM mốc ${pm.scheduledHours}h` })}
-                            className="h-7 text-[11px]"
+                            className="h-6 px-2 text-[10px]"
                           >
                             Ký Tên
                           </Button>
