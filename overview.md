@@ -17,6 +17,11 @@ Trong các dây chuyền sản xuất công nghiệp, máy móc hỏng hóc đ�
 - **ME Engineer (Kỹ sư Cơ điện):** Nhận thông báo sự cố, tiếp nhận sửa chữa đột xuất, thực hiện checklist bảo dưỡng định kỳ và gửi đề xuất vật tư thay thế.
 - **Supervisor (Quản đốc phân xưởng):** Giám sát thời gian dừng máy (Downtime), phê duyệt vật tư và nghiệm thu công việc bằng chữ ký điện tử trực tiếp trên màn hình.
 
+### 1.3. Bối cảnh vận hành thực tế — Trường hợp Nhà xưởng Quy mô Vừa & Nhỏ (SME)
+- **Đặc điểm:** Số lượng máy móc < 50 máy, đội ngũ kỹ sư bảo trì từ 3 – 7 người, không có thủ kho riêng trực ca 24/7 (hoặc thủ kho chỉ làm giờ hành chính).
+- **Quy trình lấy vật tư:** Vật tư tiêu hao cơ bản (dầu mỡ, bu-lông, gioăng, đai curoa...) được để sẵn ở *Tủ vật tư nhanh* tại phân xưởng. Kỹ sư ME là người **TỰ LẤY**: Khi máy hỏng, ME ra tủ lấy linh kiện và tự thay vào máy.
+- **Cách AssetTrack hỗ trợ:** ME mở app, chọn các món đồ vừa lấy để **Ghi log (Spare Parts Logging - Tính năng 6)**. Việc ghi log này giúp hệ thống lưu lại lý lịch sửa chữa của máy và trừ lùi số lượng để Quản đốc biết khi nào tủ vật tư sắp hết.
+
 ---
 
 ## 2. Danh sách 12 Tính năng Cốt lõi (12 Core Features)
@@ -29,7 +34,7 @@ Trong các dây chuyền sản xuất công nghiệp, máy móc hỏng hóc đ�
 
 ### Tác nhân 2: Kỹ sư Cơ điện Bảo trì (ME Engineer)
 5. **Tiếp nhận phiếu sửa chữa SOS (SOS Work Order Claiming):** Nhận thông báo đẩy (Push Notification) thời gian thực và bấm "Tiếp nhận" xử lý.
-6. **Khai báo linh kiện & Vật tư thay thế (Spare Parts Logging):** Ghi nhận các phụ tùng tiêu hao đã sử dụng để cập nhật lịch sử máy. **Lưu ý phạm vi (Scope note):** tính năng này chỉ ghi log vật tư đã dùng vào lịch sử phiếu công việc — không bao gồm quản lý tồn kho thực (trừ số lượng tồn, cảnh báo hết hàng, nhập kho ban đầu). Quản lý tồn kho là **out of scope** của dự án này.
+6. **Khai báo linh kiện & Vật tư thay thế (Spare Parts Logging):** Ghi nhận các phụ tùng tiêu hao đã tự lấy từ *Tủ vật tư nhanh* tại phân xưởng để cập nhật lịch sử sửa chữa của máy và giúp Quản đốc theo dõi trừ lùi số lượng tồn tủ. **Lưu ý phạm vi (Scope note):** tính năng này chỉ ghi log vật tư đã dùng vào lịch sử phiếu công việc — không bao gồm quản lý kho tổng phức tạp (như nhập kho hàng hóa, quét mã vạch kho, phân vị trí kệ kho).
 7. **Thực hiện Checklist bảo trì định kỳ (PM Checklist Execution):** Mở danh sách checklist bắt buộc (tra dầu, siết ốc...) và tích chọn hoàn thành từng mục.
 8. **Tải ảnh bằng chứng bảo dưỡng (Maintenance Proof Upload):** Chụp ảnh linh kiện cũ/mới trước và sau khi thay thế làm bằng chứng hoàn thành.
 
@@ -63,7 +68,7 @@ Trong các dây chuyền sản xuất công nghiệp, máy móc hỏng hóc đ�
 | **US-03** | Operator | Tạo phiếu SOS khẩn cấp kèm ảnh lỗi | Báo cáo sự cố dừng chuyền cho kỹ sư ME tức thời. | • Bắt buộc chọn mức độ nghiêm trọng (Low/Medium/High/Critical).<br>• Cho phép đính kèm ít nhất 1 ảnh từ camera.<br>• Trạng thái máy đổi sang `Repairing` ngay sau khi gửi. |
 | **US-04** | ME Engineer | Nhận notification sự cố & bấm tiếp nhận | Xác nhận bắt đầu sửa chữa máy hỏng. | • Notification xuất hiện trong < 3s sau khi Operator gửi.<br>• Nhấn notification mở trực tiếp màn hình chi tiết phiếu SOS.<br>• Ghi nhận `claimed_at` để tính MTTR.<br>• **Race condition:** DB dùng `UPDATE work_orders SET status='in_progress', assignee_id=:me_id WHERE id=:id AND status='pending'` — nếu 0 row bị ảnh hưởng (ME khác đã thắng), app hiển thị thông báo "Phiếu đã được tiếp nhận bởi kỹ sư khác" và không cho phép tiếp nhận lại. |
 | **US-05** | ME Engineer | Thực hiện PM Checklist & tải ảnh linh kiện | Hoàn tất bảo dưỡng định kỳ đúng quy trình. | • Phải tích 100% hạng mục mới kích hoạt nút "Hoàn thành".<br>• Các hạng mục đánh dấu "Bắt buộc chụp ảnh" phải có ít nhất 1 ảnh đính kèm mới được tích. |
-| **US-06** | ME Engineer | Khai báo vật tư tiêu hao đã thay | Ghi nhận lịch sử phụ tùng phục vụ kiểm kho. | • Cho phép chọn vật tư từ danh mục có sẵn và nhập số lượng.<br>• Lưu vào lịch sử phụ tùng của máy sau khi hoàn thành. |
+| **US-06** | ME Engineer | Khai báo vật tư tiêu hao tự lấy từ Tủ vật tư nhanh | Ghi nhận lý lịch phụ tùng của máy và hỗ trợ kiểm soát tồn tủ. | • Cho phép chọn vật tư tiêu hao từ danh mục có sẵn và nhập số lượng.<br>• Tự động trừ số lượng tồn tủ vật tư nhanh và lưu vào lịch sử máy. |
 | **US-07** | ME Engineer | Gửi đề xuất thay linh kiện đắt tiền lên Supervisor | Xin phê duyệt trước khi tự ý thay thế phụ tùng giá trị cao. | • ME chọn phụ tùng, nhập đơn giá và lý do đề xuất.<br>• Phiếu đề xuất chuyển trạng thái `Pending Approval`; ME không thể tự duyệt.<br>• Supervisor nhận notification về đề xuất mới. |
 | **US-08** | Supervisor | Ký tên điện tử nghiệm thu trên màn hình | Xác nhận máy đã được sửa/bảo trì đạt chuẩn. | • Canvas chữ ký xuất file PNG tối thiểu 300×150px.<br>• Không cho phép lưu nếu canvas trống.<br>• Máy tự động về trạng thái `Active` sau khi lưu. |
 | **US-09** | Supervisor | Phê duyệt / từ chối đề xuất thay linh kiện đắt tiền | Kiểm soát chi phí sửa chữa phân xưởng. | • Hiển thị cảnh báo màu đỏ nếu đơn giá vượt hạn mức cấu hình.<br>• Lưu rõ tên Supervisor, thời điểm và lý do từ chối (nếu có). |

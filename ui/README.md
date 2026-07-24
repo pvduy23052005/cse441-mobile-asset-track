@@ -11,6 +11,11 @@ Trong các nhà máy sản xuất công nghiệp, sự cố hỏng hóc máy mó
 - **Quy trình báo sự cố thủ công & chậm trễ:** Báo hỏng qua giấy tờ hoặc tin nhắn chat không gửi được thông báo khẩn cấp tới kỹ sư cơ điện, gây kéo dài thời gian chờ đợi (MTTR).
 - **Thiếu lý lịch thiết bị & minh chứng nghiệm thu:** Không lưu lại lịch sử sửa chữa, vật tư đã thay thế và thiếu cam kết trách nhiệm nghiệm thu giữa Quản đốc và Kỹ sư.
 
+**Bối cảnh vận hành thực tế — Nhà xưởng Quy mô Vừa & Nhỏ (SME):**
+- **Đặc điểm:** Số lượng máy móc < 50 máy, đội ngũ kỹ sư bảo trì từ 3 – 7 người, không có thủ kho riêng trực ca 24/7 (hoặc thủ kho chỉ làm giờ hành chính).
+- **Quy trình lấy vật tư:** Vật tư tiêu hao cơ bản (dầu mỡ, bu-lông, gioăng, đai curoa...) được để sẵn ở *Tủ vật tư nhanh* tại phân xưởng. Kỹ sư ME là người **TỰ LẤY**: Khi máy hỏng, ME ra tủ lấy linh kiện và tự thay vào máy.
+- **Cách AssetTrack hỗ trợ:** ME mở app, chọn các món đồ vừa lấy để **Ghi log (Spare Parts Logging - Tính năng 6)**. Việc ghi log này giúp hệ thống lưu lại lý lịch sửa chữa của máy và trừ lùi số lượng để Quản đốc biết khi nào tủ vật tư sắp hết.
+
 **Giải pháp AssetTrack:** Xây dựng hệ thống ứng dụng di động kết nối 3 tác nhân trong nhà máy, số hóa toàn bộ Hộ chiếu thiết bị bằng mã QR, tự động hóa quy trình bảo trì định kỳ theo số giờ máy chạy, gửi thông báo SOS thời gian thực và xác thực nghiệm thu bằng chữ ký số cảm ứng.
 
 ---
