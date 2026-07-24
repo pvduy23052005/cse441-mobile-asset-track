@@ -99,12 +99,3 @@ npm run dev
 ```
 
 Trình duyệt tự động mở tại đường dẫn: **`http://localhost:3000`**
-
----
-
-## 📚 Tài Liệu Thiết Kế Chi Tiết (Project Documentation)
-
-- 📘 **Tóm tắt Quản lý Dự án:** [overview.md](../overview.md)
-- 📗 **Đặc tả Thiết kế SAD (System Architecture Document):** [system_design.md](../system_design.md)
-- 🗄️ **Thiết kế CSDL & Tập lệnh SQL:** [database_schema.md](../database_schema.md)
-- 🎨 **Hướng dẫn shadcn/ui:** [shadcn_ui_guide.md](../shadcn_ui_guide.md)
