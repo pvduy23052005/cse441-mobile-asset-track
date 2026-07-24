@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Clock, AlertTriangle, Cpu, Wrench, ChevronDown, CheckCircle2, PlusCircle, Calendar, ShieldCheck } from 'lucide-react';
-import { Machine } from '../types';
+import { X, Clock, AlertTriangle, Cpu, Wrench, ChevronDown, CheckCircle2, PlusCircle, Calendar, ShieldCheck, History } from 'lucide-react';
+import { Machine, WorkOrder, PMChecklist } from '../types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -12,6 +12,8 @@ interface MachinePassportModalProps {
   onClose: () => void;
   onUpdateHours: (machineId: string, newHours: number, shift: 'START_SHIFT' | 'END_SHIFT') => void;
   onOpenSOS: (machine: Machine) => void;
+  pastWorkOrders?: WorkOrder[];
+  pastChecklists?: PMChecklist[];
 }
 
 export const MachinePassportModal: React.FC<MachinePassportModalProps> = ({
@@ -20,6 +22,8 @@ export const MachinePassportModal: React.FC<MachinePassportModalProps> = ({
   onClose,
   onUpdateHours,
   onOpenSOS,
+  pastWorkOrders = [],
+  pastChecklists = [],
 }) => {
   const [activeTab, setActiveTab] = useState<'SPECS' | 'TROUBLESHOOT' | 'HISTORY'>('SPECS');
   const [showHoursPopup, setShowHoursPopup] = useState(false);
@@ -48,21 +52,25 @@ export const MachinePassportModal: React.FC<MachinePassportModalProps> = ({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return <Badge variant="active">● Hoạt Động</Badge>;
+        return <Badge variant="active">● HOẠT ĐỘNG</Badge>;
       case 'REPAIRING':
-        return <Badge variant="repairing">● Sửa Chữa (SOS)</Badge>;
+        return <Badge variant="repairing">● SỬA CHỮA (SOS)</Badge>;
       case 'MAINTENANCE':
-        return <Badge variant="maintenance">● Bảo Trì PM</Badge>;
+        return <Badge variant="maintenance">● BẢO TRÌ PM</Badge>;
       default:
-        return <Badge variant="secondary">● Ngừng</Badge>;
+        return <Badge variant="secondary">● NGỪNG</Badge>;
     }
   };
+
+  // Dynamic history calculation
+  const machineWOs = pastWorkOrders.filter((wo) => wo.machineId === machine.id || wo.machineCode === machine.code);
+  const machinePMs = pastChecklists.filter((pm) => pm.machineId === machine.id || pm.machineCode === machine.code);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm p-0 sm:p-4">
       <div className="w-full max-w-md bg-white border border-slate-200 rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom duration-300">
         
-        {/* Header */}
+        {/* Header (Wireframe 5.A: Tên + Mã + Tag trạng thái) */}
         <div className="p-5 border-b border-slate-100 bg-slate-50/60 flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -96,15 +104,15 @@ export const MachinePassportModal: React.FC<MachinePassportModalProps> = ({
             onClick={() => setShowHoursPopup(true)}
             className="h-8 rounded-xl font-bold"
           >
-            <PlusCircle className="w-3.5 h-3.5" /> Nhập Ca
+            <PlusCircle className="w-3.5 h-3.5" /> + Nhập Ca
           </Button>
         </div>
 
-        {/* Hours Update Popup Form (US-02, 5.G) */}
+        {/* Hours Update Popup Form (US-02, Wireframe 5.G) */}
         {showHoursPopup && (
           <form onSubmit={handleHoursSubmit} className="mx-5 mb-3 p-3 rounded-2xl bg-slate-50 border border-emerald-300 space-y-2">
             <div className="text-xs font-bold text-slate-800 flex items-center justify-between">
-              <span>Nhập Số Giờ Chạy Hiện Tại</span>
+              <span>Cập Nhật Chỉ Số Giờ Chạy Hiện Tại</span>
               <span className="text-[11px] text-slate-500 font-mono">Trước: {machine.runningHours}h</span>
             </div>
 
@@ -151,7 +159,7 @@ export const MachinePassportModal: React.FC<MachinePassportModalProps> = ({
           </form>
         )}
 
-        {/* Navigation Tabs */}
+        {/* Navigation Tabs (Wireframe 5.A) */}
         <div className="px-5 border-b border-slate-100 flex gap-4">
           <button
             onClick={() => setActiveTab('SPECS')}
@@ -181,7 +189,7 @@ export const MachinePassportModal: React.FC<MachinePassportModalProps> = ({
                 : 'border-transparent text-slate-400 hover:text-slate-700'
             }`}
           >
-            Lịch Sử Bảo Trì
+            Lịch Sử Bảo Trì ({machineWOs.length + machinePMs.length || 3})
           </button>
         </div>
 
@@ -209,14 +217,14 @@ export const MachinePassportModal: React.FC<MachinePassportModalProps> = ({
                 </div>
               </div>
 
-              {/* Maintenance ProgressBar with Warning colors */}
+              {/* Maintenance ProgressBar with Warning colors (Wireframe 5.A) */}
               <div className={`p-3.5 rounded-xl border mt-2 ${
                 isOverdue ? 'bg-rose-50 border-rose-200' :
                 isNearMaintenance ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-200'
               }`}>
                 <div className="flex items-center justify-between text-xs mb-1.5">
                   <span className="text-slate-700 font-bold flex items-center gap-1">
-                    Mốc bảo trì kế tiếp:
+                    Mốc bảo trì tiếp theo:
                     {isNearMaintenance && <span className="text-amber-700 text-[10px] font-bold">⚠️ Sắp đến hạn (&lt;10%)</span>}
                     {isOverdue && <span className="text-rose-700 text-[10px] font-bold">🚨 Quá hạn bảo trì!</span>}
                   </span>
@@ -270,35 +278,82 @@ export const MachinePassportModal: React.FC<MachinePassportModalProps> = ({
           )}
 
           {activeTab === 'HISTORY' && (
-            <div className="space-y-3">
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3 text-xs">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <div>
-                  <div className="font-bold text-slate-900">Thay dầu bôi trơn & Vệ sinh phin lọc</div>
-                  <div className="text-slate-500 text-[11px]">Ngày: {machine.lastMaintenanceDate} • Kỹ sư: ME Trần Minh Đức</div>
+            <div className="space-y-2.5">
+              {/* Dynamic History listing */}
+              {machineWOs.map((wo) => (
+                <div key={wo.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-2.5 text-xs">
+                  <CheckCircle2 className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[10px] font-bold text-rose-700">{wo.code}</span>
+                      <Badge variant="outline" className="text-[9px]">{wo.status}</Badge>
+                    </div>
+                    <div className="font-bold text-slate-900">{wo.description}</div>
+                    <div className="text-slate-500 text-[11px] mt-0.5">
+                      Báo bởi: {wo.reporterName} • Kỹ sư: {wo.assigneeName || 'Đang xử lý'}
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3 text-xs">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <div>
-                  <div className="font-bold text-slate-900">Kiểm tra định kỳ mốc 500 Giờ</div>
-                  <div className="text-slate-500 text-[11px]">Ngày: 2026-04-10 • Quản Đốc đã ký nghiệm thu</div>
+              ))}
+
+              {machinePMs.map((pm) => (
+                <div key={pm.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-2.5 text-xs">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[10px] font-bold text-emerald-700">{pm.code}</span>
+                      <Badge variant="active" className="text-[9px]">{pm.status}</Badge>
+                    </div>
+                    <div className="font-bold text-slate-900">Bảo trì định kỳ mốc {pm.scheduledHours}h</div>
+                    <div className="text-slate-500 text-[11px] mt-0.5">
+                      Kỹ sư: {pm.assigneeName || 'ME Engineer'} • Quản đốc đã ký nghiệm thu
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3 text-xs">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <div>
-                  <div className="font-bold text-slate-900">Sửa chữa SOS rò rỉ van áp suất</div>
-                  <div className="text-slate-500 text-[11px]">Ngày: 2026-01-15 • Đã thay cụm gioăng làm kín</div>
-                </div>
-              </div>
+              ))}
+
+              {/* Default static fallback if empty */}
+              {machineWOs.length === 0 && machinePMs.length === 0 && (
+                <>
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3 text-xs">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-bold text-slate-900">✓ 12/06 - Thay dầu bôi trơn 500h - Kỹ sư ME A</div>
+                      <div className="text-slate-500 text-[11px]">Đã hoàn thành & Quản đốc ký nghiệm thu</div>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3 text-xs">
+                    <CheckCircle2 className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-bold text-slate-900">✓ 01/04 - Sửa SOS rò rỉ van áp - Kỹ sư ME B</div>
+                      <div className="text-slate-500 text-[11px]">Đã thay cụm gioăng làm kín & bàn giao máy</div>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3 text-xs">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-bold text-slate-900">✓ 15/01 - Bảo trì 1000h - Kỹ sư ME A</div>
+                      <div className="text-slate-500 text-[11px]">Đã kiểm tra siết bu-lông và vệ sinh phin lọc</div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
         </div>
 
-        {/* Footer Action: Report SOS */}
-        <div className="p-4 border-t border-slate-100 bg-white">
+        {/* Footer Actions (Wireframe 5.A: [Cập nhật giờ máy chạy] + [🚨 BÁO LỖI SOS KHẨN CẤP 🚨]) */}
+        <div className="p-4 border-t border-slate-100 bg-white space-y-2">
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full h-11 text-xs font-extrabold border-slate-300 hover:bg-slate-50 text-slate-800"
+            onClick={() => setShowHoursPopup(true)}
+          >
+            <PlusCircle className="w-4 h-4 text-emerald-600" /> [Cập nhật giờ máy chạy]
+          </Button>
+
           <Button
             variant="destructive"
             size="lg"
@@ -308,7 +363,7 @@ export const MachinePassportModal: React.FC<MachinePassportModalProps> = ({
               onOpenSOS(machine);
             }}
           >
-            <AlertTriangle className="w-4 h-4" /> BÁO LỖI SOS KHẨN CẤP
+            <AlertTriangle className="w-4 h-4" /> [🚨 BÁO LỖI SOS KHẨN CẤP 🚨]
           </Button>
         </div>
 

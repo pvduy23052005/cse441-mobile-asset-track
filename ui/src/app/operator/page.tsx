@@ -9,6 +9,7 @@ import {
   AlertTriangle,
   ChevronRight,
   Cpu,
+  XCircle,
 } from 'lucide-react';
 
 import { Machine, WorkOrder } from '../../types';
@@ -16,6 +17,7 @@ import { initialMachines, initialWorkOrders } from '../../data/mockData';
 import { QRScannerModal } from '../../components/QRScannerModal';
 import { MachinePassportModal } from '../../components/MachinePassportModal';
 import { SOSFormModal } from '../../components/SOSFormModal';
+import { Button } from '@/components/ui/button';
 
 export default function OperatorPage() {
   const [machines, setMachines] = useState<Machine[]>(initialMachines);
@@ -59,6 +61,23 @@ export default function OperatorPage() {
 
     setMachines((prev) =>
       prev.map((m) => (m.id === data.machineId ? { ...m, status: 'REPAIRING' } : m))
+    );
+  };
+
+  const handleCancelWorkOrder = (woId: string) => {
+    const reason = prompt('Nhập lý do hủy phiếu SOS (Tránh báo nhầm - US-13):');
+    if (!reason) return;
+
+    setWorkOrders((prev) =>
+      prev.map((wo) => {
+        if (wo.id === woId && wo.status === 'PENDING') {
+          setMachines((mPrev) =>
+            mPrev.map((m) => (m.id === wo.machineId ? { ...m, status: 'ACTIVE' } : m))
+          );
+          return { ...wo, status: 'CANCELLED', cancellationReason: reason };
+        }
+        return wo;
+      })
     );
   };
 
@@ -134,18 +153,33 @@ export default function OperatorPage() {
 
             <div className="space-y-2">
               {workOrders.map((wo) => (
-                <div key={wo.id} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+                <div key={wo.id} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="font-mono font-black text-rose-700">{wo.code}</span>
                     <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
                       wo.status === 'PENDING' ? 'bg-amber-100 text-amber-800' :
-                      wo.status === 'IN_PROGRESS' ? 'bg-cyan-100 text-cyan-800' : 'bg-emerald-100 text-emerald-800'
+                      wo.status === 'IN_PROGRESS' ? 'bg-cyan-100 text-cyan-800' :
+                      wo.status === 'CANCELLED' ? 'bg-slate-200 text-slate-700' : 'bg-emerald-100 text-emerald-800'
                     }`}>
                       {wo.status}
                     </span>
                   </div>
                   <div className="font-bold text-slate-900">{wo.machineName}</div>
                   <p className="text-slate-600 text-[11px] leading-snug font-medium">{wo.description}</p>
+
+                  {/* Cancel SOS Button for Operator (US-13) */}
+                  {wo.status === 'PENDING' && (
+                    <div className="pt-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleCancelWorkOrder(wo.id)}
+                        className="w-full text-rose-700 border-rose-200 hover:bg-rose-50 text-[11px] h-7 font-bold"
+                      >
+                        <XCircle className="w-3.5 h-3.5" /> Hủy Phiếu SOS (Báo Nhầm - US-13)
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -167,6 +201,7 @@ export default function OperatorPage() {
           onClose={() => setPassportMachine(null)}
           onUpdateHours={handleUpdateHours}
           onOpenSOS={(m) => setSosMachine(m)}
+          pastWorkOrders={workOrders}
         />
 
         <SOSFormModal

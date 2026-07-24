@@ -67,6 +67,16 @@ export default function SupervisorPage() {
     );
   };
 
+  const handleRejectSign = (reason: string) => {
+    const code = signoffData.itemCode;
+    setWorkOrders((prev) =>
+      prev.map((wo) => (wo.code === code ? { ...wo, status: 'REJECTED', rejectionReason: reason } : wo))
+    );
+    setChecklists((prev) =>
+      prev.map((pm) => (pm.code === code ? { ...pm, status: 'REJECTED', rejectionReason: reason } : pm))
+    );
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans selection:bg-amber-500 selection:text-white">
       <div className="w-full max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col relative border-x border-slate-200 shadow-2xl">
@@ -236,14 +246,38 @@ export default function SupervisorPage() {
 
         </div>
 
-        {/* Signature Modal */}
+        {/* Signature Modal with Work Summary Box (Wireframe 5.E) */}
         <DigitalSignoffModal
           isOpen={signoffData.isOpen}
           onClose={() => setSignoffData((prev) => ({ ...prev, isOpen: false }))}
           onConfirmSign={handleConfirmSign}
+          onReject={handleRejectSign}
           title={signoffData.title}
           subtitle={signoffData.subtitle}
           itemCode={signoffData.itemCode}
+          workSummary={(() => {
+            const wo = workOrders.find((w) => w.code === signoffData.itemCode);
+            const pm = checklists.find((p) => p.code === signoffData.itemCode);
+            if (wo) {
+              return {
+                machineName: wo.machineName,
+                machineCode: wo.machineCode,
+                engineerName: wo.assigneeName || 'Trần Minh Đức (ME)',
+                downtimeDuration: '2h 35m',
+                spareParts: wo.usedSpareParts?.map((sp) => ({ name: sp.name, quantity: sp.quantity })),
+              };
+            }
+            if (pm) {
+              return {
+                machineName: pm.machineName,
+                machineCode: pm.machineCode,
+                engineerName: pm.assigneeName || 'Trần Minh Đức (ME)',
+                downtimeDuration: '1h 20m',
+                spareParts: [{ name: 'Dầu bôi trơn & Bộ lọc PM', quantity: 1 }],
+              };
+            }
+            return undefined;
+          })()}
         />
 
       </div>

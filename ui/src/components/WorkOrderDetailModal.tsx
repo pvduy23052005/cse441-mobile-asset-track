@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Wrench, CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
+import { X, Wrench, CheckCircle2, AlertTriangle, Clock, XCircle } from 'lucide-react';
 import { WorkOrder, SparePartItem } from '../types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,7 @@ interface WorkOrderDetailModalProps {
   onClaimWorkOrder: (woId: string) => void;
   onCompleteWorkOrder: (woId: string, usedParts: SparePartItem[]) => void;
   onAddSparePartToWO: (woId: string, part: SparePartItem) => void;
+  onCancelWorkOrder?: (woId: string, reason: string) => void;
 }
 
 export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
@@ -25,11 +26,15 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
   onClaimWorkOrder,
   onCompleteWorkOrder,
   onAddSparePartToWO,
+  onCancelWorkOrder,
 }) => {
   const [partName, setPartName] = useState('');
   const [partQty, setPartQty] = useState('1');
   const [partUnitPrice, setPartUnitPrice] = useState('500000');
   const [showAddPartForm, setShowAddPartForm] = useState(false);
+  const [showCancelForm, setShowCancelForm] = useState(false);
+  const [cancellationReasonInput, setCancellationReasonInput] = useState('');
+  const [raceConditionError, setRaceConditionError] = useState(false);
 
   if (!isOpen || !workOrder) return null;
 
@@ -57,6 +62,30 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
     setPartQty('1');
     setPartUnitPrice('500000');
     setShowAddPartForm(false);
+  };
+
+  const handleClaim = () => {
+    // Race condition simulation check (US-04)
+    if (workOrder.status !== 'PENDING') {
+      setRaceConditionError(true);
+      return;
+    }
+    onClaimWorkOrder(workOrder.id);
+    onClose();
+  };
+
+  const handleConfirmCancel = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cancellationReasonInput.trim()) {
+      alert('Vui lòng nhập lý do hủy phiếu!');
+      return;
+    }
+    if (onCancelWorkOrder) {
+      onCancelWorkOrder(workOrder.id, cancellationReasonInput.trim());
+    }
+    setShowCancelForm(false);
+    setCancellationReasonInput('');
+    onClose();
   };
 
   const getSeverityBadge = (severity: string) => {
@@ -95,6 +124,14 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
         {/* Scrollable Modal Content */}
         <div className="p-4 overflow-y-auto flex-1 space-y-3.5">
           
+          {/* Race Condition Error Banner (US-04) */}
+          {raceConditionError && (
+            <div className="p-3 rounded-2xl bg-rose-100 border border-rose-300 text-rose-900 text-xs font-extrabold flex items-center gap-2 animate-in shake">
+              <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
+              <span>Phiếu đã được tiếp nhận bởi kỹ sư khác! Bạn không thể nhận trùng.</span>
+            </div>
+          )}
+
           {/* Machine & Reporter Summary Card */}
           <Card className="bg-slate-50/50">
             <CardContent className="p-3.5 space-y-2 text-xs">
@@ -169,7 +206,7 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
               <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
                 Linh Kiện Đã Khai Báo:
               </h4>
-              {workOrder.status !== 'APPROVED' && (
+              {workOrder.status !== 'APPROVED' && workOrder.status !== 'CANCELLED' && (
                 <button
                   type="button"
                   onClick={() => setShowAddPartForm(!showAddPartForm)}
@@ -258,22 +295,58 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
             )}
           </div>
 
+          {/* Cancellation Form Modal (US-13) */}
+          {showCancelForm && (
+            <form onSubmit={handleConfirmCancel} className="p-3.5 rounded-2xl bg-rose-50 border border-rose-300 space-y-2.5">
+              <div className="text-xs font-extrabold text-rose-800 flex items-center gap-1.5">
+                <XCircle className="w-4 h-4 text-rose-600" /> Hủy Phiếu SOS Đã Báo Nhầm (US-13)
+              </div>
+              <p className="text-[11px] text-rose-700">Trạng thái máy sẽ tự động quay về ACTIVE sau khi hủy.</p>
+              
+              <textarea
+                rows={2}
+                required
+                placeholder="Nhập lý do hủy phiếu (e.g. Thao tác nhầm, sự cố nhẹ đã tự khắc phục...)"
+                value={cancellationReasonInput}
+                onChange={(e) => setCancellationReasonInput(e.target.value)}
+                className="w-full bg-white border border-rose-300 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:border-rose-500"
+              />
+
+              <div className="flex gap-2">
+                <Button type="button" size="sm" variant="outline" onClick={() => setShowCancelForm(false)} className="flex-1">
+                  Quay Lại
+                </Button>
+                <Button type="submit" size="sm" variant="destructive" className="flex-1 font-bold">
+                  Xác Nhận Hủy Phiếu
+                </Button>
+              </div>
+            </form>
+          )}
+
         </div>
 
         {/* Footer Actions */}
         <div className="p-4 border-t border-slate-100 bg-white space-y-2">
-          {workOrder.status === 'PENDING' && (
-            <Button
-              variant="cyan"
-              size="lg"
-              onClick={() => {
-                onClaimWorkOrder(workOrder.id);
-                onClose();
-              }}
-              className="w-full h-11 text-xs font-black"
-            >
-              <Wrench className="w-4 h-4" /> Bấm Tiếp Nhận Sửa Chữa Ngay
-            </Button>
+          {workOrder.status === 'PENDING' && !showCancelForm && (
+            <div className="space-y-2">
+              <Button
+                variant="cyan"
+                size="lg"
+                onClick={handleClaim}
+                className="w-full h-11 text-xs font-black"
+              >
+                <Wrench className="w-4 h-4" /> Bấm Tiếp Nhận Sửa Chữa Ngay
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCancelForm(true)}
+                className="w-full h-9 text-xs font-bold text-rose-700 border-rose-200 hover:bg-rose-50"
+              >
+                <XCircle className="w-4 h-4 text-rose-600" /> Hủy Phiếu SOS Báo Nhầm (US-13)
+              </Button>
+            </div>
           )}
 
           {(workOrder.status === 'IN_PROGRESS' || workOrder.status === 'REJECTED') && (
@@ -299,6 +372,12 @@ export const WorkOrderDetailModal: React.FC<WorkOrderDetailModalProps> = ({
           {workOrder.status === 'APPROVED' && (
             <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold text-center">
               Đã được Quản đốc ký nghiệm thu & bàn giao về Active!
+            </div>
+          )}
+
+          {workOrder.status === 'CANCELLED' && (
+            <div className="p-3 rounded-xl bg-slate-100 border border-slate-300 text-slate-700 text-xs font-bold text-center">
+              Phiếu đã bị HỦY (Lý do: {workOrder.cancellationReason || 'Báo nhầm'})
             </div>
           )}
         </div>

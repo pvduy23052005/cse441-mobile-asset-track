@@ -952,6 +952,8 @@ export default function AssetTrackMobileApp() {
           onClose={() => setPassportMachine(null)}
           onUpdateHours={handleUpdateHours}
           onOpenSOS={(m) => setSosMachine(m)}
+          pastWorkOrders={workOrders}
+          pastChecklists={checklists}
         />
 
         <SOSFormModal
@@ -977,6 +979,7 @@ export default function AssetTrackMobileApp() {
           onClaimWorkOrder={handleClaimWorkOrder}
           onCompleteWorkOrder={handleCompleteWorkOrder}
           onAddSparePartToWO={handleAddSparePartToWO}
+          onCancelWorkOrder={handleCancelWorkOrder}
         />
 
         <DigitalSignoffModal
@@ -987,6 +990,29 @@ export default function AssetTrackMobileApp() {
           title={signoffData.title}
           subtitle={signoffData.subtitle}
           itemCode={signoffData.itemCode}
+          workSummary={(() => {
+            const wo = workOrders.find((w) => w.code === signoffData.itemCode);
+            const pm = checklists.find((p) => p.code === signoffData.itemCode);
+            if (wo) {
+              return {
+                machineName: wo.machineName,
+                machineCode: wo.machineCode,
+                engineerName: wo.assigneeName || 'Trần Minh Đức (ME)',
+                downtimeDuration: '2h 35m',
+                spareParts: wo.usedSpareParts?.map((sp) => ({ name: sp.name, quantity: sp.quantity })),
+              };
+            }
+            if (pm) {
+              return {
+                machineName: pm.machineName,
+                machineCode: pm.machineCode,
+                engineerName: pm.assigneeName || 'Trần Minh Đức (ME)',
+                downtimeDuration: '1h 20m',
+                spareParts: [{ name: 'Dầu bôi trơn & Bộ lọc PM', quantity: 1 }],
+              };
+            }
+            return undefined;
+          })()}
         />
 
         <ThresholdConfigModal
