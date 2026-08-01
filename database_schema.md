@@ -28,6 +28,8 @@ erDiagram
     pm_checklists ||--o{ spare_parts_requests : "đề xuất linh kiện"
 ```
 
+> **Lưu ý Phạm vi Đề tài (Scope Note):** Hệ thống AssetTrack được thiết kế tập trung tối ưu cho **phạm vi 1 Phân Xưởng Sản Xuất duy nhất (Single Workshop Scope)**. Toàn bộ người dùng (`operator`, `me_engineer`, `supervisor`), máy móc và phiếu công việc đều thuộc về phân xưởng này. Bảng `workshops` lưu trữ thông tin của phân xưởng đề tài.
+
 ---
 
 ## 2. Đặc Tả Chi Tiết Các Bảng Dữ Liệu (Table Specifications)
@@ -35,28 +37,29 @@ erDiagram
 ### 2.1. Bảng `profiles` — Hồ sơ người dùng
 Lưu trữ thông tin tài khoản, phân quyền vai trò (`operator`, `me_engineer`, `supervisor`) và liên kết với Supabase Auth (`auth.users`).
 
-* **Cơ chế khởi tạo tài khoản (Provisioning Flow):**
-  - **Tài khoản `supervisor`:** Khởi tạo ban đầu bởi Bộ phận IT / System Admin qua Supabase Console khi khởi tạo `workshops`.
-  - **Tài khoản `operator` & `me_engineer`:** Do Supervisor phân xưởng tương ứng khởi tạo trực tiếp trên ứng dụng bằng hình thức **thêm tay thủ công** hoặc **import hàng loạt từ file Excel (.xlsx/csv)**. RLS policy đảm bảo Supervisor chỉ cấp tài khoản thuộc `workshop_id` của xưởng mình.
+* **Phân quyền người dùng trong Phân xưởng:**
+  - **Tài khoản `supervisor` (Quản đốc):** Ký tên nghiệm thu, phê duyệt linh kiện đắt tiền, xem Dashboard Downtime và cài đặt ngưỡng hệ thống.
+  - **Tài khoản `me_engineer` (Kỹ sư ME):** Tiếp nhận sự cố SOS, thực hiện PM checklist và khai báo linh kiện thay thế.
+  - **Tài khoản `operator` (Công nhân):** Quét mã QR xem Hộ chiếu thiết bị, khai báo chỉ số hoạt động và tạo phiếu SOS khẩn cấp.
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
 | :--- | :--- | :--- | :--- |
 | `id` | `uuid` | PK, FK -> auth.users.id | ID người dùng Supabase Auth |
 | `full_name` | `text` | NOT NULL | Họ và tên người dùng |
-| `role` | `text` | NOT NULL, CHECK ('operator','me_engineer','supervisor') | Vai trò trong hệ thống |
+| `role` | `text` | NOT NULL, CHECK ('operator','me_engineer','supervisor') | Vai trò trong phân xưởng |
 | `workshop_id` | `uuid` | FK -> workshops.id | Phân xưởng phụ trách |
 | `created_at` | `timestamptz` | DEFAULT now() | Thời điểm tạo tài khoản |
 
 ---
 
-### 2.2. Bảng `workshops` — Danh mục phân xưởng
-Lưu trữ các phân xưởng sản xuất trong nhà máy.
+### 2.2. Bảng `workshops` — Phân xưởng sản xuất
+Lưu trữ thông tin của Phân xưởng đề tài (mặc định 1 phân xưởng duy nhất).
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
 | :--- | :--- | :--- | :--- |
 | `id` | `uuid` | PK, DEFAULT gen_random_uuid() | ID phân xưởng |
-| `name` | `text` | NOT NULL | Tên phân xưởng (VD: Phân xưởng Ép nhựa 1) |
-| `location` | `text` | | Vị trí / Khu vực nhà máy |
+| `name` | `text` | NOT NULL | Tên phân xưởng (VD: Phân xưởng Cơ khí & Dập CNC) |
+| `location` | `text` | | Vị trí nhà máy |
 | `created_at` | `timestamptz` | DEFAULT now() | Thời điểm tạo |
 
 ---

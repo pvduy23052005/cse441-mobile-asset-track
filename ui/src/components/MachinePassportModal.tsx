@@ -92,12 +92,14 @@ export const MachinePassportModal: React.FC<MachinePassportModalProps> = ({
           </button>
         </div>
 
-        {/* Running hours quick bar */}
+        {/* Running hours / Km quick bar */}
         <div className="mx-3.5 my-2.5 p-3 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/80 flex items-center justify-between shadow-xs">
           <div>
-            <div className="text-[11px] text-slate-500 uppercase font-bold tracking-wider">Tổng Giờ Máy Chạy</div>
+            <div className="text-[11px] text-slate-500 uppercase font-bold tracking-wider">
+              {machine.unitLabel || 'Tổng Giờ Máy Chạy'}
+            </div>
             <div className="text-2xl font-black font-mono text-emerald-700 flex items-baseline gap-1">
-              {machine.runningHours.toFixed(1)} <span className="text-xs text-slate-500 font-normal">Giờ</span>
+              {machine.runningHours.toLocaleString('vi-VN')} <span className="text-xs text-slate-500 font-normal">{machine.trackingUnit === 'KM' ? 'Km' : 'Giờ'}</span>
             </div>
           </div>
           {userRole === 'OPERATOR' && (
@@ -107,7 +109,7 @@ export const MachinePassportModal: React.FC<MachinePassportModalProps> = ({
               onClick={() => setShowHoursPopup(true)}
               className="h-8 rounded-lg font-bold"
             >
-              <PlusCircle className="w-3.5 h-3.5" /> + Nhập Ca
+              <PlusCircle className="w-3.5 h-3.5" /> + Nhập Chỉ Số
             </Button>
           )}
         </div>

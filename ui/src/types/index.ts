@@ -20,10 +20,12 @@ export interface Machine {
   location: string;
   category: string;
   status: MachineStatus;
-  runningHours: number;
+  runningHours: number; // Chỉ số tích lũy (Giờ hoặc Km)
   lastMaintenanceHours: number;
   nextMaintenanceHours: number;
   lastMaintenanceDate: string;
+  trackingUnit?: 'HOURS' | 'KM' | 'DAYS'; // Đơn vị theo dõi: GIỜ, KM, NGÀY
+  unitLabel?: string; // Tên hiển thị đơn vị (vd: 'Giờ máy chạy', 'Km di chuyển', 'Ngày vận hành')
   specifications: {
     power: string;
     voltage: string;

@@ -10,16 +10,20 @@ import {
   TrendingUp,
   FileSignature,
   CheckCircle2,
+  Users,
+  UserPlus,
 } from 'lucide-react';
 
 import { WorkOrder, PMChecklist, Machine } from '../../types';
 import { initialWorkOrders, initialPMChecklists, initialMachines } from '../../data/mockData';
 import { DigitalSignoffModal } from '../../components/DigitalSignoffModal';
+import { UserManagementModal } from '../../components/UserManagementModal';
 
 export default function SupervisorPage() {
   const [machines, setMachines] = useState<Machine[]>(initialMachines);
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>(initialWorkOrders);
   const [checklists, setChecklists] = useState<PMChecklist[]>(initialPMChecklists);
+  const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
 
   const [signoffData, setSignoffData] = useState<{
     isOpen: boolean;
@@ -99,13 +103,43 @@ export default function SupervisorPage() {
             </div>
           </div>
 
-          <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-800 border border-amber-200 flex items-center justify-center font-black text-xs">
-            QĐ
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsUserManagementOpen(true)}
+              className="p-2 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 font-extrabold text-xs flex items-center gap-1.5 transition"
+              title="Quản Lý Nhân Sự Phân Xưởng"
+            >
+              <Users className="w-4 h-4 text-amber-600" />
+              <span className="hidden sm:inline">Quản Lý Nhân Sự</span>
+            </button>
+
+            <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-800 border border-amber-200 flex items-center justify-center font-black text-xs">
+              QĐ
+            </div>
           </div>
         </header>
 
         {/* Dashboard Analytics Grid */}
         <div className="p-4 space-y-4 flex-1 overflow-y-auto pb-10">
+
+          {/* Banner Quản Lý Nhân Sự Quick Banner */}
+          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-xs flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-white/20 backdrop-blur-md text-white">
+                <UserPlus className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-xs font-extrabold">Quản Lý Nhân Sự Phân Xưởng</h2>
+                <p className="text-[10px] text-amber-100 font-medium">Cấp tài khoản thủ công hoặc Import file Excel hàng loạt</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsUserManagementOpen(true)}
+              className="px-3 py-1.5 rounded-xl bg-white text-amber-900 font-extrabold text-xs shadow-xs hover:bg-amber-50 transition shrink-0"
+            >
+              Quản Lý
+            </button>
+          </div>
           
           <div className="grid grid-cols-2 gap-2.5">
             <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs">
@@ -278,6 +312,12 @@ export default function SupervisorPage() {
             }
             return undefined;
           })()}
+        />
+
+        {/* User Management & Batch Excel Import Modal */}
+        <UserManagementModal
+          isOpen={isUserManagementOpen}
+          onClose={() => setIsUserManagementOpen(false)}
         />
 
       </div>

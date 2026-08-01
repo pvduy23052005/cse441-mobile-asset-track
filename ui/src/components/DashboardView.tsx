@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Sliders, FileSignature, CheckCircle2, AlertTriangle, X } from 'lucide-react';
+import { Sliders, FileSignature, CheckCircle2, AlertTriangle, X, Users } from 'lucide-react';
 import { Machine, WorkOrder, PMChecklist, SparePartRequest, SystemThresholdConfig } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,7 @@ interface DashboardViewProps {
   thresholdConfig: SystemThresholdConfig;
   onOpenSignoff: (itemCode: string, title: string, subtitle: string) => void;
   onOpenThresholdConfig: () => void;
+  onOpenUserManagement?: () => void;
   onApproveSparePart: (requestId: string) => void;
   onRejectSparePart: (requestId: string, reason: string) => void;
 }
@@ -27,6 +28,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   thresholdConfig,
   onOpenSignoff,
   onOpenThresholdConfig,
+  onOpenUserManagement,
   onApproveSparePart,
   onRejectSparePart,
 }) => {
@@ -66,16 +68,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       
       {/* Top Header Row with System Settings & Time Filter (Wireframe 5.F) */}
       <div className="bg-white p-3.5 rounded-md border border-slate-200 shadow-xs space-y-2.5">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <div>
             <h2 className="text-xs font-black uppercase text-slate-900">{thresholdConfig.workshopName}</h2>
             <p className="text-[11px] text-slate-500 font-medium">
               Ngưỡng duyệt linh kiện: <span className="font-mono font-bold text-emerald-700">{(thresholdConfig.costApprovalThreshold).toLocaleString('vi-VN')} VNĐ</span>
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={onOpenThresholdConfig} className="gap-1 text-xs">
-            <Sliders className="w-3.5 h-3.5 text-amber-600" /> Cấu Hình Ngưỡng
-          </Button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {onOpenUserManagement && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onOpenUserManagement}
+                className="gap-1 text-xs text-amber-800 bg-amber-50 border-amber-200 hover:bg-amber-100 font-bold"
+              >
+                <Users className="w-3.5 h-3.5 text-amber-600" /> Quản Lý Nhân Sự
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={onOpenThresholdConfig} className="gap-1 text-xs">
+              <Sliders className="w-3.5 h-3.5 text-amber-600" /> Cấu Hình Ngưỡng
+            </Button>
+          </div>
         </div>
 
         {/* Time Filter Buttons (Wireframe 5.F) */}

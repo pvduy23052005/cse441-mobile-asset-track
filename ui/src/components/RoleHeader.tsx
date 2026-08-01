@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Bell, QrCode, ShieldCheck, Wrench, HardHat } from 'lucide-react';
+import { Bell, QrCode, ShieldCheck, Wrench, HardHat, LogIn, User } from 'lucide-react';
 import { UserRole, SystemNotification } from '../types';
 
 interface RoleHeaderProps {
@@ -9,6 +9,8 @@ interface RoleHeaderProps {
   onChangeRole: (role: UserRole) => void;
   notifications: SystemNotification[];
   onOpenQR: () => void;
+  onOpenLogin?: () => void;
+  currentUserEmail?: string;
 }
 
 export const RoleHeader: React.FC<RoleHeaderProps> = ({
@@ -16,6 +18,8 @@ export const RoleHeader: React.FC<RoleHeaderProps> = ({
   onChangeRole,
   notifications,
   onOpenQR,
+  onOpenLogin,
+  currentUserEmail,
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -34,8 +38,19 @@ export const RoleHeader: React.FC<RoleHeaderProps> = ({
           </div>
         </div>
 
-        {/* Quick QR & Notification Bell */}
+        {/* Quick QR, Login & Notification Bell */}
         <div className="flex items-center gap-1.5">
+          {onOpenLogin && (
+            <button
+              onClick={onOpenLogin}
+              className="px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition flex items-center gap-1 text-[10px] font-extrabold shadow-xs"
+              title="Đăng Nhập / Chuyển Tài Khoản"
+            >
+              <LogIn className="w-3.5 h-3.5 text-amber-600" />
+              <span>{currentUserEmail ? currentUserEmail.split('@')[0] : 'Đăng Nhập'}</span>
+            </button>
+          )}
+
           <button
             onClick={onOpenQR}
             className="px-2.5 py-1 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 transition flex items-center gap-1 text-[11px] font-bold shadow-xs"
@@ -81,29 +96,65 @@ export const RoleHeader: React.FC<RoleHeaderProps> = ({
         </div>
       </div>
 
-      {/* Role Switcher Pills (Light Theme) */}
-      <div className="flex bg-slate-100 p-0.5 rounded-md border border-slate-200/80">
-        {(['OPERATOR', 'ME_ENGINEER', 'SUPERVISOR'] as UserRole[]).map((r) => {
-          const isSelected = currentRole === r;
-          let label = 'Công Nhân';
-          if (r === 'ME_ENGINEER') label = 'Kỹ Sư ME';
-          if (r === 'SUPERVISOR') label = 'Quản Đốc';
+      {/* User Role Profile Bar when Logged In */}
+      {currentUserEmail ? (
+        <div className="flex items-center justify-between bg-slate-50 p-1.5 px-2.5 rounded-lg border border-slate-200 text-xs font-bold">
+          <div className="flex items-center gap-2">
+            {currentRole === 'OPERATOR' && (
+              <span className="inline-flex items-center gap-1 text-emerald-800 font-extrabold text-[11px]">
+                <HardHat className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Công Nhân Vận Hành:</span>
+              </span>
+            )}
+            {currentRole === 'ME_ENGINEER' && (
+              <span className="inline-flex items-center gap-1 text-sky-800 font-extrabold text-[11px]">
+                <Wrench className="w-3.5 h-3.5 text-sky-600" />
+                <span>Kỹ Sư Cơ Điện (ME):</span>
+              </span>
+            )}
+            {currentRole === 'SUPERVISOR' && (
+              <span className="inline-flex items-center gap-1 text-amber-800 font-extrabold text-[11px]">
+                <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+                <span>Quản Đốc Phân Xưởng:</span>
+              </span>
+            )}
+            <span className="text-slate-900 font-mono text-[11px] font-bold">{currentUserEmail}</span>
+          </div>
 
-          return (
+          {onOpenLogin && (
             <button
-              key={r}
-              onClick={() => onChangeRole(r)}
-              className={`flex-1 py-1 px-1.5 rounded text-[11px] font-extrabold transition flex items-center justify-center gap-1 ${
-                isSelected
-                  ? 'bg-white text-emerald-700 shadow-xs border border-slate-200'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
+              onClick={onOpenLogin}
+              className="text-[10px] text-slate-500 hover:text-rose-600 underline font-semibold transition"
             >
-              {label}
+              [Đổi Tài Khoản]
             </button>
-          );
-        })}
-      </div>
+          )}
+        </div>
+      ) : (
+        /* Demo Role Switcher (Chỉ hiện khi chưa đăng nhập) */
+        <div className="flex bg-slate-100 p-0.5 rounded-md border border-slate-200/80">
+          {(['OPERATOR', 'ME_ENGINEER', 'SUPERVISOR'] as UserRole[]).map((r) => {
+            const isSelected = currentRole === r;
+            let label = 'Công Nhân';
+            if (r === 'ME_ENGINEER') label = 'Kỹ Sư ME';
+            if (r === 'SUPERVISOR') label = 'Quản Đốc';
+
+            return (
+              <button
+                key={r}
+                onClick={() => onChangeRole(r)}
+                className={`flex-1 py-1 px-1.5 rounded text-[11px] font-extrabold transition flex items-center justify-center gap-1 ${
+                  isSelected
+                    ? 'bg-white text-emerald-700 shadow-xs border border-slate-200'
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

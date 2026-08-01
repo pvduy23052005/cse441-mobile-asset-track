@@ -137,6 +137,36 @@ export const initialMachines: Machine[] = [
       },
     ],
   },
+  {
+    id: 'mch-401',
+    code: 'XN-401',
+    name: 'Xe Nâng Dầu Komatsu 3.5 Tấn (Theo dõi KM)',
+    location: 'Khu Vực Kho Vận & Logistic',
+    category: 'Phương Tiện Nâng Hạ',
+    status: 'ACTIVE',
+    runningHours: 15420.0,
+    lastMaintenanceHours: 15000,
+    nextMaintenanceHours: 16000,
+    lastMaintenanceDate: '2026-06-01',
+    trackingUnit: 'KM',
+    unitLabel: 'Km di chuyển',
+    specifications: {
+      power: 'Động cơ Diesel 45 HP',
+      voltage: '12V Ắc quy',
+      manufacturer: 'Komatsu Japan',
+      year: 2023,
+    },
+    quickTroubleshooting: [
+      {
+        issue: 'Càng nâng hạ chậm, kêu rè rè',
+        solution: 'Kiểm tra mức dầu nhớt thủy lực càng nâng, xả bọt khí đường ống.',
+      },
+      {
+        issue: 'Áp suất lốp xe bị giảm',
+        solution: 'Bơm lốp đạt 7.5 Bar, kiểm tra đinh găm bánh xe.',
+      },
+    ],
+  },
 ];
 
 export const initialWorkOrders: WorkOrder[] = [

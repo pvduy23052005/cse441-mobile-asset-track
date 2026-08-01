@@ -46,6 +46,8 @@ import { DigitalSignoffModal } from '../components/DigitalSignoffModal';
 import { ThresholdConfigModal } from '../components/ThresholdConfigModal';
 import { WorkOrderDetailModal } from '../components/WorkOrderDetailModal';
 import { DashboardView } from '../components/DashboardView';
+import { UserManagementModal } from '../components/UserManagementModal';
+import { LoginModal } from '../components/LoginModal';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -53,6 +55,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 export default function AssetTrackMobileApp() {
   const [currentRole, setCurrentRole] = useState<UserRole>('OPERATOR');
+  const [currentUserEmail, setCurrentUserEmail] = useState('operator.an@factory.com');
   const [activeTab, setActiveTab] = useState<'HOME' | 'SCANNER' | 'TASKS' | 'MACHINES'>('HOME');
 
   // Core Data States according to overview.md
@@ -73,7 +76,15 @@ export default function AssetTrackMobileApp() {
   const [sosMachine, setSosMachine] = useState<Machine | null>(null);
   const [pmModalChecklist, setPmModalChecklist] = useState<PMChecklist | null>(null);
   const [isThresholdModalOpen, setIsThresholdModalOpen] = useState(false);
+  const [isUserManagementModalOpen, setIsUserManagementModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrder | null>(null);
+
+  // Machine List Pagination State
+  const [machinePage, setMachinePage] = useState(1);
+  const MACHINES_PER_PAGE = 3;
+  const totalMachinePages = Math.ceil(machines.length / MACHINES_PER_PAGE) || 1;
+  const paginatedMachines = machines.slice((machinePage - 1) * MACHINES_PER_PAGE, machinePage * MACHINES_PER_PAGE);
 
   const [signoffData, setSignoffData] = useState<{
     isOpen: boolean;
@@ -432,6 +443,8 @@ export default function AssetTrackMobileApp() {
           onChangeRole={setCurrentRole}
           notifications={notifications}
           onOpenQR={() => setIsQRScannerOpen(true)}
+          onOpenLogin={() => setIsLoginModalOpen(true)}
+          currentUserEmail={currentUserEmail}
         />
 
         {/* Main Content Area */}
@@ -467,7 +480,7 @@ export default function AssetTrackMobileApp() {
                     </div>
                   </div>
 
-                  {/* Machine Status List */}
+                  {/* Machine Status List with Pagination */}
                   <div>
                     <h3 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 mb-2 flex items-center justify-between">
                       <span>Danh Sách Máy Phụ Trách ({machines.length})</span>
@@ -475,7 +488,7 @@ export default function AssetTrackMobileApp() {
                     </h3>
 
                     <div className="space-y-2">
-                      {machines.map((m) => (
+                      {paginatedMachines.map((m) => (
                         <div
                           key={m.id}
                           onClick={() => setPassportMachine(m)}
@@ -494,7 +507,7 @@ export default function AssetTrackMobileApp() {
                                 <span className="text-xs font-bold text-slate-800">{m.name}</span>
                               </div>
                               <div className="text-[11px] text-slate-500 font-medium mt-0.5">
-                                {m.runningHours} Giờ máy chạy (Mốc kế: {m.nextMaintenanceHours}h)
+                                {m.runningHours.toLocaleString('vi-VN')} {m.unitLabel || 'Giờ máy chạy'} (Mốc kế: {m.nextMaintenanceHours.toLocaleString('vi-VN')}{m.trackingUnit === 'KM' ? ' Km' : 'h'})
                               </div>
                             </div>
                           </div>
@@ -502,6 +515,29 @@ export default function AssetTrackMobileApp() {
                         </div>
                       ))}
                     </div>
+
+                    {/* Pagination Controls */}
+                    {totalMachinePages > 1 && (
+                      <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-slate-200/80 text-xs font-bold text-slate-600">
+                        <button
+                          disabled={machinePage === 1}
+                          onClick={() => setMachinePage((prev) => Math.max(prev - 1, 1))}
+                          className="px-2.5 py-1 rounded bg-white border border-slate-200 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center gap-1 text-[11px]"
+                        >
+                          ← Trang trước
+                        </button>
+                        <span className="text-[11px] font-mono">
+                          Trang {machinePage} / {totalMachinePages}
+                        </span>
+                        <button
+                          disabled={machinePage === totalMachinePages}
+                          onClick={() => setMachinePage((prev) => Math.min(prev + 1, totalMachinePages))}
+                          className="px-2.5 py-1 rounded bg-white border border-slate-200 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center gap-1 text-[11px]"
+                        >
+                          Trang sau →
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Active SOS Tracker */}
@@ -679,6 +715,7 @@ export default function AssetTrackMobileApp() {
                     setSignoffData({ isOpen: true, itemCode: code, title, subtitle })
                   }
                   onOpenThresholdConfig={() => setIsThresholdModalOpen(true)}
+                  onOpenUserManagement={() => setIsUserManagementModalOpen(true)}
                   onApproveSparePart={handleApproveSparePart}
                   onRejectSparePart={handleRejectSparePart}
                 />
@@ -1012,6 +1049,20 @@ export default function AssetTrackMobileApp() {
           onClose={() => setIsThresholdModalOpen(false)}
           config={thresholdConfig}
           onSaveConfig={handleSaveThresholdConfig}
+        />
+
+        <UserManagementModal
+          isOpen={isUserManagementModalOpen}
+          onClose={() => setIsUserManagementModalOpen(false)}
+        />
+
+        <LoginModal
+          isOpen={isLoginModalOpen}
+          onClose={() => setIsLoginModalOpen(false)}
+          onLoginSuccess={(role, email) => {
+            setCurrentRole(role);
+            setCurrentUserEmail(email);
+          }}
         />
 
       </div>

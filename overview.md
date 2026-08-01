@@ -15,37 +15,35 @@ Trong các dây chuyền sản xuất công nghiệp, máy móc hỏng hóc đ�
 ### 1.2. Phân hệ người dùng (User Personas)
 - **Operator (Công nhân vận hành máy):** Tiếp cận máy hàng ngày, quét QR tra cứu thông số, nhập số giờ chạy và báo sự cố SOS khẩn cấp.
 - **ME Engineer (Kỹ sư Cơ điện):** Nhận thông báo sự cố, tiếp nhận sửa chữa đột xuất, thực hiện checklist bảo dưỡng định kỳ và gửi đề xuất vật tư thay thế.
-- **Supervisor (Quản đốc phân xưởng):** Giám sát thời gian dừng máy (Downtime), phê duyệt vật tư, nghiệm thu công việc bằng chữ ký điện tử và **Quản lý & Cấp tài khoản nhân sự phân xưởng** (thêm tay thủ công hoặc import hàng loạt qua file Excel cho Operator & ME Engineer thuộc xưởng mình). *Lưu ý:* Tài khoản của Supervisor được Bộ phận IT / System Admin khởi tạo ban đầu khi mở phân xưởng.
+- **Supervisor (Quản đốc phân xưởng):** Giám sát thời gian dừng máy (Downtime), phê duyệt vật tư đắt tiền, nghiệm thu công việc bằng chữ ký điện tử và cài đặt ngưỡng mốc bảo trì/chi phí phân xưởng.
 
-### 1.3. Bối cảnh vận hành thực tế — Trường hợp Nhà xưởng Quy mô Vừa & Nhỏ (SME)
-- **Đặc điểm:** Số lượng máy móc < 50 máy, đội ngũ kỹ sư bảo trì từ 3 – 7 người, không có thủ kho riêng trực ca 24/7 (hoặc thủ kho chỉ làm giờ hành chính).
+### 1.3. Bối cảnh vận hành thực tế — Phạm vi 1 Phân xưởng Sản xuất (Single Workshop Scope)
+- **Đặc điểm phạm vi:** Đề tài tập trung tối ưu cho **1 Phân Xưởng Sản Xuất quy mô vừa & nhỏ (SME)** với số lượng máy móc < 50 máy, đội ngũ kỹ sư bảo trì từ 3 – 7 người, không có thủ kho riêng trực ca 24/7.
 - **Quy trình lấy vật tư:** Vật tư tiêu hao cơ bản (dầu mỡ, bu-lông, gioăng, đai curoa...) được để sẵn ở *Tủ vật tư nhanh* tại phân xưởng. Kỹ sư ME là người **TỰ LẤY**: Khi máy hỏng, ME ra tủ lấy linh kiện và tự thay vào máy.
 - **Cách AssetTrack hỗ trợ:** ME mở app, chọn các món đồ vừa lấy để **Ghi log (Spare Parts Logging - Tính năng 6)**. Việc ghi log này giúp hệ thống lưu lại lý lịch sửa chữa của máy và trừ lùi số lượng để Quản đốc biết khi nào tủ vật tư sắp hết.
 
 ---
 
-## 2. Danh sách 14 Tính năng Cốt lõi (14 Core Features)
+## 2. Danh sách 13 Tính năng Cốt lõi (13 Core Features)
 
 ### Tác nhân 1: Công nhân vận hành (Operator)
 1. **Quét mã QR - Hộ chiếu Thiết bị (QR Machine Passport):** Xem nhanh thông số kỹ thuật, lịch sử sửa chữa và cẩm nang khắc phục lỗi nhanh.
-2. **Khai báo số giờ chạy máy (Running Hours Logging):** Nhập chỉ số giờ chạy thực tế đầu/cuối ca để làm căn cứ tính thời gian bảo trì.
+2. **Khai báo chỉ số máy chạy (Running Hours / Mileage Logging):** Nhập chỉ số hoạt động thực tế (giờ hoặc km) đầu/cuối ca để làm căn cứ tính thời gian bảo trì.
 3. **Báo lỗi khẩn cấp SOS (Breakdown SOS Creation):** Tạo phiếu yêu cầu sửa chữa khẩn cấp, chọn mức độ nghiêm trọng và mô tả lỗi.
 4. **Đính kèm hình ảnh sự cố (Failure Photo Attachment):** Chụp ảnh hiện trạng lỗi trực tiếp từ camera gửi lên hệ thống.
 
 ### Tác nhân 2: Kỹ sư Cơ điện Bảo trì (ME Engineer)
 5. **Tiếp nhận phiếu sửa chữa SOS (SOS Work Order Claiming):** Nhận thông báo đẩy (Push Notification) thời gian thực và bấm "Tiếp nhận" xử lý.
-6. **Khai báo linh kiện & Vật tư thay thế (Spare Parts Logging):** Ghi nhận các phụ tùng tiêu hao đã tự lấy từ *Tủ vật tư nhanh* tại phân xưởng để cập nhật lịch sử sửa chữa của máy và giúp Quản đốc theo dõi trừ lùi số lượng tồn tủ. **Lưu ý phạm vi (Scope note):** tính năng này chỉ ghi log vật tư đã dùng vào lịch sử phiếu công việc — không bao gồm quản lý kho tổng phức tạp (như nhập kho hàng hóa, quét mã vạch kho, phân vị trí kệ kho).
+6. **Khai báo linh kiện & Vật tư thay thế (Spare Parts Logging):** Ghi nhận các phụ tùng tiêu hao đã tự lấy từ *Tủ vật tư nhanh* tại phân xưởng để cập nhật lịch sử sửa chữa của máy và giúp Quản đốc theo dõi trừ lùi số lượng tồn tủ. **Lưu ý phạm vi (Scope note):** tính năng này chỉ ghi log vật tư đã dùng vào lịch sử phiếu công việc — không bao gồm quản lý kho tổng phức tạp.
 7. **Thực hiện Checklist bảo trì định kỳ (PM Checklist Execution):** Mở danh sách checklist bắt buộc (tra dầu, siết ốc...) và tích chọn hoàn thành từng mục.
 8. **Tải ảnh bằng chứng bảo dưỡng (Maintenance Proof Upload):** Chụp ảnh linh kiện cũ/mới trước và sau khi thay thế làm bằng chứng hoàn thành.
-12. **Xem danh sách toàn bộ phiếu công việc đang mở (Work Order List View):** Quản lý và ưu tiên xử lý các sự cố theo mức độ nghiêm trọng.
+9. **Xem danh sách toàn bộ phiếu công việc đang mở (Work Order List View):** Quản lý và ưu tiên xử lý các sự cố theo mức độ nghiêm trọng.
 
 ### Tác nhân 3: Quản đốc phân xưởng (Factory Supervisor)
-9. **Nghiệm thu & Ký tên điện tử (Digital Sign-off):** Ký tên trực tiếp bằng tay trên màn hình cảm ứng để phê duyệt và đưa máy về trạng thái "Hoạt động".
-10. **Phê duyệt đề xuất linh kiện đắt tiền (Spare Parts Approval):** Xem xét và phê duyệt/từ chối các đề xuất thay thế phụ tùng giá trị cao từ ME.
-11. **Dashboard giám sát Downtime & Trạng thái phân xưởng (Real-time Dashboard):** Xem biểu đồ tỷ lệ máy chạy/hỏng, tổng giờ dừng máy (Downtime) và danh sách sự cố đang mở.
-12. **Thiết lập ngưỡng hệ thống (System Threshold Settings):** Cài đặt mốc số giờ chạy máy (e.g. 500h, 1000h) để tự động sinh phiếu bảo trì **và** cấu hình ngưỡng giá trị linh kiện (Cost Threshold) yêu cầu phê duyệt Supervisor trước khi thay thế. Chỉ Supervisor phụ trách phân xưởng đó mới được chỉnh sửa cấu hình này.
-13. **Hủy phiếu SOS báo nhầm (Work Order Cancellation):** Cho phép Hủy các phiếu SOS bị gửi sai hoặc báo nhầm khi phiếu đang ở trạng thái Chờ (`Pending`).
-14. **Quản lý & Import Nhân viên Phân xưởng (Workshop Employee Management & Batch Excel Import):** Supervisor có thể cấp tài khoản cho nhân sự trong xưởng của mình bằng cách **thêm tay thủ công từng người** (nhập Họ tên, Email, Mã NV, Role) hoặc **import hàng loạt từ file Excel** (.xlsx/csv). Tài khoản được tự động gắn `workshop_id` của Supervisor. *(Lưu ý: Tài khoản Supervisor ban đầu được Bộ phận IT / System Admin cấp qua Supabase Console khi tạo phân xưởng).*
+10. **Nghiệm thu & Ký tên điện tử (Digital Sign-off):** Ký tên trực tiếp bằng tay trên màn hình cảm ứng để phê duyệt và đưa máy về trạng thái "Hoạt động".
+11. **Phê duyệt đề xuất linh kiện đắt tiền (Spare Parts Approval):** Xem xét và phê duyệt/từ chối các đề xuất thay thế phụ tùng giá trị cao từ ME.
+12. **Dashboard giám sát Downtime & Trạng thái phân xưởng (Real-time Dashboard):** Xem biểu đồ tỷ lệ máy chạy/hỏng, tổng giờ dừng máy (Downtime) và danh sách sự cố đang mở.
+13. **Thiết lập ngưỡng hệ thống (System Threshold Settings):** Cài đặt mốc số giờ/km bảo trì định kỳ **và** cấu hình ngưỡng giá trị linh kiện (Cost Threshold) yêu cầu phê duyệt Supervisor trước khi thay thế.
 
 ---
 
@@ -53,7 +51,7 @@ Trong các dây chuyền sản xuất công nghiệp, máy móc hỏng hóc đ�
 
 | Mã NFR | Thuộc tính | Yêu cầu |
 | :--- | :--- | :--- |
-| **NFR-01** | Bảo mật & Phân quyền | Toàn bộ dữ liệu được bảo vệ bằng Row-Level Security (RLS) trên Supabase; mỗi role chỉ đọc/ghi trong phạm vi quyền hạn của mình. **Phạm vi Supervisor:** mỗi Supervisor chỉ thấy máy móc, phiếu công việc và cấu hình thuộc `workshop_id` mà họ phụ trách — Supervisor phân xưởng A không thấy dữ liệu phân xưởng B. Bảng `machines`, `work_orders`, `pm_checklists`, `workshop_configs` đều có cột `workshop_id` để RLS lọc theo. |
+| **NFR-01** | Bảo mật & Phân quyền | Toàn bộ dữ liệu được bảo vệ bằng Row-Level Security (RLS) trên Supabase; phân quyền theo 3 vai trò (`Operator`, `ME Engineer`, `Supervisor`) trong phân xưởng. Người dùng chỉ thực hiện các thao tác trong phạm vi quyền hạn của vai trò mình phụ trách. |
 | **NFR-02** | Hiệu năng thông báo | Push notification SOS phải được gửi đến ME trong vòng **< 3 giây** kể từ khi Operator bấm gửi phiếu. |
 | **NFR-03** | Hiệu năng quét mã | Camera nhận diện và decode mã QR trong **< 1.5 giây** trong điều kiện ánh sáng nhà máy bình thường. |
 | **NFR-04** | Dung lượng ảnh | Mỗi ảnh đính kèm (sự cố, linh kiện, chữ ký) không vượt quá **5MB**; app tự nén trước khi upload. |
@@ -325,6 +323,67 @@ Trong các dây chuyền sản xuất công nghiệp, máy móc hỏng hóc đ�
 ```
 - Chỉ Supervisor của phân xưởng đó mới thấy và chỉnh được màn hình này (RLS theo `workshop_id`).
 - Thay đổi mốc giờ có hiệu lực với các lần nhập giờ chạy tiếp theo, không ảnh hưởng phiếu đang mở.
+
+### J. Màn hình Quản lý & Import Nhân viên Phân xưởng (Supervisor)
+```
+┌─────────────────────────────────┐
+│  ←  Quản lý Nhân sự Phân xưởng  │
+│     Phân xưởng Ép nhựa 1        │
+├─────────────────────────────────┤
+│  [Danh sách] [Thêm tay] [Excel] │  ← Tab chuyển đổi
+├─────────────────────────────────┤
+│  THÊM NHÂN VIÊN THỦ CÔNG        │
+│  Họ và tên:                     │
+│  ┌──────────────────────────┐  │
+│  │ Nguyễn Văn B             │  │
+│  └──────────────────────────┘  │
+│  Email:                        │
+│  ┌──────────────────────────┐  │
+│  │ nguyenvanb@factory.com   │  │
+│  └──────────────────────────┘  │
+│  Vai trò:                      │
+│  ● Operator (Công nhân)         │
+│  ○ ME Engineer (Kỹ sư Bảo trì)  │
+│  [+ Tạo tài khoản nhân viên]   │
+├─────────────────────────────────┤
+│  NHẬP DANH SÁCH TỪ EXCEL        │
+│  ┌──────────────────────────┐  │
+│  │ 📄 [Chọn file .xlsx/.csv]│  │  ← Nút tải file
+│  └──────────────────────────┘  │
+│  Tải file mẫu: [📥 File_Mau.xlsx]│
+│  Preview (3 nhân viên tìm thấy):│
+│  • Tran Van C — Operator        │
+│  • Le Van D — ME Engineer       │
+│  • Pham Van E — Operator        │
+│  [✓ Xác nhận Import Hàng Loạt] │
+└─────────────────────────────────┘
+```
+- Chỉ Supervisor mới thấy màn hình này; tài khoản mới khởi tạo tự động gán `workshop_id` của phân xưởng hiện tại.
+- Hỗ trợ 2 hình thức: Thêm thủ công từng nhân viên hoặc chọn file Excel để import hàng loạt.
+
+### K. Màn hình Đăng nhập (Login Screen)
+```
+┌─────────────────────────────────┐
+│          ASSETTRACK             │
+│   Hệ thống Quản lý Lý lịch      │
+│     & Bảo trì Nhà máy           │
+├─────────────────────────────────┤
+│  Email / Mã nhân viên           │
+│  ┌──────────────────────────┐  │
+│  │ supervisor.a@factory.com │  │
+│  └──────────────────────────┘  │
+│  Mật khẩu                       │
+│  ┌──────────────────────────┐  │
+│  │ ••••••••••               │  │
+│  └──────────────────────────┘  │
+│  [✓ Ghi nhớ đăng nhập]          │
+│                                 │
+│         [ĐĂNG NHẬP]             │
+├─────────────────────────────────┤
+│  Hỗ trợ kỹ thuật: 1900-xxxx     │
+└─────────────────────────────────┘
+```
+- Điều hướng tự động dựa trên `role` (`operator`, `me_engineer`, `supervisor`) sau khi xác thực thành công.
 
 ---
 
