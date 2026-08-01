@@ -14,6 +14,7 @@ Tài liệu này tập trung chuyên sâu vào các sơ đồ mô hình hóa ph�
 * **FR-5 (Nghiệm thu Chữ ký số):** Quản đốc phân xưởng phải ký tên điện tử trực tiếp trên app để nghiệm thu phiếu sửa chữa/bảo trì trước khi đưa máy hoạt động lại.
 * **FR-6 (Giám sát & Thống kê):** Quản đốc phải xem được thời gian dừng máy (Downtime) và trạng thái phân xưởng thời gian thực thông qua dashboard.
 * **FR-7 (Ghi Log Vật tư & Tủ vật tư nhanh SME):** Đối với nhà xưởng vừa & nhỏ (SME), Kỹ sư ME tự lấy linh kiện từ *Tủ vật tư nhanh* tại phân xưởng để thay thế và dùng app ghi log phụ tùng (`Spare Parts Logging`), giúp lưu lý lịch sửa chữa của máy và trừ lùi tồn tủ để Quản đốc chủ động nhập bổ sung.
+* **FR-8 (Quản lý & Cấp tài khoản Nhân sự Phân xưởng):** Supervisor có thể cấp tài khoản truy cập ứng dụng cho công nhân Operator và kỹ sư ME thuộc phân xưởng mình phụ trách bằng cách **thêm tay thủ công từng người** (nhập Họ tên, Email, Mã NV, Role) hoặc **import hàng loạt từ file Excel (.xlsx/csv)**. Tài khoản của Supervisor ban đầu được Bộ phận IT / System Admin cấp qua Supabase Console khi khởi tạo phân xưởng.
 
 ### 1.2. Yêu cầu Phi Chức năng (Non-functional Requirements - NFR)
 * **NFR-1 (Bảo mật & Phân quyền):** Ràng buộc truy cập dữ liệu bằng Row-Level Security (RLS) trên Supabase; mỗi role chỉ đọc/ghi trong phạm vi quyền hạn. Mỗi Supervisor chỉ thấy dữ liệu thuộc `workshop_id` mà họ phụ trách.
@@ -50,6 +51,7 @@ flowchart LR
         UC_ApproveParts["Phê duyệt đề xuất linh kiện"]
         UC_ViewDashboard["Xem Dashboard Downtime"]
         UC_ConfigPM["Cài đặt mốc giờ & ngưỡng chi phí"]
+        UC_ManageUsers["Quản lý & Import Nhân viên (Excel / Thủ công)"]
     end
 
     Operator --> UC_ScanQR
@@ -67,6 +69,7 @@ flowchart LR
     Supervisor --> UC_ApproveParts
     Supervisor --> UC_ViewDashboard
     Supervisor --> UC_ConfigPM
+    Supervisor --> UC_ManageUsers
 ```
 
 ### 2.2. Đặc tả Use Case tiêu biểu (Use Case Specification)

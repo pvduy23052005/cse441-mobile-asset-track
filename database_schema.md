@@ -35,6 +35,10 @@ erDiagram
 ### 2.1. Bảng `profiles` — Hồ sơ người dùng
 Lưu trữ thông tin tài khoản, phân quyền vai trò (`operator`, `me_engineer`, `supervisor`) và liên kết với Supabase Auth (`auth.users`).
 
+* **Cơ chế khởi tạo tài khoản (Provisioning Flow):**
+  - **Tài khoản `supervisor`:** Khởi tạo ban đầu bởi Bộ phận IT / System Admin qua Supabase Console khi khởi tạo `workshops`.
+  - **Tài khoản `operator` & `me_engineer`:** Do Supervisor phân xưởng tương ứng khởi tạo trực tiếp trên ứng dụng bằng hình thức **thêm tay thủ công** hoặc **import hàng loạt từ file Excel (.xlsx/csv)**. RLS policy đảm bảo Supervisor chỉ cấp tài khoản thuộc `workshop_id` của xưởng mình.
+
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
 | :--- | :--- | :--- | :--- |
 | `id` | `uuid` | PK, FK -> auth.users.id | ID người dùng Supabase Auth |
