@@ -452,7 +452,7 @@ export default function AssetTrackMobileApp() {
                           Thao tác công nhân
                         </span>
                         <h2 className="text-sm font-extrabold text-white mt-0.5">
-                          Quét QR Hộ Chiếu Máy
+                          Quét QR thông tin máy
                         </h2>
                         <p className="text-[11px] text-emerald-50 mt-0.5">
                           Xem thông số, lịch sử & báo lỗi khẩn cấp
