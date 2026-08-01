@@ -16,6 +16,7 @@ interface DashboardViewProps {
   onOpenSignoff: (itemCode: string, title: string, subtitle: string) => void;
   onOpenThresholdConfig: () => void;
   onOpenUserManagement?: () => void;
+  onOpenAddMachine?: () => void;
   onApproveSparePart: (requestId: string) => void;
   onRejectSparePart: (requestId: string, reason: string) => void;
 }
@@ -29,6 +30,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenSignoff,
   onOpenThresholdConfig,
   onOpenUserManagement,
+  onOpenAddMachine,
   onApproveSparePart,
   onRejectSparePart,
 }) => {
@@ -76,6 +78,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </p>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
+            {onOpenAddMachine && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onOpenAddMachine}
+                className="gap-1 text-xs text-emerald-800 bg-emerald-50 border-emerald-300 hover:bg-emerald-100 font-bold"
+              >
+                + Thêm Máy Mới
+              </Button>
+            )}
             {onOpenUserManagement && (
               <Button
                 variant="outline"

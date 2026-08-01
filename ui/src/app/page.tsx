@@ -48,6 +48,7 @@ import { WorkOrderDetailModal } from '../components/WorkOrderDetailModal';
 import { DashboardView } from '../components/DashboardView';
 import { UserManagementModal } from '../components/UserManagementModal';
 import { LoginModal } from '../components/LoginModal';
+import { AddMachineModal } from '../components/AddMachineModal';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -78,6 +79,7 @@ export default function AssetTrackMobileApp() {
   const [isThresholdModalOpen, setIsThresholdModalOpen] = useState(false);
   const [isUserManagementModalOpen, setIsUserManagementModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isAddMachineModalOpen, setIsAddMachineModalOpen] = useState(false);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrder | null>(null);
 
   // Machine List Pagination State
@@ -716,6 +718,7 @@ export default function AssetTrackMobileApp() {
                   }
                   onOpenThresholdConfig={() => setIsThresholdModalOpen(true)}
                   onOpenUserManagement={() => setIsUserManagementModalOpen(true)}
+                  onOpenAddMachine={() => setIsAddMachineModalOpen(true)}
                   onApproveSparePart={handleApproveSparePart}
                   onRejectSparePart={handleRejectSparePart}
                 />
@@ -1062,6 +1065,14 @@ export default function AssetTrackMobileApp() {
           onLoginSuccess={(role, email) => {
             setCurrentRole(role);
             setCurrentUserEmail(email);
+          }}
+        />
+
+        <AddMachineModal
+          isOpen={isAddMachineModalOpen}
+          onClose={() => setIsAddMachineModalOpen(false)}
+          onAddMachine={(newM) => {
+            setMachines((prev) => [newM, ...prev]);
           }}
         />
 
