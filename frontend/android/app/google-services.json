@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "554358282265",
+    "project_id": "assettrack-ea5ba",
+    "storage_bucket": "assettrack-ea5ba.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:554358282265:android:abfaf26281d32696363288",
+        "android_client_info": {
+          "package_name": "com.assettrack.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "554358282265-fegithjm9cqo7l24rp6lb8ka4d6jlbif.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCw_AcxZ8tI-mkwdxN6J92jVPjHgF0NWgk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "554358282265-fegithjm9cqo7l24rp6lb8ka4d6jlbif.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
