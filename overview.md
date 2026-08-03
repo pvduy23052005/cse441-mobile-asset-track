@@ -1,6 +1,6 @@
 # AssetTrack - Báo cáo Tổng quan Dự án & Quản lý Phát triển
 
-Hệ thống Quản lý Lý lịch Thiết bị & Bảo trì Phòng ngừa Nhà máy dựa trên nền tảng **Flutter & Supabase**.
+Hệ thống Quản lý Lý lịch Thiết bị & Bảo trì Phòng ngừa Nhà máy dựa trên nền tảng **Flutter & Firebase**.
 
 ---
 
@@ -28,7 +28,7 @@ Trong các dây chuyền sản xuất công nghiệp, máy móc hỏng hóc đ�
 
 ### Tác nhân 1: Công nhân vận hành (Operator)
 1. **Quét mã QR - Hộ chiếu Thiết bị (QR Machine Passport):** Xem nhanh thông số kỹ thuật, lịch sử sửa chữa và cẩm nang khắc phục lỗi nhanh.
-2. **Khai báo chỉ số máy chạy (Running Hours / Mileage Logging):** Nhập chỉ số hoạt động thực tế (giờ hoặc km) đầu/cuối ca để làm căn cứ tính thời gian bảo trì.
+2. **Khai báo chỉ số vận hành máy (Running Hours / Kilometer Logging):** Nhập chỉ số hoạt động thực tế theo **Giờ chạy (hours)** với máy cố định hoặc **Số km (km)** với xe nâng/thiết bị di chuyển đầu/cuối ca để làm căn cứ tính thời gian bảo trì.
 3. **Báo lỗi khẩn cấp SOS (Breakdown SOS Creation):** Tạo phiếu yêu cầu sửa chữa khẩn cấp, chọn mức độ nghiêm trọng và mô tả lỗi.
 4. **Đính kèm hình ảnh sự cố (Failure Photo Attachment):** Chụp ảnh hiện trạng lỗi trực tiếp từ camera gửi lên hệ thống.
 
@@ -43,7 +43,7 @@ Trong các dây chuyền sản xuất công nghiệp, máy móc hỏng hóc đ�
 10. **Nghiệm thu & Ký tên điện tử (Digital Sign-off):** Ký tên trực tiếp bằng tay trên màn hình cảm ứng để phê duyệt và đưa máy về trạng thái "Hoạt động".
 11. **Phê duyệt đề xuất linh kiện đắt tiền (Spare Parts Approval):** Xem xét và phê duyệt/từ chối các đề xuất thay thế phụ tùng giá trị cao từ ME.
 12. **Dashboard giám sát Downtime & Trạng thái phân xưởng (Real-time Dashboard):** Xem biểu đồ tỷ lệ máy chạy/hỏng, tổng giờ dừng máy (Downtime) và danh sách sự cố đang mở.
-13. **Thiết lập ngưỡng hệ thống (System Threshold Settings):** Cài đặt mốc số giờ/km bảo trì định kỳ **và** cấu hình ngưỡng giá trị linh kiện (Cost Threshold) yêu cầu phê duyệt Supervisor trước khi thay thế.
+13. **Thiết lập đơn vị & ngưỡng bảo trì (System Threshold & Unit Settings):** Chọn đơn vị theo dõi (`hours` hoặc `km`), cài đặt mốc bảo trì ban đầu (`initial_thresholds` VD: 500, 1000) và chu kỳ định kỳ lặp lại (`recurring_interval` VD: 500) **cũng như** cấu hình ngưỡng giá trị linh kiện (Cost Threshold) yêu cầu phê duyệt Supervisor.
 
 ---
 
@@ -51,12 +51,12 @@ Trong các dây chuyền sản xuất công nghiệp, máy móc hỏng hóc đ�
 
 | Mã NFR | Thuộc tính | Yêu cầu |
 | :--- | :--- | :--- |
-| **NFR-01** | Bảo mật & Phân quyền | Toàn bộ dữ liệu được bảo vệ bằng Row-Level Security (RLS) trên Supabase; phân quyền theo 3 vai trò (`Operator`, `ME Engineer`, `Supervisor`) trong phân xưởng. Người dùng chỉ thực hiện các thao tác trong phạm vi quyền hạn của vai trò mình phụ trách. |
+| **NFR-01** | Bảo mật & Phân quyền | Toàn bộ dữ liệu được bảo vệ bằng **Firebase Security Rules** và phân quyền người dùng qua **Firebase Auth (Custom Claims / User Profile Role)** theo 3 vai trò (`Operator`, `ME Engineer`, `Supervisor`) trong phân xưởng. Người dùng chỉ thực hiện các thao tác trong phạm vi quyền hạn của vai trò mình phụ trách. |
 | **NFR-02** | Hiệu năng thông báo | Push notification SOS phải được gửi đến ME trong vòng **< 3 giây** kể từ khi Operator bấm gửi phiếu. |
 | **NFR-03** | Hiệu năng quét mã | Camera nhận diện và decode mã QR trong **< 1.5 giây** trong điều kiện ánh sáng nhà máy bình thường. |
 | **NFR-04** | Dung lượng ảnh | Mỗi ảnh đính kèm (sự cố, linh kiện, chữ ký) không vượt quá **5MB**; app tự nén trước khi upload. |
 | **NFR-05** | Tính khả dụng UI | Giao diện tối ưu cho màn hình cảm ứng ≥ 5 inch; các nút hành động quan trọng có kích thước tối thiểu **48×48dp** để dễ thao tác khi đeo găng tay. |
-| **NFR-06** | Offline & Tự đồng bộ | App lưu dữ liệu Machine Passport vào local cache để xem khi mất mạng. Các thao tác ghi (nhập giờ chạy, tạo phiếu SOS) khi mất mạng được lưu vào **local queue** (SQLite); khi có mạng trở lại app **tự động upload** theo thứ tự và xóa khỏi queue. App hiển thị banner "Đang offline — dữ liệu sẽ được đồng bộ khi có mạng".<br><br>**① Xử lý ảnh offline:** Ảnh đính kèm khi tạo phiếu SOS offline được lưu vào app storage dưới dạng file (`path_provider`); SQLite queue chỉ lưu đường dẫn local. Khi có mạng, app upload ảnh lên Supabase Storage trước, nhận URL, sau đó mới tạo Work Order kèm URL đó. Nếu upload ảnh thất bại giữa chừng, toàn bộ phiếu giữ lại trong queue và retry lần sau.<br><br>**② Resume queue khi khởi động lại app:** SQLite là persistent storage (không mất khi tắt app/mất pin). App **đọc lại queue ngay khi khởi động** — không chỉ lắng nghe event "có mạng trở lại" — để tiếp tục đồng bộ các phiếu chưa hoàn thành. Idempotency đảm bảo bằng cột `client_generated_id` (UUID do app tạo) có `UNIQUE constraint` tại Supabase, tránh tạo phiếu trùng khi retry.<br><br>**③ Cảnh báo SOS offline:** Push notification tới ME **chỉ gửi được sau khi phiếu đã đồng bộ lên Supabase** — tức là nếu Operator tạo SOS lúc mất mạng, ME sẽ không nhận được notification ngay (không đạt NFR-02 trong trường hợp này). App hiển thị **banner cảnh báo đỏ** khi tạo SOS offline: *"⚠️ Không có mạng — Phiếu SOS sẽ chỉ được gửi tới kỹ sư sau khi kết nối trở lại. Hãy thông báo trực tiếp nếu sự cố nghiêm trọng."*<br><br>**Xử lý conflict:** last-write-wins — bản có timestamp muộn hơn thắng. |
+| **NFR-06** | Offline & Tự đồng bộ | App lưu dữ liệu Machine Passport vào local cache để xem khi mất mạng. Các thao tác ghi (nhập giờ chạy, tạo phiếu SOS) khi mất mạng được lưu vào **local queue** (SQLite / Firestore Offline Persistence); khi có mạng trở lại app **tự động upload** theo thứ tự và xóa khỏi queue. App hiển thị banner "Đang offline — dữ liệu sẽ được đồng bộ khi có mạng".<br><br>**① Xử lý ảnh offline:** Ảnh đính kèm khi tạo phiếu SOS offline được lưu vào app storage dưới dạng file (`path_provider`); SQLite queue chỉ lưu đường dẫn local. Khi có mạng, app upload ảnh lên **Firebase Storage** trước, nhận URL, sau đó mới tạo Work Order kèm URL đó. Nếu upload ảnh thất bại giữa chừng, toàn bộ phiếu giữ lại trong queue và retry lần sau.<br><br>**② Resume queue khi khởi động lại app:** SQLite / Persistent Storage duy trì dữ liệu khi tắt app. App **đọc lại queue ngay khi khởi động** — không chỉ lắng nghe event "có mạng trở lại" — để tiếp tục đồng bộ các phiếu chưa hoàn thành. Idempotency đảm bảo bằng cột `client_generated_id` (UUID do app tạo) có constraint duy nhất tại Firestore, tránh tạo phiếu trùng khi retry.<br><br>**③ Cảnh báo SOS offline:** Push notification tới ME **chỉ gửi được sau khi phiếu đã đồng bộ lên Firebase** — tức là nếu Operator tạo SOS lúc mất mạng, ME sẽ không nhận được notification ngay (không đạt NFR-02 trong trường hợp này). App hiển thị **banner cảnh báo đỏ** khi tạo SOS offline: *"⚠️ Không có mạng — Phiếu SOS sẽ chỉ được gửi tới kỹ sư sau khi kết nối trở lại. Hãy thông báo trực tiếp nếu sự cố nghiêm trọng."*<br><br>**Xử lý conflict:** last-write-wins — bản có timestamp muộn hơn thắng. |
 
 ---
 
@@ -65,19 +65,19 @@ Trong các dây chuyền sản xuất công nghiệp, máy móc hỏng hóc đ�
 | Mã US | Vai trò (As a) | Mong muốn (I want to) | Lợi ích (So that) | Tiêu chí nghiệm thu (Acceptance Criteria) |
 | :--- | :--- | :--- | :--- | :--- |
 | **US-01** | Operator | Quét mã QR dán trên thân máy | Xem nhanh "Hộ chiếu thiết bị" (thông số, lịch sử, cẩm nang lỗi). | • Camera decode QR trong < 1.5s.<br>• Hiển thị đúng tên máy, mã máy, trạng thái và lịch sử 5 lần bảo trì gần nhất. |
-| **US-02** | Operator | Khai báo số giờ chạy máy đầu/cuối ca | Cung cấp dữ liệu cho hệ thống tính mốc bảo dưỡng. | • Form chỉ nhận số dương lớn hơn chỉ số lần nhập trước.<br>• Lưu log timestamp và tên người nhập. |
+| **US-02** | Operator | Khai báo chỉ số máy chạy / km đầu/cuối ca | Cung cấp dữ liệu cho hệ thống tính mốc bảo dưỡng. | • Form nhận chỉ số dương lớn hơn chỉ số trước; hiển thị đúng đơn vị (Giờ chạy hoặc Số km).<br>• Lưu log timestamp và tên người nhập. |
 | **US-03** | Operator | Tạo phiếu SOS khẩn cấp kèm ảnh lỗi | Báo cáo sự cố dừng chuyền cho kỹ sư ME tức thời. | • Bắt buộc chọn mức độ nghiêm trọng (Low/Medium/High/Critical).<br>• Cho phép đính kèm ít nhất 1 ảnh từ camera.<br>• Trạng thái máy đổi sang `Repairing` ngay sau khi gửi. |
-| **US-04** | ME Engineer | Nhận notification sự cố & bấm tiếp nhận | Xác nhận bắt đầu sửa chữa máy hỏng. | • Notification xuất hiện trong < 3s sau khi Operator gửi.<br>• Nhấn notification mở trực tiếp màn hình chi tiết phiếu SOS.<br>• Ghi nhận `claimed_at` để tính MTTR.<br>• **Race condition:** DB dùng `UPDATE work_orders SET status='in_progress', assignee_id=:me_id WHERE id=:id AND status='pending'` — nếu 0 row bị ảnh hưởng (ME khác đã thắng), app hiển thị thông báo "Phiếu đã được tiếp nhận bởi kỹ sư khác" và không cho phép tiếp nhận lại. |
+| **US-04** | ME Engineer | Nhận notification sự cố & bấm tiếp nhận | Xác nhận bắt đầu sửa chữa máy hỏng. | • Notification xuất hiện trong < 3s sau khi Operator gửi.<br>• Nhấn notification mở trực tiếp màn hình chi tiết phiếu SOS.<br>• Ghi nhận `claimed_at` để tính MTTR.<br>• **Race condition:** Firestore dùng **Transaction** `UPDATE work_orders` (chỉ cập nhật nếu `status == 'pending'`) — nếu phiếu đã được tiếp nhận trước, app hiển thị thông báo "Phiếu đã được tiếp nhận bởi kỹ sư khác" và không cho phép tiếp nhận lại. |
 | **US-05** | ME Engineer | Thực hiện PM Checklist & tải ảnh linh kiện | Hoàn tất bảo dưỡng định kỳ đúng quy trình. | • Phải tích 100% hạng mục mới kích hoạt nút "Hoàn thành".<br>• Các hạng mục đánh dấu "Bắt buộc chụp ảnh" phải có ít nhất 1 ảnh đính kèm mới được tích. |
 | **US-06** | ME Engineer | Khai báo vật tư tiêu hao tự lấy từ Tủ vật tư nhanh | Ghi nhận lý lịch phụ tùng của máy và hỗ trợ kiểm soát tồn tủ. | • Cho phép chọn vật tư tiêu hao từ danh mục có sẵn và nhập số lượng.<br>• Tự động trừ số lượng tồn tủ vật tư nhanh và lưu vào lịch sử máy. |
 | **US-07** | ME Engineer | Gửi đề xuất thay linh kiện đắt tiền lên Supervisor | Xin phê duyệt trước khi tự ý thay thế phụ tùng giá trị cao. | • ME chọn phụ tùng, nhập đơn giá và lý do đề xuất.<br>• Phiếu đề xuất chuyển trạng thái `Pending Approval`; ME không thể tự duyệt.<br>• Supervisor nhận notification về đề xuất mới. |
 | **US-08** | Supervisor | Ký tên điện tử nghiệm thu trên màn hình | Xác nhận máy đã được sửa/bảo trì đạt chuẩn. | • Canvas chữ ký xuất file PNG tối thiểu 300×150px.<br>• Không cho phép lưu nếu canvas trống.<br>• Máy tự động về trạng thái `Active` sau khi lưu. |
 | **US-09** | Supervisor | Phê duyệt / từ chối đề xuất thay linh kiện đắt tiền | Kiểm soát chi phí sửa chữa phân xưởng. | • Hiển thị cảnh báo màu đỏ nếu đơn giá vượt hạn mức cấu hình.<br>• Lưu rõ tên Supervisor, thời điểm và lý do từ chối (nếu có). |
 | **US-10** | Supervisor | Xem Dashboard thống kê Downtime | Giám sát hiệu suất và thời gian dừng máy toàn phân xưởng. | • Biểu đồ tròn tỷ lệ máy Active/Repairing/Maintenance.<br>• Thống kê tổng giờ Downtime tích lũy theo ngày/tuần/tháng.<br>• Danh sách top 5 máy có Downtime cao nhất. |
-| **US-11** | Supervisor | Cấu hình mốc giờ bảo dưỡng định kỳ **và ngưỡng duyệt chi phí linh kiện** | Tự động hóa việc tạo PM Checklist và kiểm soát chi phí thay thế. | • Cấu hình được nhiều mốc giờ (500h, 1000h, 2000h) cho từng model máy.<br>• Hệ thống tự sinh PM Checklist khi số giờ chạy vượt mốc.<br>• Cấu hình được ngưỡng giá trị linh kiện (VD: 2.000.000đ); đề xuất vượt ngưỡng mới yêu cầu duyệt, dưới ngưỡng ME tự ghi nhận không cần duyệt.<br>• Chỉ Supervisor của phân xưởng đó mới chỉnh được cấu hình — RLS kiểm tra `workshop_id` khớp. |
+| **US-11** | Supervisor | Cấu hình đơn vị, mốc bảo dưỡng định kỳ **và ngưỡng duyệt chi phí linh kiện** | Tự động hóa việc tạo PM Checklist và kiểm soát chi phí thay thế. | • Cho phép chọn đơn vị đo (`hours`/`km`), cấu hình các mốc ban đầu (VD: 500, 1000) + chu kỳ lặp lại (VD: mỗi 500 giờ/km).<br>• Hệ thống tự sinh PM Checklist khi số giờ/km máy chạy chạm hoặc vượt mốc kế tiếp.<br>• Cấu hình được ngưỡng giá trị linh kiện (VD: 2.000.000đ); đề xuất vượt ngưỡng mới yêu cầu duyệt.<br>• Chỉ Supervisor mới chỉnh được cấu hình — Firebase Security Rules kiểm tra vai trò `supervisor`. |
 | **US-12** | ME Engineer | Xem danh sách toàn bộ phiếu công việc đang mở | Quản lý và ưu tiên xử lý các sự cố theo mức độ nghiêm trọng. | • Hiển thị danh sách Work Order lọc theo 4 tab: Tất cả / Chờ (Pending) / Đang xử lý (In Progress) / Hoàn thành (Completed).<br>• Sắp xếp theo mức độ nghiêm trọng và thời gian tạo phiếu. |
 | **US-13** | Operator / Supervisor | Hủy phiếu SOS đã báo nhầm | Tránh ME mất thời gian xử lý sự cố không có thật. | • Chỉ hủy được khi phiếu còn ở trạng thái `Pending` (chưa có ME tiếp nhận).<br>• Trạng thái máy tự động về `Active` sau khi hủy.<br>• Lưu lý do hủy và tên người hủy để audit. |
-| **US-14** | Supervisor | Quản lý & Cấp tài khoản nhân sự xưởng (Thêm tay hoặc Import Excel) | Cấp quyền truy cập ứng dụng cho công nhân Operator & kỹ sư ME thuộc phân xưởng mình phụ trách. | • Hỗ trợ thêm tay thủ công từng nhân viên (nhập Họ tên, Email, Mã NV, Role).<br>• Hỗ trợ upload file Excel/CSV (.xlsx/.csv) để import danh sách nhân viên hàng loạt.<br>• Tự động gán `workshop_id` trùng với Supervisor khởi tạo (RLS cách ly).<br>• Chỉ Supervisor mới quản lý/thêm được nhân viên thuộc phân xưởng mình phụ trách. |
+| **US-14** | Supervisor | Quản lý & Cấp tài khoản nhân sự xưởng (Thêm tay hoặc Import Excel) | Cấp quyền truy cập ứng dụng cho công nhân Operator & kỹ sư ME thuộc phân xưởng mình phụ trách. | • Hỗ trợ thêm tay thủ công từng nhân viên (nhập Họ tên, Email, Mã NV, Role).<br>• Hỗ trợ upload file Excel/CSV (.xlsx/.csv) để import danh sách nhân viên hàng loạt.<br>• Tự động khởi tạo tài khoản trên Firebase Authentication & lưu hồ sơ vào Firestore `users`.<br>• Chỉ Supervisor mới quản lý/thêm được nhân viên thuộc phân xưởng. |
 
 ---
 
@@ -321,7 +321,7 @@ Trong các dây chuyền sản xuất công nghiệp, máy móc hỏng hóc đ�
 │         [Lưu cấu hình]         │
 └─────────────────────────────────┘
 ```
-- Chỉ Supervisor của phân xưởng đó mới thấy và chỉnh được màn hình này (RLS theo `workshop_id`).
+- Chỉ Supervisor mới thấy và chỉnh được màn hình này (Phân quyền Firebase Security Rules theo role supervisor).
 - Thay đổi mốc giờ có hiệu lực với các lần nhập giờ chạy tiếp theo, không ảnh hưởng phiếu đang mở.
 
 ### J. Màn hình Quản lý & Import Nhân viên Phân xưởng (Supervisor)
@@ -439,35 +439,35 @@ Cả **2 thành viên** đều là Full-stack Developers, hợp tác phát tri�
 
 | Module / Tính năng | Thành viên Chủ trì | Thành viên Phối hợp | Công việc chi tiết |
 | :--- | :--- | :--- | :--- |
-| **Module 1: Auth, Máy móc & QR Passport** | **Thành viên 1** | **Thành viên 2** | • *TV1:* Cấu trúc Flutter project, UI Machine Passport, tích hợp `mobile_scanner`, offline cache.<br>• *TV2:* Tạo Supabase DB, bảng `machines`, `profiles`, cài đặt Auth RLS. |
-| **Module 2: SOS Breakdown & Push Notification** | **Thành viên 2** | **Thành viên 1** | • *TV2:* Tạo bảng `work_orders`, DB Trigger đổi trạng thái máy, Edge Function gọi Firebase FCM.<br>• *TV1:* UI Form SOS, đính kèm ảnh lỗi, màn hình danh sách Work Order, lắng nghe FCM. |
-| **Module 3: PM Checklist & Spare Parts** | **Thành viên 1** | **Thành viên 2** | • *TV1:* UI checklist tương tác, tích hợp `image_picker`, UI đề xuất & duyệt vật tư.<br>• *TV2:* Bảng `pm_checklists`, `pm_checklist_items`, `spare_parts_requests`, Supabase Storage Bucket `work-order-images`. |
-| **Module 4: Ký nghiệm thu & Dashboard Downtime** | **Thành viên 2** | **Thành viên 1** | • *TV2:* Canvas ký tên nghiệm thu (`signature`), Bucket `signatures`, DB Trigger về `active`.<br>• *TV1:* UI Dashboard biểu đồ Downtime (`fl_chart`), kết nối SQL Aggregates. |
+| **Module 1: Auth, Máy móc & QR Passport** | **Thành viên 1** | **Thành viên 2** | • *TV1:* Cấu trúc Flutter project, UI Machine Passport, tích hợp `mobile_scanner`, offline cache.<br>• *TV2:* Khởi tạo Firebase Project, cấu hình Firebase Auth, Cloud Firestore Collections `machines`, `users`, Firebase Security Rules. |
+| **Module 2: SOS Breakdown & Push Notification** | **Thành viên 2** | **Thành viên 1** | • *TV2:* Firestore Collection `work_orders`, Cloud Function tự động chuyển trạng thái máy & gửi Firebase FCM.<br>• *TV1:* UI Form SOS, đính kèm ảnh lỗi, màn hình danh sách Work Order, lắng nghe FCM. |
+| **Module 3: PM Checklist & Spare Parts** | **Thành viên 1** | **Thành viên 2** | • *TV1:* UI checklist tương tác, tích hợp `image_picker`, UI đề xuất & duyệt vật tư.<br>• *TV2:* Firestore Collections `pm_checklists`, `spare_parts_requests`, Firebase Storage Bucket `work-order-images`. |
+| **Module 4: Ký nghiệm thu & Dashboard Downtime** | **Thành viên 2** | **Thành viên 1** | • *TV2:* Canvas ký tên nghiệm thu (`signature`), Firebase Storage Bucket `signatures`, Cloud Function tự động đưa máy về `active`.<br>• *TV1:* UI Dashboard biểu đồ Downtime (`fl_chart`), truy vấn thống kê Firestore. |
 
 ---
 
 ### 7.2. Lịch trình phát triển (Roadmap 5 Tuần)
 
 - **Tuần 1: Khởi động hệ thống & Nền tảng**
-  - *Cả 2 thành viên:* Thống nhất API Contract, cấu hình Supabase và thiết lập Flutter project.
-  - *Thành viên 1:* Khởi tạo Flutter Project, cài Riverpod, thiết lập Theme nhà máy, màn hình Login.
-  - *Thành viên 2:* Tạo Supabase Project, chạy mã DDL đầy đủ, cấu hình RLS Policies & DB Triggers.
+  - *Cả 2 thành viên:* Thống nhất API Contract/Data model, cấu hình Firebase Console và thiết lập Flutter project.
+  - *Thành viên 1:* Khởi tạo Flutter Project, cài Riverpod, thiết lập Theme nhà máy, màn hình Login kết nối Firebase Auth.
+  - *Thành viên 2:* Tạo Firebase Project, cấu hình Firestore Collections, thiết lập Security Rules & Cloud Functions.
 
 - **Tuần 2: Hoàn thiện Module 1 (QR Code & Machine Passport)**
-  - *Thành viên 1:* UI camera quét QR, màn hình Hộ chiếu thiết bị, popup nhập giờ chạy, **offline queue** (lưu Machine Passport vào local cache để đọc; lưu thao tác ghi vào SQLite queue khi mất mạng, tự đồng bộ lên Supabase khi có mạng trở lại, hiển thị banner trạng thái đồng bộ).
-  - *Thành viên 2:* Nhập dữ liệu máy mẫu, tạo RPC Function xử lý mã QR, sinh QR code mẫu để test.
+  - *Thành viên 1:* UI camera quét QR, màn hình Hộ chiếu thiết bị, popup nhập giờ chạy, **offline queue** (lưu Machine Passport vào local cache; đồng bộ tự động lên Firebase khi có mạng, hiển thị banner trạng thái).
+  - *Thành viên 2:* Nhập dữ liệu máy mẫu lên Firestore, tạo mã QR code mẫu để test.
 
 - **Tuần 3: Hoàn thiện Module 2 (Breakdown SOS & Push Notification)**
-  - *Thành viên 1:* Form báo lỗi SOS, chụp ảnh đính kèm, màn hình danh sách Work Order với filter/sort.
-  - *Thành viên 2:* DB Trigger đổi trạng thái máy sang `repairing`, Edge Function gửi push noti FCM.
+  - *Thành viên 1:* Form báo lỗi SOS, chụp ảnh đính kèm upload Firebase Storage, màn hình danh sách Work Order.
+  - *Thành viên 2:* Cloud Function đổi trạng thái máy sang `repairing`, trigger gửi push notification FCM tới ME.
 
 - **Tuần 4: Hoàn thiện Module 3 & 4 (PM Checklist, Spare Parts, Chữ ký)**
   - *Thành viên 1:* UI Checklist bảo dưỡng, upload ảnh linh kiện, UI đề xuất vật tư từ ME.
-  - *Thành viên 2:* Canvas ký tên nghiệm thu, lưu chữ ký vào Supabase Storage, UI phê duyệt vật tư cho Supervisor.
+  - *Thành viên 2:* Canvas ký tên nghiệm thu, lưu ảnh chữ ký vào Firebase Storage, UI phê duyệt vật tư cho Supervisor.
 
 - **Tuần 5: Dashboard, Cấu hình PM & Testing**
-  - *Thành viên 1:* Dashboard biểu đồ Downtime (Pie Chart + Bar Chart), màn hình cấu hình mốc giờ PM **và ngưỡng chi phí linh kiện** (tính năng 12 mở rộng).
-  - *Thành viên 2:* SQL Aggregates truy vấn dữ liệu Downtime, test toàn bộ DB Trigger & Edge Function, **kiểm tra RLS đa phân xưởng** (Supervisor A không thấy dữ liệu phân xưởng B).
+  - *Thành viên 1:* Dashboard biểu đồ Downtime (Pie Chart + Bar Chart), màn hình cấu hình mốc giờ PM và ngưỡng chi phí linh kiện.
+  - *Thành viên 2:* Viết Firestore Queries tổng hợp Downtime, test toàn bộ Cloud Functions & Security Rules.
   - *Cả 2 thành viên:* Test end-to-end toàn bộ luồng với mã QR in giấy, kiểm tra hành vi offline (banner, block ghi), sửa lỗi và đóng gói APK/IPA.
 
 ---
@@ -479,5 +479,5 @@ Cả **2 thành viên** đều là Full-stack Developers, hợp tác phát tri�
 1. 📘 **Phân tích & Thiết kế Kỹ thuật Hệ thống (Technical SAD):** [system_design.md](./system_design.md)
    - *Bao gồm:* Yêu cầu kỹ thuật FR/NFR, Biểu đồ Use Case & Đặc tả, Biểu đồ Hoạt động (Activity Diagrams), Biểu đồ Tuần tự (Sequence Diagrams), Biểu đồ Chuyển trạng thái (State Transition Diagrams), Biểu đồ Thực thể Lớp (UML Class Diagram), và Kiến trúc Hệ thống.
 
-2. 🗄️ **Thiết kế Cơ sở Dữ liệu & Tập lệnh SQL (Database Schema):** [database_schema.md](./database_schema.md)
-   - *Bao gồm:* Sơ đồ ERD, Tập lệnh SQL DDL (Tạo Bảng, Enum, Trigger tự động đồng bộ Profile), Chính sách Bảo mật cấp dòng (RLS Policies), và Cấu hình Supabase Storage Buckets.
+2. 🗄️ **Mô hình Cơ sở Dữ liệu Cloud Firestore (NoSQL Data Model):** Tham khảo tại **[Mục 8 - system_design.md](./system_design.md#8-mô-hình-cơ-sở-dữ-liệu-nosql-cloud-firestore-cloud-firestore-data-model)**
+   - *Bao gồm:* Sơ đồ Firestore Collections, Chi tiết 7 Collections NoSQL, Mã Firebase Security Rules (`firestore.rules`), và Cấu hình Composite Indexes.
