@@ -17,12 +17,12 @@ Tài liệu này tập trung chuyên sâu vào các sơ đồ mô hình hóa ph�
 * **FR-8 (Cấu hình Ngưỡng Hệ thống Phân xưởng):** Supervisor cài đặt các mốc số giờ/km bảo trì định kỳ cho các model máy và ngưỡng duyệt giá trị chi phí linh kiện của phân xưởng.
 
 ### 1.2. Yêu cầu Phi Chức năng (Non-functional Requirements - NFR)
-* **NFR-1 (Bảo mật & Phân quyền):** Ràng buộc truy cập dữ liệu bằng Row-Level Security (RLS) trên Supabase; phân quyền theo 3 vai trò (`Operator`, `ME Engineer`, `Supervisor`) trong phân xưởng.
+* **NFR-1 (Bảo mật & Phân quyền):** Ràng buộc truy cập dữ liệu bằng **Firebase Security Rules** và phân quyền người dùng qua **Firebase Auth (Custom Claims / Role)** theo 3 vai trò (`Operator`, `ME Engineer`, `Supervisor`) trong phân xưởng.
 * **NFR-2 (Thời gian thực):** Thông báo đẩy về sự cố SOS phải được gửi đi trong vòng **< 3 giây** kể từ khi Operator gửi yêu cầu.
 * **NFR-3 (Hiệu năng quét mã):** Camera nhận diện và decode mã QR trong **< 1.5 giây** trong điều kiện ánh sáng nhà máy bình thường.
 * **NFR-4 (Dung lượng ảnh):** Mỗi ảnh đính kèm không vượt quá **5MB**; app tự nén trước khi upload.
 * **NFR-5 (Tính khả dụng UI):** Giao diện tối ưu cho màn hình cảm ứng ≥ 5 inch; các nút hành động quan trọng có kích thước tối thiểu **48×48dp**.
-* **NFR-6 (Offline & Tự đồng bộ):** Thao tác ghi khi mất mạng lưu vào SQLite local queue; khi có mạng app tự upload theo thứ tự. Ảnh offline lưu vào app storage dưới dạng file, SQLite chỉ lưu đường dẫn. App đọc lại queue khi khởi động. SOS tạo offline sẽ không gửi notification ngay — chỉ gửi sau khi đồng bộ xong.
+* **NFR-6 (Offline & Tự đồng bộ):** Thao tác ghi khi mất mạng lưu vào **SQLite / Firestore Offline Queue**; khi có mạng app tự upload theo thứ tự. Ảnh offline lưu vào app storage dưới dạng file, SQLite chỉ lưu đường dẫn. App đọc lại queue khi khởi động. SOS tạo offline sẽ không gửi notification ngay — chỉ gửi sau khi đồng bộ lên Firebase.
 
 ---
 
@@ -147,26 +147,26 @@ sequenceDiagram
     autonumber
     actor OP as Operator
     participant App as Flutter Mobile App
-    participant DB as Supabase DB
-    participant Trigger as DB Trigger / Edge Function
-    participant FCM as Firebase Push Server
+    participant DB as Cloud Firestore
+    participant Function as Firebase Cloud Function
+    participant FCM as Firebase Push Server (FCM)
     actor ME as ME Engineer
 
     OP->>App: Quét mã QR & Chọn Báo lỗi SOS
     OP->>App: Nhập mô tả, chọn độ nghiêm trọng & chụp ảnh lỗi
-    App->>DB: INSERT INTO work_orders (status: 'pending', client_generated_id: uuid)
-    Note over DB: Trigger đổi trạng thái máy sang 'repairing'
-    DB-->>App: Xác nhận tạo thành công (201 Created)
+    App->>DB: addDoc / setDoc(work_orders collection, status: 'pending')
+    Note over DB: Cloud Function lắng nghe onCreate
+    DB-->>App: Xác nhận tạo thành công
     App-->>OP: Hiển thị "Đã gửi yêu cầu thành công"
 
-    activate Trigger
-    DB->>Trigger: Lắng nghe sự kiện INSERT
-    Trigger->>FCM: Gửi Push Payload (Tiêu đề: Máy X gặp sự cố SOS!)
-    deactivate Trigger
+    activate Function
+    DB->>Function: Event onCreate (work_order)
+    Function->>FCM: Gửi Push Payload (Tiêu đề: Máy X gặp sự cố SOS!)
+    deactivate Function
     FCM->>ME: Đẩy Notification thời gian thực tới điện thoại ME
     ME->>App: Nhấn Notification → Xem chi tiết sự cố
-    App->>DB: UPDATE work_orders SET status='in_progress', assignee_id=me_id WHERE status='pending'
-    Note over DB: Nếu 0 row affected → ME khác đã tiếp nhận trước (race condition handled)
+    App->>DB: runTransaction UPDATE work_orders (status='in_progress', assignee_id=me_id)
+    Note over DB: Nếu đã có ME khác nhận trước → Transaction abort (Race condition handled)
 ```
 
 ### 4.2. Luồng Tiếp nhận & Sửa chữa SOS (ME Engineer)
@@ -176,18 +176,18 @@ sequenceDiagram
     autonumber
     actor ME as ME Engineer
     participant App as Flutter Mobile App
-    participant DB as Supabase DB
-    participant Store as Supabase Storage
+    participant DB as Cloud Firestore
+    participant Store as Firebase Storage
 
     ME->>App: Xem danh sách Work Order & Chọn "Tiếp nhận"
-    App->>DB: UPDATE work_orders SET status='in_progress' WHERE status='pending'
+    App->>DB: runTransaction UPDATE status='in_progress'
     DB-->>App: Cập nhật thành công — ghi nhận claimed_at
     ME->>App: Tiến hành sửa chữa & cập nhật vật tư tiêu hao
     ME->>App: Chụp ảnh máy đã sửa làm bằng chứng
-    App->>Store: Upload ảnh bằng chứng
-    Store-->>App: Trả về Image URL
+    App->>Store: Upload ảnh bằng chứng lên Firebase Storage
+    Store-->>App: Trả về Download URL
     ME->>App: Chọn "Hoàn thành"
-    App->>DB: UPDATE work_orders SET status='completed', downtime_end=now()
+    App->>DB: UPDATE work_orders document (status='completed', downtime_end=now())
     DB-->>App: Ghi nhận dữ liệu thành công
     App-->>ME: Hiển thị "Đang đợi Quản đốc nghiệm thu"
 ```
@@ -199,16 +199,16 @@ sequenceDiagram
     autonumber
     actor ME as ME Engineer
     participant App as Flutter Mobile App
-    participant DB as Supabase DB
-    participant Store as Supabase Storage
+    participant DB as Cloud Firestore
+    participant Store as Firebase Storage
 
-    Note over DB: Hệ thống tự sinh PM khi running_hours >= scheduled_hours
+    Note over DB: Cloud Function tự sinh PM khi running_hours >= scheduled_hours
     ME->>App: Xem danh sách Work Order & Chọn phiếu PM
     App->>DB: UPDATE pm_checklists SET status='in_progress'
     ME->>App: Tick từng hạng mục checklist
-    ME->>App: Chụp ảnh linh kiện mới thay thế (bắt buộc với mục có photo_required)
-    App->>Store: Upload ảnh linh kiện
-    Store-->>App: Trả về Image URL
+    ME->>App: Chụp ảnh linh kiện mới thay thế (bắt buộc với mục photo_required)
+    App->>Store: Upload ảnh linh kiện lên Firebase Storage
+    Store-->>App: Trả về Download URL
     App->>DB: UPDATE pm_checklist_items SET is_checked=true, photo_url=url
     ME->>App: Chọn "Hoàn thành" (chỉ active khi 100% checklist đã tích)
     App->>DB: UPDATE pm_checklists SET status='completed'
@@ -223,18 +223,18 @@ sequenceDiagram
     autonumber
     actor SV as Supervisor (Quản đốc)
     participant App as Flutter Mobile App
-    participant Store as Supabase Storage
-    participant DB as Supabase DB
+    participant Store as Firebase Storage
+    participant DB as Cloud Firestore
 
     SV->>App: Mở danh sách chờ nghiệm thu → Chọn phiếu
     SV->>App: Xem tóm tắt: máy, kỹ sư, vật tư đã thay, tổng downtime
     SV->>App: Vẽ chữ ký tay trực tiếp lên màn hình cảm ứng
     alt Supervisor chấp nhận
         SV->>App: Xác nhận nghiệm thu
-        App->>Store: Upload ảnh chữ ký (PNG ≥ 300×150px)
+        App->>Store: Upload ảnh chữ ký lên Firebase Storage (signatures/)
         Store-->>App: Trả về Signature Image URL
         App->>DB: UPDATE work_orders SET status='approved', signature_url=url
-        Note over DB: Trigger tự động đổi trạng thái máy về 'active'
+        Note over DB: Cloud Function tự động đổi trạng thái máy về 'active'
         DB-->>App: Cập nhật thành công
         App-->>SV: "Thiết bị đã hoạt động trở lại"
     else Supervisor từ chối
@@ -459,373 +459,291 @@ graph TD
         Riverpod[State Management - Riverpod]
         Scanner[mobile_scanner SDK]
         SigCanvas[signature Canvas SDK]
-        ClientSDK[Supabase Flutter Client SDK]
-        SQLiteQ[SQLite - Offline Queue]
+        FirebaseSDK[Firebase Flutter SDK]
+        SQLiteQ[SQLite / Persistent Offline Queue]
         LocalFS[Local File Storage - path_provider]
     end
 
-    subgraph Supabase_BaaS ["Hệ thống Backend (Supabase)"]
-        Auth[Xác thực người dùng - Auth]
-        DB[(Cơ sở dữ liệu PostgreSQL)]
-        RLS[Chính sách bảo mật RLS theo workshop_id]
-        Storage[Supabase Storage - Ảnh & Chữ ký]
-        Triggers[DB Triggers / Webhooks]
-        EdgeFunc[Edge Functions]
-    end
-
-    subgraph External_Services ["Dịch vụ bên thứ ba"]
+    subgraph Firebase_BaaS ["Hệ thống Backend (Firebase BaaS)"]
+        Auth[Firebase Authentication]
+        Firestore[(Cloud Firestore - NoSQL DB)]
+        Rules[Firebase Security Rules]
+        Storage[Firebase Storage - Ảnh & Chữ ký]
+        Functions[Firebase Cloud Functions]
         FCM[Firebase Cloud Messaging - FCM]
     end
 
     UI --> Riverpod
     Riverpod --> Scanner
     Riverpod --> SigCanvas
-    Riverpod --> ClientSDK
+    Riverpod --> FirebaseSDK
     Riverpod --> SQLiteQ
-    SQLiteQ -->|Lưu ảnh path| LocalFS
-    SQLiteQ -->|Sync khi có mạng| ClientSDK
+    SQLiteQ -->|Lưu ảnh local path| LocalFS
+    SQLiteQ -->|Sync khi có mạng| FirebaseSDK
 
-    ClientSDK -->|HTTPS / WSS| Auth
-    ClientSDK -->|SQL Query| RLS
-    RLS --> DB
-    ClientSDK -->|Upload/Download| Storage
+    FirebaseSDK -->|HTTPS / WSS| Auth
+    FirebaseSDK -->|Firestore Query| Rules
+    Rules --> Firestore
+    FirebaseSDK -->|Upload/Download| Storage
 
-    DB -->|Listen Event| Triggers
-    Triggers -->|Invoke| EdgeFunc
-    EdgeFunc -->|Send Payload| FCM
+    Firestore -->|onDocumentCreated / Updated| Functions
+    Functions -->|Send Push Payload| FCM
     FCM -->|Push Notification| Client_App
 ```
 
+
+## 8. Mô hình Cơ sở Dữ liệu NoSQL Cloud Firestore (Cloud Firestore Data Model)
+
+Tài liệu này chi tiết hóa cấu trúc lưu trữ NoSQL trên **Cloud Firestore** cho ứng dụng AssetTrack. Kiến trúc được thiết kế tối ưu cho **phân xưởng duy nhất (Single Workshop Scope)**, áp dụng các kỹ thuật phi chuẩn hóa (Denormalization) và Embedded Arrays để giúp ứng dụng Flutter truy vấn nhanh, hỗ trợ đầy đủ chế độ Offline Persistence và tiết kiệm chi phí read/write operations trên Firebase.
+
 ---
 
-## 8. Thiết kế Cơ sở Dữ liệu Quan hệ (Relational Database Design)
-
-### 8.1. Mô hình Thực thể Quan hệ (ERD)
+### 8.1. Sơ đồ Cấu trúc Firestore Collections (NoSQL Schema Overview)
 
 ```mermaid
 erDiagram
-    profiles {
-        uuid id PK
-        text full_name
-        text role
-        uuid workshop_id FK
-        timestamptz created_at
-    }
-
-    workshops {
-        uuid id PK
-        text name
-        text location
-        timestamptz created_at
-    }
-
-    machines {
-        uuid id PK
-        text code UK
-        text name
-        text model
-        jsonb specifications
-        text status
-        float8 running_hours
-        uuid workshop_id FK
-        timestamptz last_maintenance_at
-        timestamptz created_at
-    }
-
-    workshop_configs {
-        uuid id PK
-        uuid workshop_id FK
-        text machine_model
-        int4[] pm_threshold_hours
-        float8 cost_approval_threshold
-        uuid updated_by FK
-        timestamptz updated_at
-    }
-
-    work_orders {
-        uuid id PK
-        uuid client_generated_id UK
-        uuid workshop_id FK
-        uuid machine_id FK
-        uuid reporter_id FK
-        uuid assignee_id FK
-        uuid supervisor_id FK
-        text severity
-        text description
-        text status
-        timestamptz downtime_start
-        timestamptz downtime_end
-        timestamptz claimed_at
-        text supervisor_signature_url
-        text rejection_reason
-        uuid rejected_by FK
-        timestamptz cancelled_at
-        text cancellation_reason
-        uuid cancelled_by FK
-        timestamptz created_at
-    }
-
-    pm_checklists {
-        uuid id PK
-        uuid workshop_id FK
-        uuid machine_id FK
-        uuid assignee_id FK
-        uuid supervisor_id FK
-        float8 scheduled_hours
-        text status
-        text supervisor_signature_url
-        text rejection_reason
-        uuid rejected_by FK
-        timestamptz completed_at
-        timestamptz created_at
-    }
-
-    pm_checklist_items {
-        uuid id PK
-        uuid pm_checklist_id FK
-        text task_description
-        bool is_checked
-        bool photo_required
-        text photo_url
-        timestamptz checked_at
-    }
-
-    spare_part_logs {
-        uuid id PK
-        uuid work_order_id FK
-        uuid pm_checklist_id FK
-        text part_name
-        int4 quantity
-        text unit
-        uuid logged_by FK
-        timestamptz logged_at
-    }
-
-    spare_parts_requests {
-        uuid id PK
-        uuid work_order_id FK
-        uuid pm_checklist_id FK
-        uuid requested_by FK
-        text part_name
-        float8 unit_price
-        text reason
-        text status
-        uuid approved_by FK
-        text rejection_reason
-        timestamptz created_at
-    }
-
-    running_hours_log {
-        uuid id PK
-        uuid client_generated_id UK
-        uuid machine_id FK
-        float8 hours_value
-        text shift
-        uuid logged_by FK
-        timestamptz logged_at
-    }
-
-    profiles ||--o{ work_orders : "báo lỗi / tiếp nhận / nghiệm thu"
-    profiles ||--o{ pm_checklists : "thực hiện / nghiệm thu"
-    profiles ||--o{ spare_part_logs : "ghi nhận vật tư"
-    profiles ||--o{ spare_parts_requests : "đề xuất linh kiện"
-    profiles ||--o{ running_hours_log : "nhập giờ chạy"
-    profiles }o--|| workshops : "thuộc phân xưởng"
-    workshops ||--o{ machines : "có máy móc"
-    workshops ||--o{ workshop_configs : "cấu hình"
-    workshops ||--o{ work_orders : "phụ trách"
-    workshops ||--o{ pm_checklists : "phụ trách"
-    machines ||--o{ work_orders : "phát sinh sự cố"
-    machines ||--o{ pm_checklists : "bảo trì định kỳ"
+    users ||--o{ work_orders : "reporter / assignee / supervisor"
+    users ||--o{ pm_checklists : "assignee / supervisor"
+    users ||--o{ spare_parts_requests : "requested_by / approved_by"
+    users ||--o{ running_hours_log : "logged_by"
+    machines ||--o{ work_orders : "phát sinh sự cố SOS"
+    machines ||--o{ pm_checklists : "bảo trì định kỳ PM"
     machines ||--o{ running_hours_log : "theo dõi giờ chạy"
-    pm_checklists ||--|{ pm_checklist_items : "bao gồm hạng mục"
-    work_orders ||--o{ spare_part_logs : "ghi nhận vật tư"
-    pm_checklists ||--o{ spare_part_logs : "ghi nhận vật tư"
-    work_orders ||--o{ spare_parts_requests : "đề xuất linh kiện"
-    pm_checklists ||--o{ spare_parts_requests : "đề xuất linh kiện"
+    workshop_configs ||--|| machines : "cấu hình mốc PM theo model"
 ```
 
 ---
 
-### 8.2. Mô tả Chi tiết Từng Bảng
+### 8.2. Chi tiết Đặc tả Các Collections (Collections & Document Specifications)
 
-#### Bảng `profiles` — Hồ sơ người dùng
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `id` | `uuid` | PK, default `auth.uid()` | ID người dùng, liên kết với Supabase Auth |
-| `full_name` | `text` | NOT NULL | Họ tên đầy đủ |
-| `role` | `text` | NOT NULL, CHECK IN ('operator','me_engineer','supervisor') | Vai trò trong hệ thống |
-| `workshop_id` | `uuid` | FK → workshops.id | Phân xưởng phụ trách |
-| `created_at` | `timestamptz` | default now() | Thời điểm tạo |
+#### 1. Collection `users` — Hồ sơ người dùng & Phân quyền
+Document ID = `uid` (Khớp với `uid` từ Firebase Authentication).
 
----
-
-#### Bảng `workshops` — Phân xưởng
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `id` | `uuid` | PK, default gen_random_uuid() | ID phân xưởng |
-| `name` | `text` | NOT NULL | Tên phân xưởng |
-| `location` | `text` | | Vị trí / địa chỉ |
-| `created_at` | `timestamptz` | default now() | Thời điểm tạo |
+| Thuộc tính | Kiểu dữ liệu | Mô tả & Ràng buộc |
+| :--- | :--- | :--- |
+| `uid` | `string` | ID người dùng từ Firebase Auth (Document ID) |
+| `full_name` | `string` | Họ và tên đầy đủ |
+| `email` | `string` | Địa chỉ email đăng nhập |
+| `role` | `string` | Vai trò trong xưởng: `'operator'` \| `'me_engineer'` \| `'supervisor'` |
+| `employee_code` | `string` | Mã nhân viên (VD: OP-01, ME-02, SV-01) |
+| `created_at` | `timestamp` | Thời điểm khởi tạo tài khoản |
 
 ---
 
-#### Bảng `machines` — Máy móc
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `id` | `uuid` | PK | ID máy |
-| `code` | `text` | UNIQUE, NOT NULL | Mã máy in trên QR (e.g. MC-102) |
-| `name` | `text` | NOT NULL | Tên máy |
-| `model` | `text` | NOT NULL | Model máy (liên kết với workshop_configs.machine_model) |
-| `specifications` | `jsonb` | | Thông số kỹ thuật (công suất, áp suất...) |
-| `status` | `text` | NOT NULL, CHECK IN ('active','repairing','maintenance','inactive') | Trạng thái hiện tại |
-| `running_hours` | `float8` | default 0 | Tổng số giờ chạy tích lũy |
-| `workshop_id` | `uuid` | FK → workshops.id | Thuộc phân xưởng nào |
-| `last_maintenance_at` | `timestamptz` | | Thời điểm bảo trì gần nhất |
-| `created_at` | `timestamptz` | default now() | |
+#### 2. Collection `machines` — Hộ chiếu & Lý lịch máy móc
+Document ID = `machine_id` (Tự sinh hoặc dùng `code` dạng `MC-101`).
+
+| Thuộc tính | Kiểu dữ liệu | Mô tả & Ràng buộc |
+| :--- | :--- | :--- |
+| `machine_id` | `string` | ID thiết bị (Document ID) |
+| `code` | `string` | Mã máy in trên tem QR duy nhất (VD: `MC-102`) |
+| `name` | `string` | Tên máy (VD: Máy dập thủy lực 150T / Xe nâng Toyota) |
+| `model` | `string` | Model máy (liên kết cấu hình PM theo model) |
+| `specifications` | `map` | Thông số kỹ thuật `{ power: "150 kW", max_pressure: "250 bar" }` |
+| `status` | `string` | Trạng thái máy: `'active'` \| `'repairing'` \| `'maintenance'` \| `'inactive'` |
+| `tracking_type` | `string` | Đơn vị theo dõi bảo trì: `'hours'` (Giờ chạy) \| `'km'` (Số km) |
+| `meter_unit` | `string` | Nhãn đơn vị hiển thị trên UI: `'giờ'` \| `'km'` |
+| `current_meter_value` | `number` | Chỉ số giờ chạy hoặc số km tích lũy hiện tại |
+| `pm_config` | `map` | Cấu hình mốc bảo trì linh hoạt theo máy:<br>`{ initial_thresholds: [500, 1000], recurring_interval: 500, unit: "hours" }` |
+| `quick_troubleshooting` | `array<map>` | Danh sách các mẹo xử lý lỗi nhanh cho công nhân:<br>`[{ issue: "Máy rung mạnh", solution: "Siết bu-lông chân máy" }]` |
+| `last_maintenance_at` | `timestamp` \| `null` | Thời điểm bảo trì định kỳ gần nhất |
+| `created_at` | `timestamp` | Thời điểm tạo máy |
 
 ---
 
-#### Bảng `workshop_configs` — Cấu hình ngưỡng phân xưởng
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `id` | `uuid` | PK | |
-| `workshop_id` | `uuid` | FK → workshops.id | Phân xưởng áp dụng |
-| `machine_model` | `text` | NOT NULL | Model máy (e.g. "Máy dập thủy lực") |
-| `pm_threshold_hours` | `int4[]` | NOT NULL | Danh sách mốc giờ PM (e.g. {500,1000,2000}) |
-| `cost_approval_threshold` | `float8` | default 2000000 | Ngưỡng giá trị linh kiện cần duyệt (VNĐ) |
-| `updated_by` | `uuid` | FK → profiles.id | Supervisor cuối cùng chỉnh sửa |
-| `updated_at` | `timestamptz` | default now() | |
+#### 3. Collection `workshop_configs` — Cấu hình ngưỡng phân xưởng
+Document ID = `machine_model` (Mỗi model máy có 1 cấu hình ngưỡng mặc định).
+
+| Thuộc tính | Kiểu dữ liệu | Mô tả & Ràng buộc |
+| :--- | :--- | :--- |
+| `machine_model` | `string` | Model máy áp dụng (Document ID, VD: "Máy dập thủy lực") |
+| `tracking_type` | `string` | Đơn vị mặc định: `'hours'` \| `'km'` |
+| `pm_initial_thresholds` | `array<number>` | Các mốc bảo trì chạy rà ban đầu (VD: `[500, 1000]`) |
+| `pm_recurring_interval` | `number` | Chu kỳ bảo trì định kỳ lặp lại về sau (VD: `500`) |
+| `cost_approval_threshold` | `number` | Ngưỡng chi phí linh kiện cần duyệt (VNĐ, mặc định: `2000000`) |
+| `updated_by` | `string` | `uid` Quản đốc cập nhật gần nhất |
+| `updated_at` | `timestamp` | Thời điểm cập nhật cấu hình |
 
 ---
 
-#### Bảng `work_orders` — Phiếu sửa chữa SOS
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `id` | `uuid` | PK | |
-| `client_generated_id` | `uuid` | UNIQUE, NOT NULL | UUID do app tạo offline, tránh tạo trùng khi retry |
-| `workshop_id` | `uuid` | FK → workshops.id | Phân xưởng quản lý (phục vụ RLS trực tiếp theo NFR-01) |
-| `machine_id` | `uuid` | FK → machines.id | Máy bị sự cố |
-| `reporter_id` | `uuid` | FK → profiles.id | Operator tạo phiếu |
-| `assignee_id` | `uuid` | FK → profiles.id, nullable | ME tiếp nhận |
-| `supervisor_id` | `uuid` | FK → profiles.id, nullable | Supervisor nghiệm thu |
-| `severity` | `text` | NOT NULL, CHECK IN ('low','medium','high','critical') | Mức độ nghiêm trọng |
-| `description` | `text` | NOT NULL | Mô tả sự cố |
-| `image_urls` | `text[]` | default '{}' | Mảng URL ảnh hiện trạng lỗi (tối đa 5 ảnh, enforce ở app layer) |
-| `status` | `text` | NOT NULL, CHECK IN ('pending','in_progress','completed','approved','rejected','cancelled') | Trạng thái phiếu |
-| `downtime_start` | `timestamptz` | | Thời điểm máy bắt đầu dừng |
-| `downtime_end` | `timestamptz` | | Thời điểm máy chạy lại |
-| `claimed_at` | `timestamptz` | | Thời điểm ME tiếp nhận (tính MTTR) |
-| `supervisor_signature_url` | `text` | | URL ảnh chữ ký PNG |
-| `rejection_reason` | `text` | | Lý do từ chối nghiệm thu |
-| `rejected_by` | `uuid` | FK → profiles.id, nullable | Supervisor từ chối |
-| `cancelled_at` | `timestamptz` | | Thời điểm hủy phiếu |
-| `cancellation_reason` | `text` | | Lý do hủy |
-| `cancelled_by` | `uuid` | FK → profiles.id, nullable | Người hủy phiếu (Operator / Supervisor) |
-| `created_at` | `timestamptz` | default now() | |
+#### 4. Collection `work_orders` — Phiếu báo sự cố khẩn cấp (SOS Breakdown)
+Document ID = `work_order_id` (Tự sinh hoặc dùng `client_generated_id`).
+
+| Thuộc tính | Kiểu dữ liệu | Mô tả & Ràng buộc |
+| :--- | :--- | :--- |
+| `work_order_id` | `string` | ID phiếu công việc (Document ID) |
+| `client_generated_id` | `string` | UUID do app mobile tạo offline (Unique, chống trùng khi sync) |
+| `machine_id` | `string` | ID máy phát sinh sự cố |
+| `machine_code` | `string` | Mã máy (Denormalized để hiển thị nhanh danh sách) |
+| `machine_name` | `string` | Tên máy (Denormalized) |
+| `reporter_id` | `string` | `uid` Operator báo lỗi |
+| `reporter_name` | `string` | Tên Operator báo lỗi (Denormalized) |
+| `assignee_id` | `string` \| `null` | `uid` Kỹ sư ME tiếp nhận |
+| `assignee_name` | `string` \| `null` | Tên Kỹ sư ME tiếp nhận (Denormalized) |
+| `supervisor_id` | `string` \| `null` | `uid` Quản đốc nghiệm thu |
+| `severity` | `string` | Mức độ nghiêm trọng: `'low'` \| `'medium'` \| `'high'` \| `'critical'` |
+| `description` | `string` | Mô tả chi tiết hiện trạng lỗi |
+| `image_urls` | `array<string>` | Mảng URL ảnh sự cố lưu trên Firebase Storage |
+| `status` | `string` | Trạng thái: `'pending'` \| `'in_progress'` \| `'completed'` \| `'approved'` \| `'rejected'` \| `'cancelled'` |
+| `downtime_start` | `timestamp` | Thời điểm máy dừng chạy |
+| `downtime_end` | `timestamp` \| `null` | Thời điểm máy chạy lại |
+| `claimed_at` | `timestamp` \| `null` | Thời điểm ME bấm tiếp nhận |
+| `supervisor_signature_url` | `string` \| `null` | URL ảnh chữ ký tay nghiệm thu (PNG) |
+| `rejection_reason` | `string` \| `null` | Lý do Quản đốc từ chối nghiệm thu |
+| `rejected_by` | `string` \| `null` | `uid` Quản đốc từ chối |
+| `cancelled_at` | `timestamp` \| `null` | Thời điểm hủy phiếu |
+| `cancellation_reason` | `string` \| `null` | Lý do hủy phiếu |
+| `cancelled_by` | `string` \| `null` | `uid` người hủy phiếu |
+| `spare_part_logs` | `array<map>` | Danh sách vật tư tiêu hao đã tự lấy nhúng trực tiếp:<br>`[{ part_name: "Dầu 46#", quantity: 5, unit: "lít", logged_by: "uid", logged_at: timestamp }]` |
+| `created_at` | `timestamp` | Thời điểm tạo phiếu SOS |
 
 ---
 
-#### Bảng `pm_checklists` — Phiếu bảo trì định kỳ
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `id` | `uuid` | PK | |
-| `workshop_id` | `uuid` | FK → workshops.id | Phân xưởng quản lý (phục vụ RLS trực tiếp theo NFR-01) |
-| `machine_id` | `uuid` | FK → machines.id | Máy cần bảo trì |
-| `assignee_id` | `uuid` | FK → profiles.id, nullable | ME thực hiện |
-| `supervisor_id` | `uuid` | FK → profiles.id, nullable | Supervisor nghiệm thu |
-| `scheduled_hours` | `float8` | NOT NULL | Mốc giờ kích hoạt bảo trì (e.g. 500) |
-| `status` | `text` | NOT NULL, CHECK IN ('pending','in_progress','completed','approved','rejected','cancelled') | |
-| `supervisor_signature_url` | `text` | | URL chữ ký nghiệm thu |
-| `rejection_reason` | `text` | | Lý do từ chối |
-| `rejected_by` | `uuid` | FK → profiles.id, nullable | Supervisor từ chối |
-| `completed_at` | `timestamptz` | | |
-| `created_at` | `timestamptz` | default now() | |
+#### 5. Collection `pm_checklists` — Phiếu bảo trì định kỳ (PM)
+Document ID = `pm_checklist_id`.
+
+| Thuộc tính | Kiểu dữ liệu | Mô tả & Ràng buộc |
+| :--- | :--- | :--- |
+| `pm_checklist_id` | `string` | ID phiếu bảo trì PM (Document ID) |
+| `machine_id` | `string` | ID máy cần bảo trì |
+| `machine_code` | `string` | Mã máy (Denormalized) |
+| `machine_name` | `string` | Tên máy (Denormalized) |
+| `assignee_id` | `string` \| `null` | `uid` Kỹ sư ME thực hiện |
+| `assignee_name` | `string` \| `null` | Tên ME thực hiện (Denormalized) |
+| `supervisor_id` | `string` \| `null` | `uid` Quản đốc nghiệm thu |
+| `scheduled_hours` | `number` | Mốc giờ kích hoạt bảo trì (VD: `500`) |
+| `status` | `string` | Trạng thái: `'pending'` \| `'in_progress'` \| `'completed'` \| `'approved'` \| `'rejected'` \| `'cancelled'` |
+| `supervisor_signature_url` | `string` \| `null` | URL ảnh chữ ký nghiệm thu |
+| `rejection_reason` | `string` \| `null` | Lý do từ chối nghiệm thu |
+| `rejected_by` | `string` \| `null` | `uid` Quản đốc từ chối |
+| `items` | `array<map>` | Mảng danh mục các mục cần kiểm tra nhúng trực tiếp:<br>`[{ item_id: "1", task_description: "Thay dầu", is_checked: true, photo_required: true, photo_url: "url", checked_at: timestamp }]` |
+| `spare_part_logs` | `array<map>` | Mảng log vật tư đã dùng thay thế |
+| `completed_at` | `timestamp` \| `null` | Thời điểm ME bấm hoàn thành |
+| `created_at` | `timestamp` | Thời điểm tự động sinh PM |
 
 ---
 
-#### Bảng `pm_checklist_items` — Hạng mục checklist bảo trì
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `id` | `uuid` | PK | |
-| `pm_checklist_id` | `uuid` | FK → pm_checklists.id, ON DELETE CASCADE | Thuộc phiếu PM nào |
-| `task_description` | `text` | NOT NULL | Mô tả hạng mục (e.g. "Thay dầu bôi trơn") |
-| `is_checked` | `bool` | default false | Đã hoàn thành chưa |
-| `photo_required` | `bool` | default false | Bắt buộc chụp ảnh minh chứng |
-| `photo_url` | `text` | | URL ảnh linh kiện đã thay |
-| `checked_at` | `timestamptz` | | Thời điểm tích hoàn thành |
+#### 6. Collection `spare_parts_requests` — Đề xuất linh kiện đắt tiền
+Document ID = `request_id`.
+
+| Thuộc tính | Kiểu dữ liệu | Mô tả & Ràng buộc |
+| :--- | :--- | :--- |
+| `request_id` | `string` | ID đề xuất linh kiện (Document ID) |
+| `parent_type` | `string` | Thuộc phiếu nào: `'work_order'` \| `'pm_checklist'` |
+| `parent_id` | `string` | ID của `work_order` hoặc `pm_checklist` tương ứng |
+| `machine_code` | `string` | Mã máy cần thay linh kiện |
+| `requested_by` | `string` | `uid` ME gửi đề xuất |
+| `requested_by_name` | `string` | Tên ME gửi đề xuất (Denormalized) |
+| `part_name` | `string` | Tên linh kiện đắt tiền cần mua/thay |
+| `quantity` | `number` | Số lượng đề xuất (CHECK > 0) |
+| `unit_price` | `number` | Đơn giá linh kiện (VNĐ) |
+| `total_price` | `number` | Tổng giá trị đề xuất (`quantity` × `unit_price`) |
+| `reason` | `string` | Lý do đề xuất thay thế |
+| `status` | `string` | Trạng thái: `'pending_approval'` \| `'approved'` \| `'rejected'` |
+| `approved_by` | `string` \| `null` | `uid` Quản đốc phê duyệt |
+| `rejection_reason` | `string` \| `null` | Lý do từ chối phê duyệt |
+| `created_at` | `timestamp` | Thời điểm gửi đề xuất |
 
 ---
 
-#### Bảng `spare_part_logs` — Log vật tư đã sử dụng
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `id` | `uuid` | PK | |
-| `work_order_id` | `uuid` | FK → work_orders.id, nullable | Thuộc phiếu SOS nào |
-| `pm_checklist_id` | `uuid` | FK → pm_checklists.id, nullable | Thuộc phiếu PM nào |
-| `part_name` | `text` | NOT NULL | Tên vật tư / linh kiện |
-| `quantity` | `int4` | NOT NULL, CHECK > 0 | Số lượng |
-| `unit` | `text` | NOT NULL | Đơn vị (cái, lít, kg...) |
-| `logged_by` | `uuid` | FK → profiles.id | ME ghi nhận |
-| `logged_at` | `timestamptz` | default now() | |
+#### 7. Collection `running_hours_log` (hoặc `usage_logs`) — Lịch sử nhập chỉ số vận hành
+Document ID = `log_id`.
 
-> **Ghi chú:** `work_order_id` và `pm_checklist_id` chỉ một trong hai được điền, cái còn lại là NULL. CHECK (`work_order_id` IS NOT NULL OR `pm_checklist_id` IS NOT NULL).
-
----
-
-#### Bảng `spare_parts_requests` — Đề xuất linh kiện đắt tiền
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `id` | `uuid` | PK | |
-| `work_order_id` | `uuid` | FK → work_orders.id, nullable | Thuộc phiếu SOS nào (nếu có) |
-| `pm_checklist_id` | `uuid` | FK → pm_checklists.id, nullable | Thuộc phiếu PM nào (nếu có) |
-| `requested_by` | `uuid` | FK → profiles.id | ME gửi đề xuất |
-| `part_name` | `text` | NOT NULL | Tên linh kiện |
-| `unit_price` | `float8` | NOT NULL, CHECK > 0 | Đơn giá (VNĐ) |
-| `reason` | `text` | NOT NULL | Lý do cần thay thế |
-| `status` | `text` | NOT NULL, CHECK IN ('pending_approval','approved','rejected') | |
-| `approved_by` | `uuid` | FK → profiles.id, nullable | Supervisor phê duyệt |
-| `rejection_reason` | `text` | | Lý do từ chối |
-| `created_at` | `timestamptz` | default now() | |
-
-> **Ghi chú:** `work_order_id` và `pm_checklist_id` chỉ một trong hai được điền. CHECK (`work_order_id` IS NOT NULL OR `pm_checklist_id` IS NOT NULL).
+| Thuộc tính | Kiểu dữ liệu | Mô tả & Ràng buộc |
+| :--- | :--- | :--- |
+| `log_id` | `string` | ID bản ghi nhập chỉ số (Document ID) |
+| `client_generated_id` | `string` | UUID tạo từ mobile chống trùng khi retry sync |
+| `machine_id` | `string` | ID máy được nhập chỉ số |
+| `machine_code` | `string` | Mã máy (Denormalized) |
+| `meter_value` | `number` | Chỉ số vận hành (Số giờ chạy hoặc Số km) |
+| `unit` | `string` | Đơn vị đo: `'hours'` \| `'km'` |
+| `shift` | `string` | Ca làm việc: `'start'` (đầu ca) \| `'end'` (cuối ca) |
+| `logged_by` | `string` | `uid` Operator nhập |
+| `logged_by_name` | `string` | Tên Operator (Denormalized) |
+| `logged_at` | `timestamp` | Thời điểm ghi nhận |
 
 ---
 
-#### Bảng `running_hours_log` — Lịch sử nhập giờ chạy máy
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `id` | `uuid` | PK | |
-| `client_generated_id` | `uuid` | UNIQUE, NOT NULL | UUID do app tạo offline (chống tạo trùng log khi retry sync) |
-| `machine_id` | `uuid` | FK → machines.id | Máy được nhập giờ |
-| `hours_value` | `float8` | NOT NULL, CHECK > 0 | Chỉ số giờ tại thời điểm nhập |
-| `shift` | `text` | CHECK IN ('start','end') | Đầu ca hay cuối ca |
-| `logged_by` | `uuid` | FK → profiles.id | Operator nhập |
-| `logged_at` | `timestamptz` | default now() | |
+### 8.3. Mã Quy tắc Bảo mật Firebase Security Rules (`firestore.rules`)
 
-> **Ghi chú:** Mỗi lần nhập, `hours_value` phải lớn hơn lần nhập gần nhất của cùng máy. Kiểm tra bằng DB Trigger hoặc RPC Function trước khi INSERT.
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function isSupervisor() {
+      return isAuthenticated() && getUserData().role == 'supervisor';
+    }
+    
+    function isEngineer() {
+      return isAuthenticated() && (getUserData().role == 'me_engineer' || getUserData().role == 'supervisor');
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isSupervisor(); // Chỉ Supervisor được thêm/sửa tài khoản
+    }
+
+    // Machines Collection
+    match /machines/{machineId} {
+      allow read: if isAuthenticated();
+      allow write: if isSupervisor() || isEngineer();
+    }
+
+    // Workshop Configs Collection
+    match /workshop_configs/{configId} {
+      allow read: if isAuthenticated();
+      allow write: if isSupervisor(); // Chỉ Supervisor được sửa cấu hình ngưỡng
+    }
+
+    // Work Orders Collection
+    match /work_orders/{orderId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isSupervisor();
+    }
+
+    // PM Checklists Collection
+    match /pm_checklists/{pmId} {
+      allow read: if isAuthenticated();
+      allow create: if isSupervisor() || isEngineer();
+      allow update: if isEngineer();
+    }
+
+    // Spare Parts Requests Collection
+    match /spare_parts_requests/{requestId} {
+      allow read: if isAuthenticated();
+      allow create: if isEngineer();
+      allow update: if isSupervisor(); // Chỉ Supervisor được Approve/Reject
+    }
+
+    // Running Hours Log Collection
+    match /running_hours_log/{logId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+    }
+  }
+}
+```
 
 ---
 
-### 8.3. Tóm tắt Quan hệ Giữa Các Bảng
+### 8.4. Cấu hình Indexing Khuyến nghị (Firestore Composite Indexes)
 
-| Bảng con | Khóa ngoại | Bảng cha | Loại quan hệ |
-| :--- | :--- | :--- | :--- |
-| `profiles` | `workshop_id` | `workshops` | N-1 (nhiều người thuộc 1 phân xưởng) |
-| `machines` | `workshop_id` | `workshops` | N-1 |
-| `workshop_configs` | `workshop_id` | `workshops` | N-1 |
-| `work_orders` | `workshop_id` | `workshops` | N-1 (hỗ trợ RLS theo NFR-01) |
-| `work_orders` | `machine_id` | `machines` | N-1 |
-| `work_orders` | `reporter_id`, `assignee_id`, `supervisor_id`, `rejected_by`, `cancelled_by` | `profiles` | N-1 |
-| `pm_checklists` | `workshop_id` | `workshops` | N-1 (hỗ trợ RLS theo NFR-01) |
-| `pm_checklists` | `machine_id` | `machines` | N-1 |
-| `pm_checklists` | `assignee_id`, `supervisor_id`, `rejected_by` | `profiles` | N-1 |
-| `pm_checklist_items` | `pm_checklist_id` | `pm_checklists` | N-1 (CASCADE DELETE) |
-| `spare_part_logs` | `work_order_id` | `work_orders` | N-1 (nullable) |
-| `spare_part_logs` | `pm_checklist_id` | `pm_checklists` | N-1 (nullable) |
-| `spare_part_logs` | `logged_by` | `profiles` | N-1 |
-| `spare_parts_requests` | `work_order_id` | `work_orders` | N-1 (nullable) |
-| `spare_parts_requests` | `pm_checklist_id` | `pm_checklists` | N-1 (nullable) |
-| `spare_parts_requests` | `requested_by`, `approved_by` | `profiles` | N-1 |
-| `running_hours_log` | `machine_id` | `machines` | N-1 |
-| `running_hours_log` | `logged_by` | `profiles` | N-1 |
+Để các màn hình Mobile truy vấn nhanh với số lượng lớn bản ghi, cần tạo các Composite Indexes sau trên Firebase Console:
+
+1. **`work_orders`**: `status` (Ascending) + `severity` (Descending) + `created_at` (Descending) — Phục vụ màn hình danh sách phiếu cho Kỹ sư ME.
+2. **`running_hours_log`**: `machine_id` (Ascending) + `logged_at` (Descending) — Phục vụ lấy chỉ số giờ chạy lần nhập gần nhất của máy.
+3. **`spare_parts_requests`**: `status` (Ascending) + `created_at` (Descending) — Phục vụ Quản đốc xem danh sách đề xuất cần duyệt.
+

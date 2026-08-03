@@ -26,6 +26,10 @@ export interface Machine {
   lastMaintenanceDate: string;
   trackingUnit?: 'HOURS' | 'KM' | 'DAYS'; // Đơn vị theo dõi: GIỜ, KM, NGÀY
   unitLabel?: string; // Tên hiển thị đơn vị (vd: 'Giờ máy chạy', 'Km di chuyển', 'Ngày vận hành')
+  pmConfig?: {
+    initialThresholds: number[]; // Các mốc chạy rà ban đầu e.g. [500, 1000]
+    recurringInterval: number; // Chu kỳ định kỳ lặp lại e.g. 500
+  };
   specifications: {
     power: string;
     voltage: string;
