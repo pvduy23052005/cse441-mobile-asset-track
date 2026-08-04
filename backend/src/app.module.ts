@@ -1,14 +1,16 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppService } from './app.service';
-import { SupabaseModule } from './modules/supabase/supabase.module';
+import { FirebaseModule } from './modules/firebase/firebase.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    SupabaseModule,
+    FirebaseModule,
+    UserModule,
   ],
   providers: [AppService],
 })
