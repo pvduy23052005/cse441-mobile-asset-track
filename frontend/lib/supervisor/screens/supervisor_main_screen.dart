@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../features/dashboard/widgets/supervisor_dashboard_view.dart';
 import '../features/approvals/widgets/supervisor_approval_view.dart';
 import '../features/analytics/widgets/supervisor_analytics_view.dart';
-import '../features/asset_management/widgets/supervisor_asset_manage_view.dart';
+import '../features/machine_management/widgets/supervisor_machine_manage_view.dart';
 
 class SupervisorMainScreen extends StatefulWidget {
   final int initialIndex;
@@ -19,14 +19,14 @@ class _SupervisorMainScreenState extends State<SupervisorMainScreen> {
     SupervisorDashboardView(),
     SupervisorApprovalView(),
     SupervisorAnalyticsView(),
-    SupervisorAssetManageView(),
+    SupervisorMachineManageView(),
   ];
 
   final List<String> _titles = const [
     'Dashboard Quản Lý',
     'Danh Sách Phê Duyệt',
     'Biểu Đồ KPI & Sức Khỏe',
-    'Quản Lý Tài Sản',
+    'Quản Lý Máy Móc',
   ];
 
   @override
@@ -76,9 +76,9 @@ class _SupervisorMainScreenState extends State<SupervisorMainScreen> {
             label: 'Analytics',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.inventory_outlined),
-            activeIcon: Icon(Icons.inventory),
-            label: 'Tài Sản',
+            icon: Icon(Icons.precision_manufacturing_outlined),
+            activeIcon: Icon(Icons.precision_manufacturing),
+            label: 'Máy Móc',
           ),
         ],
       ),

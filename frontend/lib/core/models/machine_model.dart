@@ -1,18 +1,18 @@
-class AssetModel {
+class MachineModel {
   final String id;
   final String name;
   final String code;
   final String status;
 
-  AssetModel({
+  MachineModel({
     required this.id,
     required this.name,
     required this.code,
     required this.status,
   });
 
-  factory AssetModel.fromJson(Map<String, dynamic> json) {
-    return AssetModel(
+  factory MachineModel.fromJson(Map<String, dynamic> json) {
+    return MachineModel(
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       code: json['code'] ?? '',

@@ -32,7 +32,7 @@ graph TD
     subgraph B [core/]
         B1[network/ - ApiClient & Interceptor]
         B2[services/ - Global Services]
-        B3[models/ - User, Asset & Ticket Models]
+        B3[models/ - User, Machine & Ticket Models]
         B4[routes/ - AppRouter & RoleGuard]
         B5[theme/ - Design System]
         B6[utils/ - Formatters & Enums]
@@ -50,8 +50,8 @@ Thư mục `lib/` được tổ chức chi tiết như sau:
 lib/
 ├── core/                             # 🟢 HẠ TẦNG DÙNG CHUNG TOÀN APP
 │   ├── network/                      # ApiClient, Firebase Auth Interceptor
-│   ├── services/                     # AuthService, AssetService, TicketService
-│   ├── models/                       # UserModel, AssetModel, TicketModel
+│   ├── services/                     # AuthService, MachineService, TicketService
+│   ├── models/                       # UserModel, MachineModel, TicketModel
 │   ├── routes/                       # AppRouter, RoleGuard
 │   ├── theme/                        # AppTheme (Material 3 ColorScheme & Styles)
 │   ├── utils/                        # Formatters, Enums (UserRole)
@@ -107,9 +107,9 @@ lib/
 │       ├── analytics/
 │       │   └── widgets/
 │       │       └── supervisor_analytics_view.dart
-│       └── asset_management/
+│       └── machine_management/
 │           └── widgets/
-│               └── supervisor_asset_manage_view.dart
+│               └── supervisor_machine_manage_view.dart
 │
 ├── shared_features/                  # 🟣 MÀN HÌNH CHUNG DÙNG GIỐNG NHAU (FULL SCREEN)
 │   ├── auth/                         # Cổng Login (Operator/Engineer & Supervisor)
@@ -129,7 +129,7 @@ Hệ thống phân định 3 nhóm vai trò chính thông qua `UserRole`:
 | :--- | :--- | :--- |
 | **Operator** *(Vận hành)* | • Màn hình chính (`operator_main_screen.dart`) chứa Navigation bar<br>• Dashboard (`operator_dashboard_view.dart`) <br>• Quét QR code (`operator_scan_qr_view.dart`)<br>• Checklist ca (`operator_checklist_view.dart`)<br>• Lịch sử ca (`operator_history_view.dart`) | `lib/operator/` |
 | **Engineer** *(Bảo trì/Kỹ thuật)* | • Màn hình chính (`engineer_main_screen.dart`) chứa Navigation bar<br>• Dashboard kỹ thuật (`engineer_dashboard_view.dart`)<br>• Ticket bảo trì (`engineer_ticket_list_view.dart`)<br>• Yêu cầu phụ tùng (`engineer_spare_parts_view.dart`)<br>• Lịch sử bảo trì (`engineer_history_view.dart`) | `lib/engineer/` |
-| **Supervisor** *(Giám sát/Quản lý)* | • Màn hình chính (`supervisor_main_screen.dart`) chứa Navigation bar<br>• Dashboard giám sát (`supervisor_dashboard_view.dart`)<br>• Phê duyệt (`supervisor_approval_view.dart`)<br>• Analytics KPI (`supervisor_analytics_view.dart`)<br>• Quản lý tài sản (`supervisor_asset_manage_view.dart`) | `lib/supervisor/` |
+| **Supervisor** *(Giám sát/Quản lý)* | • Màn hình chính (`supervisor_main_screen.dart`) chứa Navigation bar<br>• Dashboard giám sát (`supervisor_dashboard_view.dart`)<br>• Phê duyệt (`supervisor_approval_view.dart`)<br>• Analytics KPI (`supervisor_analytics_view.dart`)<br>• Quản lý máy móc (`supervisor_machine_manage_view.dart`) | `lib/supervisor/` |
 
 ---
 
@@ -137,8 +137,8 @@ Hệ thống phân định 3 nhóm vai trò chính thông qua `UserRole`:
 
 - **`main.dart`**: Khởi tạo `WidgetsFlutterBinding`, `Firebase.initializeApp()`, `StorageService.init()`, cài đặt `AppTheme.lightTheme` và định tuyến ban đầu tới `LoginPortalScreen`.
 - **`ApiClient`** (`core/network/`): Đóng gói các phương thức giao tiếp RESTful API tới NestJS Backend.
-- **Services** (`core/services/`): `AuthService`, `AssetService`, `TicketService`.
-- **Models** (`core/models/`): `UserModel`, `AssetModel`, `TicketModel`.
+- **Services** (`core/services/`): `AuthService`, `MachineService`, `TicketService`.
+- **Models** (`core/models/`): `UserModel`, `MachineModel`, `TicketModel`.
 - **Routes & Security** (`core/routes/`): `AppRouter`, `RoleGuard`.
 - **Global Widgets** (`core/widgets/`): `AppButton`, `AppTextField`, `LoadingWidget`.
 
