@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class SupervisorAssetManageView extends StatelessWidget {
-  const SupervisorAssetManageView({super.key});
+class SupervisorMachineManageView extends StatelessWidget {
+  const SupervisorMachineManageView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -9,7 +9,7 @@ class SupervisorAssetManageView extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       children: [
         const Text(
-          'Quản Lý Danh Mục Tài Sản',
+          'Quản Lý Máy Móc & Thiết Bị',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
@@ -17,7 +17,7 @@ class SupervisorAssetManageView extends StatelessWidget {
           child: ListTile(
             leading: const Icon(Icons.precision_manufacturing_outlined, color: Colors.blueGrey),
             title: const Text('Máy nén khí khu vực 1'),
-            subtitle: const Text('Mã TS: TS-1002 • Trạng thái: Bình thường'),
+            subtitle: const Text('Mã máy: MM-1002 • Trạng thái: Bình thường'),
             trailing: IconButton(
               icon: const Icon(Icons.edit_note_rounded),
               onPressed: () {},
