@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:frontend/core/routes/app_router.dart';
 import 'package:frontend/core/theme/app_theme.dart';
 
@@ -30,14 +31,20 @@ class _LoginPortalScreenState extends State<LoginPortalScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 1));
       if (!mounted) return;
 
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        AppRoutes.home,
-        (route) => false,
-      );
+      final emailInput = _emailController.text.toLowerCase().trim();
+      String userRole = 'operator';
+      if (emailInput.contains('supervisor')) {
+        userRole = 'supervisor';
+      } else if (emailInput.contains('engineer')) {
+        userRole = 'engineer';
+      } else if (emailInput.contains('operator')) {
+        userRole = 'operator';
+      }
+
+      AppRouter.navigateByRole(context, userRole);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
