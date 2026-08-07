@@ -69,39 +69,42 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     <div className="space-y-3 pb-20">
       
       {/* Top Header Row with System Settings & Time Filter (Wireframe 5.F) */}
-      <div className="bg-white p-3.5 rounded-md border border-slate-200 shadow-xs space-y-2.5">
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <h2 className="text-xs font-black uppercase text-slate-900">{thresholdConfig.workshopName}</h2>
-            <p className="text-[11px] text-slate-500 font-medium">
-              Ngưỡng duyệt linh kiện: <span className="font-mono font-bold text-emerald-700">{(thresholdConfig.costApprovalThreshold).toLocaleString('vi-VN')} VNĐ</span>
-            </p>
-          </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            {onOpenAddMachine && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onOpenAddMachine}
-                className="gap-1 text-xs text-emerald-800 bg-emerald-50 border-emerald-300 hover:bg-emerald-100 font-bold"
-              >
-                + Thêm Máy Mới
-              </Button>
-            )}
-            {onOpenUserManagement && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onOpenUserManagement}
-                className="gap-1 text-xs text-amber-800 bg-amber-50 border-amber-200 hover:bg-amber-100 font-bold"
-              >
-                <Users className="w-3.5 h-3.5 text-amber-600" /> Quản Lý Nhân Sự
-              </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={onOpenThresholdConfig} className="gap-1 text-xs">
-              <Sliders className="w-3.5 h-3.5 text-amber-600" /> Cấu Hình Ngưỡng
+      <div className="bg-white p-3.5 rounded-md border border-slate-200 shadow-xs space-y-3">
+        {/* Workshop Title & Threshold Row */}
+        <div>
+          <h2 className="text-sm font-black uppercase text-slate-900 leading-snug">
+            {thresholdConfig.workshopName}
+          </h2>
+          <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+            Ngưỡng duyệt linh kiện: <span className="font-mono font-bold text-emerald-700">{(thresholdConfig.costApprovalThreshold).toLocaleString('vi-VN')} VNĐ</span>
+          </p>
+        </div>
+
+        {/* Action Buttons Row */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+          {onOpenAddMachine && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onOpenAddMachine}
+              className="gap-1 text-xs text-emerald-800 bg-emerald-50 border-emerald-300 hover:bg-emerald-100 font-bold shrink-0"
+            >
+              + Thêm Máy Mới
             </Button>
-          </div>
+          )}
+          {onOpenUserManagement && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onOpenUserManagement}
+              className="gap-1 text-xs text-amber-800 bg-amber-50 border-amber-200 hover:bg-amber-100 font-bold shrink-0"
+            >
+              <Users className="w-3.5 h-3.5 text-amber-600" /> Quản Lý Nhân Sự
+            </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={onOpenThresholdConfig} className="gap-1 text-xs shrink-0">
+            <Sliders className="w-3.5 h-3.5 text-amber-600" /> Cấu Hình Ngưỡng
+          </Button>
         </div>
 
         {/* Time Filter Buttons (Wireframe 5.F) */}

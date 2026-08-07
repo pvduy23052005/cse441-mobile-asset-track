@@ -98,33 +98,35 @@ export const RoleHeader: React.FC<RoleHeaderProps> = ({
 
       {/* User Role Profile Bar when Logged In */}
       {currentUserEmail ? (
-        <div className="flex items-center justify-between bg-slate-50 p-1.5 px-2.5 rounded-lg border border-slate-200 text-xs font-bold">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-1.5 bg-slate-50 p-1.5 px-2 rounded-lg border border-slate-200 text-xs font-bold min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
             {currentRole === 'OPERATOR' && (
-              <span className="inline-flex items-center gap-1 text-emerald-800 font-extrabold text-[11px]">
+              <span className="inline-flex items-center gap-1 text-emerald-800 font-extrabold text-[11px] shrink-0">
                 <HardHat className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Công Nhân Vận Hành:</span>
+                <span>Công Nhân:</span>
               </span>
             )}
             {currentRole === 'ME_ENGINEER' && (
-              <span className="inline-flex items-center gap-1 text-sky-800 font-extrabold text-[11px]">
+              <span className="inline-flex items-center gap-1 text-sky-800 font-extrabold text-[11px] shrink-0">
                 <Wrench className="w-3.5 h-3.5 text-sky-600" />
-                <span>Kỹ Sư Cơ Điện (ME):</span>
+                <span>Kỹ Sư ME:</span>
               </span>
             )}
             {currentRole === 'SUPERVISOR' && (
-              <span className="inline-flex items-center gap-1 text-amber-800 font-extrabold text-[11px]">
+              <span className="inline-flex items-center gap-1 text-amber-800 font-extrabold text-[11px] shrink-0">
                 <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
                 <span>Quản Đốc Phân Xưởng:</span>
               </span>
             )}
-            <span className="text-slate-900 font-mono text-[11px] font-bold">{currentUserEmail}</span>
+            <span className="text-slate-900 font-mono text-[11px] font-bold truncate flex-1 min-w-0" title={currentUserEmail}>
+              {currentUserEmail}
+            </span>
           </div>
 
           {onOpenLogin && (
             <button
               onClick={onOpenLogin}
-              className="text-[10px] text-slate-500 hover:text-rose-600 underline font-semibold transition"
+              className="text-[10px] text-slate-500 hover:text-rose-600 underline font-semibold transition shrink-0 ml-1"
             >
               [Đổi Tài Khoản]
             </button>
