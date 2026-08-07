@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:frontend/core/routes/app_router.dart';
+import 'package:frontend/core/services/auth_service.dart';
 import 'package:frontend/core/theme/app_theme.dart';
 
 class LoginPortalScreen extends StatefulWidget {
@@ -14,6 +14,7 @@ class _LoginPortalScreenState extends State<LoginPortalScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authService = AuthService();
 
   bool _isPasswordVisible = false;
   bool _isLoading = false;
@@ -31,25 +32,32 @@ class _LoginPortalScreenState extends State<LoginPortalScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await Future.delayed(const Duration(seconds: 1));
+      final response = await _authService.login(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
       if (!mounted) return;
 
-      final emailInput = _emailController.text.toLowerCase().trim();
-      String userRole = 'operator';
-      if (emailInput.contains('supervisor')) {
-        userRole = 'supervisor';
-      } else if (emailInput.contains('engineer')) {
-        userRole = 'engineer';
-      } else if (emailInput.contains('operator')) {
-        userRole = 'operator';
-      }
+      final userData = response['user'] as Map<String, dynamic>?;
+      final userRole = userData?['role']?.toString();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            response['message']?.toString() ?? 'Đăng nhập thành công!',
+          ),
+          backgroundColor: AppTheme.primaryColor,
+        ),
+      );
 
       AppRouter.navigateByRole(context, userRole);
     } catch (e) {
       if (!mounted) return;
+      final errorMessage = e.toString().replaceAll('Exception: ', '');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Đăng nhập thất bại: $e'),
+          content: Text('Đăng nhập thất bại: $errorMessage'),
           backgroundColor: AppTheme.errorColor,
         ),
       );
@@ -270,8 +278,9 @@ class _LoginFormCard extends StatelessWidget {
                   ),
                 ),
                 validator: (val) {
-                  if (val == null || val.isEmpty)
+                  if (val == null || val.isEmpty) {
                     return 'Vui lòng nhập mật khẩu';
+                  }
                   if (val.length < 6) return 'Mật khẩu phải từ 6 ký tự';
                   return null;
                 },
