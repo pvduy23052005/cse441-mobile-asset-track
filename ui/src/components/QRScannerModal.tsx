@@ -39,7 +39,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         <div className="px-5 py-4 flex items-center justify-between border-b border-slate-100 bg-white">
           <div className="flex items-center gap-2 text-slate-900 font-extrabold text-sm">
             <QrCode className="w-5 h-5 text-emerald-600" />
-            <span>Quét Mã QR Hộ Chiếu Máy</span>
+            <span>Quét Mã QR thông tin máy</span>
           </div>
           <div className="flex items-center gap-2">
             <button
