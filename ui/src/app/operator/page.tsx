@@ -89,8 +89,8 @@ export default function OperatorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
-      <div className="w-full max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col relative border-x border-slate-200 shadow-2xl">
+    <div className="h-screen max-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white overflow-hidden">
+      <div className="w-full max-w-md mx-auto h-full max-h-full bg-slate-50 flex flex-col relative border-x border-slate-200 shadow-2xl overflow-hidden">
         
         {/* Header */}
         <header className="p-4 bg-white border-b border-slate-200 flex items-center justify-between sticky top-0 z-30 backdrop-blur-md bg-white/90 shadow-xs">

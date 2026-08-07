@@ -434,10 +434,10 @@ export default function AssetTrackMobileApp() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
+    <div className="h-screen max-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white overflow-hidden">
       
       {/* Mobile Frame Container */}
-      <div className="w-full max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col relative border-x border-slate-200 shadow-2xl">
+      <div className="w-full max-w-md mx-auto h-full max-h-full bg-slate-50 flex flex-col relative border-x border-slate-200 shadow-2xl overflow-hidden">
         
         {/* Role Header */}
         <RoleHeader
