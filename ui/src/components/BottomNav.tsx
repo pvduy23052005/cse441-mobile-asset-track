@@ -15,8 +15,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   pendingTasksCount,
 }) => {
   return (
-    <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200/90 px-4 py-1.5 shadow-lg">
-      <div className="max-w-md mx-auto flex items-center justify-around">
+    <div className="sticky bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-lg border-t border-slate-200/90 px-3 py-1.5 shadow-lg">
+      <div className="w-full flex items-center justify-around">
 
         {/* Home Tab */}
         <button
