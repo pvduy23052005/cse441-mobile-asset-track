@@ -16,6 +16,7 @@ import { WorkOrder, PMChecklist, PMChecklistItem, SparePartItem } from '../../ty
 import { initialWorkOrders, initialPMChecklists, initialThresholdConfig } from '../../data/mockData';
 import { PMChecklistModal } from '../../components/PMChecklistModal';
 import { WorkOrderDetailModal } from '../../components/WorkOrderDetailModal';
+import { PhoneDeviceFrame } from '../../components/PhoneDeviceFrame';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -91,12 +92,16 @@ export default function MEEngineerPage() {
   const pendingSOSCount = workOrders.filter((w) => w.status === 'PENDING').length;
   const inProgressSOSCount = workOrders.filter((w) => w.status === 'IN_PROGRESS' || w.status === 'REJECTED').length;
 
-  return (
-    <div className="h-screen max-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans selection:bg-cyan-500 selection:text-white overflow-hidden">
-      <div className="w-full max-w-md mx-auto h-full max-h-full bg-slate-50 flex flex-col relative border-x border-slate-200 shadow-2xl overflow-hidden">
-        
-        {/* Header */}
-        <header className="p-4 bg-white border-b border-slate-200 flex items-center justify-between sticky top-0 z-30 backdrop-blur-md bg-white/90 shadow-xs">
+    return (
+      <PhoneDeviceFrame
+        activeSosCount={pendingSOSCount}
+        currentUserRole="ME_ENGINEER"
+        currentUserEmail="engineer.duc@factory.com"
+      >
+        <div className="w-full flex-1 bg-slate-50 flex flex-col relative overflow-hidden">
+          
+          {/* Header */}
+          <header className="p-3 bg-white border-b border-slate-200 flex items-center justify-between sticky top-0 z-30 backdrop-blur-md bg-white/95 shadow-xs">
           <div className="flex items-center gap-3">
             <Link
               href="/"
@@ -332,6 +337,6 @@ export default function MEEngineerPage() {
         />
 
       </div>
-    </div>
+    </PhoneDeviceFrame>
   );
 }

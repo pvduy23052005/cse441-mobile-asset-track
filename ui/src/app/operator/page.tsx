@@ -17,6 +17,7 @@ import { initialMachines, initialWorkOrders } from '../../data/mockData';
 import { QRScannerModal } from '../../components/QRScannerModal';
 import { MachinePassportModal } from '../../components/MachinePassportModal';
 import { SOSFormModal } from '../../components/SOSFormModal';
+import { PhoneDeviceFrame } from '../../components/PhoneDeviceFrame';
 import { Button } from '@/components/ui/button';
 
 export default function OperatorPage() {
@@ -88,12 +89,22 @@ export default function OperatorPage() {
     );
   };
 
+  const pendingSosCount = workOrders.filter((w) => (w.severity === 'CRITICAL' || w.severity === 'HIGH') && w.status === 'PENDING').length;
+  const activeMachinesCount = machines.filter((m) => m.status === 'ACTIVE').length;
+
   return (
-    <div className="h-screen max-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white overflow-hidden">
-      <div className="w-full max-w-md mx-auto h-full max-h-full bg-slate-50 flex flex-col relative border-x border-slate-200 shadow-2xl overflow-hidden">
-        
-        {/* Header */}
-        <header className="p-4 bg-white border-b border-slate-200 flex items-center justify-between sticky top-0 z-30 backdrop-blur-md bg-white/90 shadow-xs">
+    <PhoneDeviceFrame
+      activeSosCount={pendingSosCount}
+      activeMachinesCount={activeMachinesCount}
+      totalMachinesCount={machines.length}
+      currentUserRole="OPERATOR"
+      currentUserEmail="operator.nam@factory.com"
+      onOpenQR={() => setIsQRScannerOpen(true)}
+    >
+        <div className="w-full flex-1 bg-slate-50 flex flex-col relative overflow-hidden">
+          
+          {/* Header */}
+          <header className="p-3 bg-white border-b border-slate-200 flex items-center justify-between sticky top-0 z-30 backdrop-blur-md bg-white/95 shadow-xs">
           <div className="flex items-center gap-3">
             <Link
               href="/"
@@ -220,6 +231,6 @@ export default function OperatorPage() {
         />
 
       </div>
-    </div>
+    </PhoneDeviceFrame>
   );
 }

@@ -53,10 +53,10 @@ export const RoleHeader: React.FC<RoleHeaderProps> = ({
 
           <button
             onClick={onOpenQR}
-            className="px-2.5 py-1 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 transition flex items-center gap-1 text-[11px] font-bold shadow-xs"
+            className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 transition flex items-center justify-center shadow-xs"
+            title="Quét mã QR máy"
           >
-            <QrCode className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Quét QR</span>
+            <QrCode className="w-4 h-4 text-emerald-600" />
           </button>
 
           <div className="relative">

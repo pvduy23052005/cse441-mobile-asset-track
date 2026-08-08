@@ -49,6 +49,7 @@ import { DashboardView } from '../components/DashboardView';
 import { UserManagementModal } from '../components/UserManagementModal';
 import { LoginModal } from '../components/LoginModal';
 import { AddMachineModal } from '../components/AddMachineModal';
+import { PhoneDeviceFrame } from '../components/PhoneDeviceFrame';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -433,11 +434,20 @@ export default function AssetTrackMobileApp() {
     }
   };
 
+  const pendingSOSCount = workOrders.filter((w) => (w.severity === 'CRITICAL' || w.severity === 'HIGH') && w.status === 'PENDING').length;
+  const activeMachinesCount = machines.filter((m) => m.status === 'ACTIVE').length;
+
   return (
-    <div className="h-screen max-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white overflow-hidden">
-      
-      {/* Mobile Frame Container */}
-      <div className="w-full max-w-md mx-auto h-full max-h-full bg-slate-50 flex flex-col relative border-x border-slate-200 shadow-2xl overflow-hidden">
+    <PhoneDeviceFrame
+      activeSosCount={pendingSOSCount}
+      activeMachinesCount={activeMachinesCount}
+      totalMachinesCount={machines.length}
+      currentUserRole={currentRole}
+      currentUserEmail={currentUserEmail}
+      onOpenQR={() => setIsQRScannerOpen(true)}
+      onOpenLogin={() => setIsLoginModalOpen(true)}
+    >
+      <div className="w-full flex-1 bg-slate-50 flex flex-col relative overflow-hidden">
         
         {/* Role Header */}
         <RoleHeader
@@ -721,6 +731,7 @@ export default function AssetTrackMobileApp() {
                   onOpenAddMachine={() => setIsAddMachineModalOpen(true)}
                   onApproveSparePart={handleApproveSparePart}
                   onRejectSparePart={handleRejectSparePart}
+                  onOpenMachinePassport={(m) => setPassportMachine(m)}
                 />
               )}
             </>
@@ -1077,6 +1088,6 @@ export default function AssetTrackMobileApp() {
         />
 
       </div>
-    </div>
+    </PhoneDeviceFrame>
   );
 }
