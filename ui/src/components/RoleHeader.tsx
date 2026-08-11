@@ -1,14 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Bell, QrCode, ShieldCheck, Wrench, HardHat, LogIn, User } from 'lucide-react';
+import React from 'react';
+import { ShieldCheck, Wrench, HardHat, LogIn } from 'lucide-react';
 import { UserRole, SystemNotification } from '../types';
 
 interface RoleHeaderProps {
   currentRole: UserRole;
   onChangeRole: (role: UserRole) => void;
-  notifications: SystemNotification[];
-  onOpenQR: () => void;
+  notifications?: SystemNotification[];
+  onOpenQR?: () => void;
   onOpenLogin?: () => void;
   currentUserEmail?: string;
 }
@@ -16,20 +16,15 @@ interface RoleHeaderProps {
 export const RoleHeader: React.FC<RoleHeaderProps> = ({
   currentRole,
   onChangeRole,
-  notifications,
-  onOpenQR,
   onOpenLogin,
   currentUserEmail,
 }) => {
-  const [showNotifications, setShowNotifications] = useState(false);
-  const unreadCount = notifications.filter((n) => !n.read).length;
-
   return (
     <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 p-2 shadow-xs">
-      {/* Top Header Row */}
+      {/* Top Header Row: Clean Logo & User Account Button */}
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-black text-xs shadow-xs">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-black text-xs shadow-xs">
             AT
           </div>
           <div>
@@ -38,61 +33,18 @@ export const RoleHeader: React.FC<RoleHeaderProps> = ({
           </div>
         </div>
 
-        {/* Quick QR, Login & Notification Bell */}
+        {/* User Account / Login Button */}
         <div className="flex items-center gap-1.5">
           {onOpenLogin && (
             <button
               onClick={onOpenLogin}
-              className="px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition flex items-center gap-1 text-[10px] font-extrabold shadow-xs"
+              className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition flex items-center gap-1 text-[11px] font-extrabold shadow-xs"
               title="Đăng Nhập / Chuyển Tài Khoản"
             >
               <LogIn className="w-3.5 h-3.5 text-amber-600" />
               <span>{currentUserEmail ? currentUserEmail.split('@')[0] : 'Đăng Nhập'}</span>
             </button>
           )}
-
-          <button
-            onClick={onOpenQR}
-            className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 transition flex items-center justify-center shadow-xs"
-            title="Quét mã QR máy"
-          >
-            <QrCode className="w-4 h-4 text-emerald-600" />
-          </button>
-
-          <div className="relative">
-            <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-1.5 rounded bg-slate-100 hover:bg-slate-200/80 text-slate-700 border border-slate-200 transition"
-            >
-              <Bell className="w-3.5 h-3.5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-500 text-white font-bold text-[8px] flex items-center justify-center animate-bounce shadow-xs">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-
-            {/* Notification Dropdown */}
-            {showNotifications && (
-              <div className="absolute right-0 mt-2 w-72 bg-white border border-slate-200 rounded-md shadow-xl p-3 z-50 animate-in fade-in duration-150">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-1.5 mb-1.5">
-                  <span className="text-[11px] font-bold text-slate-800">Thông Báo Thời Gian Thực</span>
-                  <span className="text-[9px] text-emerald-600 font-mono font-bold bg-emerald-50 px-1.5 py-0.5 rounded">Realtime</span>
-                </div>
-                <div className="space-y-1.5 max-h-60 overflow-y-auto">
-                  {notifications.map((n) => (
-                    <div key={n.id} className="p-2 rounded bg-slate-50 border border-slate-150 text-[11px]">
-                      <div className="flex items-center justify-between mb-0.5">
-                        <span className="font-bold text-rose-600 text-[10px]">{n.title}</span>
-                        <span className="text-[9px] text-slate-400">{n.timestamp}</span>
-                      </div>
-                      <p className="text-slate-600 text-[10px] leading-snug">{n.message}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
 
