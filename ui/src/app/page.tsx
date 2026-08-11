@@ -8,10 +8,7 @@ import {
   Cpu,
   QrCode,
   ChevronRight,
-  WifiOff,
-  AlertTriangle,
-  FileSignature,
-  Sliders,
+  Bell,
 } from 'lucide-react';
 
 import {
@@ -54,11 +51,12 @@ import { PhoneDeviceFrame } from '../components/PhoneDeviceFrame';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { sound } from '@/lib/soundEffects';
 
 export default function AssetTrackMobileApp() {
   const [currentRole, setCurrentRole] = useState<UserRole>('OPERATOR');
   const [currentUserEmail, setCurrentUserEmail] = useState('operator.an@factory.com');
-  const [activeTab, setActiveTab] = useState<'HOME' | 'SCANNER' | 'TASKS' | 'MACHINES'>('HOME');
+  const [activeTab, setActiveTab] = useState<'HOME' | 'SCANNER' | 'TASKS' | 'MACHINES' | 'NOTIFICATIONS'>('HOME');
 
   // Core Data States according to overview.md
   const [machines, setMachines] = useState<Machine[]>(initialMachines);
@@ -426,7 +424,7 @@ export default function AssetTrackMobileApp() {
 
   
 
-  const handleBottomTabChange = (tab: 'HOME' | 'SCANNER' | 'TASKS' | 'MACHINES') => {
+  const handleBottomTabChange = (tab: 'HOME' | 'SCANNER' | 'TASKS' | 'MACHINES' | 'NOTIFICATIONS') => {
     if (tab === 'SCANNER') {
       setIsQRScannerOpen(true);
     } else {
@@ -971,6 +969,52 @@ export default function AssetTrackMobileApp() {
             </div>
           )}
 
+          {/* TAB: NOTIFICATIONS LIST */}
+          {activeTab === 'NOTIFICATIONS' && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <Bell className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Thông Báo Thời Gian Thực ({notifications.length})</span>
+                  </h2>
+                  <p className="text-[10px] text-slate-500 font-medium mt-0.5">
+                    Cảnh báo sự cố máy, mốc bảo trì PM & nghiệm thu
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+                    sound.playClick();
+                  }}
+                  className="text-[10px] text-emerald-700 font-bold hover:underline bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200"
+                >
+                  Đã đọc tất cả
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {notifications.map((n) => (
+                  <div
+                    key={n.id}
+                    className={`p-3 rounded-xl border transition space-y-1 shadow-xs ${
+                      n.read ? 'bg-white border-slate-200' : 'bg-emerald-50/50 border-emerald-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-slate-900 flex items-center gap-1.5">
+                        {!n.read && <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-ping" />}
+                        {n.title}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-mono">{n.timestamp}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 leading-snug">{n.message}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
         </main>
 
         {/* Bottom Mobile Tab Bar */}
@@ -978,6 +1022,7 @@ export default function AssetTrackMobileApp() {
           activeTab={activeTab}
           onChangeTab={handleBottomTabChange}
           pendingTasksCount={workOrders.filter((w) => w.status === 'PENDING').length}
+          unreadNotificationsCount={notifications.filter((n) => !n.read).length}
         />
 
         {/* MODALS */}
