@@ -7,6 +7,7 @@ Tài liệu này mô tả chi tiết kiến trúc phần mềm, cấu trúc thư
 ## 📌 1. Tổng Quan Kiến Trúc (Architecture Overview)
 
 Ứng dụng sử dụng mô hình **Feature-Driven Architecture** (Kiến trúc phân theo tính năng) kết hợp với **Role-Based Access Control (RBAC)** nhằm mục đích:
+
 - **Tách biệt trách nhiệm (Separation of Concerns):** Phân chia rõ ràng giữa tầng hệ thống chung (`core`), các tính năng theo vai trò người dùng (`operator`, `engineer`, `supervisor`), và tính năng dùng chung (`shared_features`).
 - **Khả năng mở rộng (Scalability):** Dễ dàng bổ sung các tính năng mới mà không làm ảnh hưởng đến các mô-đun hiện có.
 - **Tái sử dụng code (Reusability):** Tối ưu các UI component và logic dùng chung tại `core` và `shared_features`.
@@ -16,7 +17,7 @@ graph TD
     A[main.dart - App Entry Point] --> B[core/ - Infrastructure Layer]
     A --> C[shared_features/ - Common Modules]
     A --> D[Role-Based Feature Modules]
-    
+
     subgraph D [Role-Based Feature Modules]
         D1[operator/ - Vận hành]
         D2[engineer/ - Kỹ thuật]
@@ -125,11 +126,11 @@ lib/
 
 Hệ thống phân định 3 nhóm vai trò chính thông qua `UserRole`:
 
-| Vai Trò (Role) | Chức Năng Chính | Mô-đun Tương Ứng |
-| :--- | :--- | :--- |
-| **Operator** *(Vận hành)* | • Màn hình chính (`operator_main_screen.dart`) chứa Navigation bar<br>• Dashboard (`operator_dashboard_view.dart`) <br>• Quét QR code (`operator_scan_qr_view.dart`)<br>• Checklist ca (`operator_checklist_view.dart`)<br>• Lịch sử ca (`operator_history_view.dart`) | `lib/operator/` |
-| **Engineer** *(Bảo trì/Kỹ thuật)* | • Màn hình chính (`engineer_main_screen.dart`) chứa Navigation bar<br>• Dashboard kỹ thuật (`engineer_dashboard_view.dart`)<br>• Ticket bảo trì (`engineer_ticket_list_view.dart`)<br>• Yêu cầu phụ tùng (`engineer_spare_parts_view.dart`)<br>• Lịch sử bảo trì (`engineer_history_view.dart`) | `lib/engineer/` |
-| **Supervisor** *(Giám sát/Quản lý)* | • Màn hình chính (`supervisor_main_screen.dart`) chứa Navigation bar<br>• Dashboard giám sát (`supervisor_dashboard_view.dart`)<br>• Phê duyệt (`supervisor_approval_view.dart`)<br>• Analytics KPI (`supervisor_analytics_view.dart`)<br>• Quản lý máy móc (`supervisor_machine_manage_view.dart`) | `lib/supervisor/` |
+| Vai Trò (Role)                      | Chức Năng Chính                                                                                                                                                                                                                                                                                     | Mô-đun Tương Ứng  |
+| :---------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------- |
+| **Operator** _(Vận hành)_           | • Màn hình chính (`operator_main_screen.dart`) chứa Navigation bar<br>• Dashboard (`operator_dashboard_view.dart`) <br>• Quét QR code (`operator_scan_qr_view.dart`)<br>• Checklist ca (`operator_checklist_view.dart`)<br>• Lịch sử ca (`operator_history_view.dart`)                              | `lib/operator/`   |
+| **Engineer** _(Bảo trì/Kỹ thuật)_   | • Màn hình chính (`engineer_main_screen.dart`) chứa Navigation bar<br>• Dashboard kỹ thuật (`engineer_dashboard_view.dart`)<br>• Ticket bảo trì (`engineer_ticket_list_view.dart`)<br>• Yêu cầu phụ tùng (`engineer_spare_parts_view.dart`)<br>• Lịch sử bảo trì (`engineer_history_view.dart`)     | `lib/engineer/`   |
+| **Supervisor** _(Giám sát/Quản lý)_ | • Màn hình chính (`supervisor_main_screen.dart`) chứa Navigation bar<br>• Dashboard giám sát (`supervisor_dashboard_view.dart`)<br>• Phê duyệt (`supervisor_approval_view.dart`)<br>• Analytics KPI (`supervisor_analytics_view.dart`)<br>• Quản lý máy móc (`supervisor_machine_manage_view.dart`) | `lib/supervisor/` |
 
 ---
 

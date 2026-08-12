@@ -4,6 +4,7 @@ import '../../engineer/screens/engineer_main_screen.dart';
 import '../../operator/screens/operator_main_screen.dart';
 import '../../shared_features/asset_common/asset_lookup_screen.dart';
 import '../../shared_features/auth/login_portal_screen.dart';
+import '../../shared_features/auth/splash_screen.dart';
 import '../../shared_features/profile/profile_screen.dart';
 import '../../supervisor/screens/supervisor_main_screen.dart';
 
@@ -58,7 +59,7 @@ class AppRouter {
     routes: [
       GoRoute(
         path: AppRoutes.home,
-        redirect: (context, state) => AppRoutes.loginPortal,
+        builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
         path: AppRoutes.loginPortal,

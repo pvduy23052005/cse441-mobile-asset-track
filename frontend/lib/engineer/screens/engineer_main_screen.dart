@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../core/routes/app_router.dart';
+import '../../core/utils/storage_service.dart';
+import '../../core/widgets/app_drawer.dart';
+import 'package:go_router/go_router.dart';
 import '../features/dashboard/widgets/engineer_dashboard_view.dart';
 import '../features/ticket_management/widgets/engineer_ticket_list_view.dart';
 import '../features/spare_parts/widgets/engineer_spare_parts_view.dart';
@@ -37,13 +41,45 @@ class _EngineerMainScreenState extends State<EngineerMainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userProfile = StorageService.getUserProfile();
+    final displayName = userProfile['fullName']?.isNotEmpty == true
+        ? userProfile['fullName']!
+        : 'Kỹ Sư Bảo Trì';
+    final displayEmail = userProfile['email']?.isNotEmpty == true
+        ? userProfile['email']!
+        : 'engineer@factory.com';
+
     return Scaffold(
       appBar: AppBar(
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu_rounded),
+            tooltip: 'Menu',
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
         title: Text(_titles[_currentIndex]),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none_rounded),
             onPressed: () {},
+          ),
+        ],
+      ),
+      drawer: AppDrawer(
+        userName: displayName,
+        userEmail: displayEmail,
+        roleLabel: 'Đội Kỹ Thuật Cơ Điện',
+        roleBadge: 'ENGINEER',
+        roleColor: const Color(0xFFD97706),
+        toolNavItems: [
+          DrawerMenuItem(
+            icon: Icons.manage_search_rounded,
+            title: 'Tra Cứu Thiết Bị',
+            onTap: () {
+              Navigator.pop(context);
+              context.push(AppRoutes.assetLookup);
+            },
           ),
         ],
       ),
