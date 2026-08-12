@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/routes/app_router.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/utils/storage_service.dart';
 import '../../core/widgets/app_drawer.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,8 @@ import '../features/dashboard/widgets/operator_dashboard_view.dart';
 import '../features/scan/widgets/operator_scan_qr_view.dart';
 import '../features/checklist/widgets/operator_checklist_view.dart';
 import '../features/history/widgets/operator_history_view.dart';
+import '../widgets/operator_bottom_nav_bar.dart';
+import '../widgets/operator_qr_scanner_sheet.dart';
 
 class OperatorMainScreen extends StatefulWidget {
   final int initialIndex;
@@ -27,11 +30,14 @@ class _OperatorMainScreenState extends State<OperatorMainScreen> {
   ];
 
   final List<String> _titles = const [
-    'Dashboard Vận Hành',
-    'Quét Mã QR / RFID',
-    'Checklist Bàn Giao Ca',
-    'Lịch Sử Vận Hành',
+    'Trang Chủ',
+    'Máy Móc',
+    'Nhiệm Vụ',
+    'Thông Báo',
   ];
+
+  final int _pendingTasksCount = 2;
+  final int _unreadNotificationsCount = 2;
 
   @override
   void initState() {
@@ -39,15 +45,15 @@ class _OperatorMainScreenState extends State<OperatorMainScreen> {
     _currentIndex = widget.initialIndex;
   }
 
+  void _openQRScannerModal() {
+    OperatorQRScannerSheet.show(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     final userProfile = StorageService.getUserProfile();
-    final displayName = userProfile['fullName']?.isNotEmpty == true
-        ? userProfile['fullName']!
-        : 'Công Nhân Vận Hành';
-    final displayEmail = userProfile['email']?.isNotEmpty == true
-        ? userProfile['email']!
-        : 'operator@factory.com';
+    final displayName = userProfile['fullName'];
+    final displayEmail = userProfile['email'];
 
     return Scaffold(
       appBar: AppBar(
@@ -62,7 +68,7 @@ class _OperatorMainScreenState extends State<OperatorMainScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none_rounded),
-            onPressed: () {},
+            onPressed: () => setState(() => _currentIndex = 3),
           ),
         ],
       ),
@@ -71,8 +77,16 @@ class _OperatorMainScreenState extends State<OperatorMainScreen> {
         userEmail: displayEmail,
         roleLabel: 'Tổ Vận Hành Máy',
         roleBadge: 'OPERATOR',
-        roleColor: const Color(0xFF0284C7),
+        roleColor: AppTheme.primaryColor,
         toolNavItems: [
+          DrawerMenuItem(
+            icon: Icons.qr_code_scanner_rounded,
+            title: 'Quét Mã QR Thiết Bị',
+            onTap: () {
+              Navigator.pop(context);
+              _openQRScannerModal();
+            },
+          ),
           DrawerMenuItem(
             icon: Icons.manage_search_rounded,
             title: 'Tra Cứu Thiết Bị',
@@ -83,40 +97,13 @@ class _OperatorMainScreenState extends State<OperatorMainScreen> {
           ),
         ],
       ),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _views,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
+      body: IndexedStack(index: _currentIndex, children: _views),
+      bottomNavigationBar: OperatorBottomNavBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            activeIcon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.qr_code_scanner_outlined),
-            activeIcon: Icon(Icons.qr_code_scanner),
-            label: 'Quét QR',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.fact_check_outlined),
-            activeIcon: Icon(Icons.fact_check),
-            label: 'Checklist',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history_outlined),
-            activeIcon: Icon(Icons.history),
-            label: 'Lịch sử',
-          ),
-        ],
+        pendingTasksCount: _pendingTasksCount,
+        unreadNotificationsCount: _unreadNotificationsCount,
+        onItemSelected: (index) => setState(() => _currentIndex = index),
+        onQRTapped: _openQRScannerModal,
       ),
     );
   }
