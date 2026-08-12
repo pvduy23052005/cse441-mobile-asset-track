@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/routes/app_router.dart';
+import '../../core/utils/storage_service.dart';
 import '../../core/widgets/app_drawer.dart';
 import 'package:go_router/go_router.dart';
 import '../features/dashboard/widgets/engineer_dashboard_view.dart';
@@ -40,6 +41,14 @@ class _EngineerMainScreenState extends State<EngineerMainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userProfile = StorageService.getUserProfile();
+    final displayName = userProfile['fullName']?.isNotEmpty == true
+        ? userProfile['fullName']!
+        : 'Kỹ Sư Bảo Trì';
+    final displayEmail = userProfile['email']?.isNotEmpty == true
+        ? userProfile['email']!
+        : 'engineer@factory.com';
+
     return Scaffold(
       appBar: AppBar(
         leading: Builder(
@@ -58,40 +67,11 @@ class _EngineerMainScreenState extends State<EngineerMainScreen> {
         ],
       ),
       drawer: AppDrawer(
-        userName: 'Lê Kỹ Sư Bảo Trì',
-        userEmail: 'engineer@factory.com',
+        userName: displayName,
+        userEmail: displayEmail,
         roleLabel: 'Đội Kỹ Thuật Cơ Điện',
         roleBadge: 'ENGINEER',
         roleColor: const Color(0xFFD97706),
-        currentIndex: _currentIndex,
-        onIndexSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        mainNavItems: const [
-          DrawerMenuItem(
-            icon: Icons.dashboard_rounded,
-            title: 'Dashboard Kỹ Thuật',
-            index: 0,
-          ),
-          DrawerMenuItem(
-            icon: Icons.confirmation_number_rounded,
-            title: 'Danh Sách Ticket Bảo Trì',
-            index: 1,
-            badgeCount: 3,
-          ),
-          DrawerMenuItem(
-            icon: Icons.build_rounded,
-            title: 'Yêu Cầu & Phụ Tùng',
-            index: 2,
-          ),
-          DrawerMenuItem(
-            icon: Icons.history_rounded,
-            title: 'Lịch Sử Bảo Trì',
-            index: 3,
-          ),
-        ],
         toolNavItems: [
           DrawerMenuItem(
             icon: Icons.manage_search_rounded,

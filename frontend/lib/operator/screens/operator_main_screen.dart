@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/routes/app_router.dart';
+import '../../core/utils/storage_service.dart';
 import '../../core/widgets/app_drawer.dart';
 import 'package:go_router/go_router.dart';
 import '../features/dashboard/widgets/operator_dashboard_view.dart';
@@ -40,6 +41,14 @@ class _OperatorMainScreenState extends State<OperatorMainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userProfile = StorageService.getUserProfile();
+    final displayName = userProfile['fullName']?.isNotEmpty == true
+        ? userProfile['fullName']!
+        : 'Công Nhân Vận Hành';
+    final displayEmail = userProfile['email']?.isNotEmpty == true
+        ? userProfile['email']!
+        : 'operator@factory.com';
+
     return Scaffold(
       appBar: AppBar(
         leading: Builder(
@@ -58,39 +67,11 @@ class _OperatorMainScreenState extends State<OperatorMainScreen> {
         ],
       ),
       drawer: AppDrawer(
-        userName: 'Trần Công Nhân',
-        userEmail: 'operator@factory.com',
+        userName: displayName,
+        userEmail: displayEmail,
         roleLabel: 'Tổ Vận Hành Máy',
         roleBadge: 'OPERATOR',
         roleColor: const Color(0xFF0284C7),
-        currentIndex: _currentIndex,
-        onIndexSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        mainNavItems: const [
-          DrawerMenuItem(
-            icon: Icons.dashboard_rounded,
-            title: 'Dashboard Vận Hành',
-            index: 0,
-          ),
-          DrawerMenuItem(
-            icon: Icons.qr_code_scanner_rounded,
-            title: 'Quét Mã QR / RFID',
-            index: 1,
-          ),
-          DrawerMenuItem(
-            icon: Icons.fact_check_rounded,
-            title: 'Checklist Bàn Giao Ca',
-            index: 2,
-          ),
-          DrawerMenuItem(
-            icon: Icons.history_rounded,
-            title: 'Lịch Sử Vận Hành',
-            index: 3,
-          ),
-        ],
         toolNavItems: [
           DrawerMenuItem(
             icon: Icons.manage_search_rounded,

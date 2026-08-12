@@ -34,8 +34,12 @@ class StorageService {
     final fullName =
         userData['fullName']?.toString().trim() ??
         userData['full_name']?.toString().trim() ??
+        userData['name']?.toString().trim() ??
         '';
-    final uid = userData['uid']?.toString() ?? userData['id']?.toString() ?? '';
+    final uid = userData['uid']?.toString() ??
+        userData['id']?.toString() ??
+        userData['_id']?.toString() ??
+        '';
 
     await _prefs?.setString(_keyUserRole, role);
     await _prefs?.setString(_keyUserEmail, email);
@@ -54,6 +58,18 @@ class StorageService {
 
   static String? getUserRole() {
     return _prefs?.getString(_keyUserRole);
+  }
+
+  static String? getUserFullName() {
+    return _prefs?.getString(_keyUserFullName);
+  }
+
+  static String? getUserEmail() {
+    return _prefs?.getString(_keyUserEmail);
+  }
+
+  static String? getUserUid() {
+    return _prefs?.getString(_keyUserUid);
   }
 
   static Map<String, String> getUserProfile() {

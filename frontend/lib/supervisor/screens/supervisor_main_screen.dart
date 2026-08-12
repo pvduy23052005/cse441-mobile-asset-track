@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/routes/app_router.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/storage_service.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../features/dashboard/widgets/supervisor_dashboard_view.dart';
 import '../features/approvals/widgets/supervisor_approval_view.dart';
@@ -98,7 +99,10 @@ class _SupervisorMainScreenState extends State<SupervisorMainScreen> {
                       width: 180,
                       height: 180,
                       decoration: BoxDecoration(
-                        border: Border.all(color: AppTheme.primaryColor, width: 3),
+                        border: Border.all(
+                          color: AppTheme.primaryColor,
+                          width: 3,
+                        ),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Center(
@@ -126,6 +130,10 @@ class _SupervisorMainScreenState extends State<SupervisorMainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userProfile = StorageService.getUserProfile();
+    final displayName = userProfile['fullName'];
+    final displayEmail = userProfile['email'];
+
     return Scaffold(
       appBar: AppBar(
         leading: Builder(
@@ -157,40 +165,11 @@ class _SupervisorMainScreenState extends State<SupervisorMainScreen> {
         ],
       ),
       drawer: AppDrawer(
-        userName: 'Nguyễn Văn Quản Đốc',
-        userEmail: 'supervisor@factory.com',
+        userName: displayName,
+        userEmail: displayEmail,
         roleLabel: 'Phân Xưởng Sản Xuất',
         roleBadge: 'QUẢN ĐỐC',
         roleColor: AppTheme.primaryColor,
-        currentIndex: _currentIndex,
-        onIndexSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        mainNavItems: [
-          const DrawerMenuItem(
-            icon: Icons.dashboard_rounded,
-            title: 'Trang Chủ & Tổng Quan',
-            index: 0,
-          ),
-          const DrawerMenuItem(
-            icon: Icons.memory_rounded,
-            title: 'Quản Lý Máy Móc',
-            index: 1,
-          ),
-          DrawerMenuItem(
-            icon: Icons.assignment_rounded,
-            title: 'Nhiệm Vụ & Phê Duyệt',
-            index: 2,
-            badgeCount: _pendingTasksCount,
-          ),
-          const DrawerMenuItem(
-            icon: Icons.people_rounded,
-            title: 'Quản Lý Nhân Sự Phân Xưởng',
-            index: 3,
-          ),
-        ],
         toolNavItems: [
           DrawerMenuItem(
             icon: Icons.notifications_active_rounded,
@@ -202,37 +181,16 @@ class _SupervisorMainScreenState extends State<SupervisorMainScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => Scaffold(
-                    appBar: AppBar(
-                      title: const Text('Thông Báo & Giám Sát KPI'),
-                    ),
+                    appBar: AppBar(title: const Text('Thông Báo & Giám Sát')),
                     body: const SupervisorAnalyticsView(),
                   ),
                 ),
               );
             },
           ),
-          DrawerMenuItem(
-            icon: Icons.qr_code_scanner_rounded,
-            title: 'Quét Mã QR Thiết Bị',
-            onTap: () {
-              Navigator.pop(context);
-              _openQRScannerModal();
-            },
-          ),
-          DrawerMenuItem(
-            icon: Icons.manage_search_rounded,
-            title: 'Tra Cứu Máy Móc & Thiết Bị',
-            onTap: () {
-              Navigator.pop(context);
-              context.push(AppRoutes.assetLookup);
-            },
-          ),
         ],
       ),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _views,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _views),
       bottomNavigationBar: _buildCustomBottomBar(),
     );
   }
@@ -242,10 +200,7 @@ class _SupervisorMainScreenState extends State<SupervisorMainScreen> {
       decoration: BoxDecoration(
         color: AppTheme.cardColor,
         border: const Border(
-          top: BorderSide(
-            color: AppTheme.borderColor,
-            width: 1.0,
-          ),
+          top: BorderSide(color: AppTheme.borderColor, width: 1.0),
         ),
         boxShadow: [
           BoxShadow(
@@ -307,7 +262,9 @@ class _SupervisorMainScreenState extends State<SupervisorMainScreen> {
     required VoidCallback onTap,
     int badgeCount = 0,
   }) {
-    final Color color = isSelected ? AppTheme.primaryColor : AppTheme.mutedForegroundColor;
+    final Color color = isSelected
+        ? AppTheme.primaryColor
+        : AppTheme.mutedForegroundColor;
 
     return Expanded(
       child: InkWell(
@@ -321,17 +278,16 @@ class _SupervisorMainScreenState extends State<SupervisorMainScreen> {
             Stack(
               clipBehavior: Clip.none,
               children: [
-                Icon(
-                  isSelected ? activeIcon : icon,
-                  size: 24,
-                  color: color,
-                ),
+                Icon(isSelected ? activeIcon : icon, size: 24, color: color),
                 if (badgeCount > 0)
                   Positioned(
                     top: -4,
                     right: -7,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 1,
+                      ),
                       decoration: BoxDecoration(
                         color: AppTheme.errorColor,
                         borderRadius: BorderRadius.circular(10),
@@ -388,10 +344,7 @@ class _SupervisorMainScreenState extends State<SupervisorMainScreen> {
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor,
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppTheme.cardColor,
-                      width: 3.5,
-                    ),
+                    border: Border.all(color: AppTheme.cardColor, width: 3.5),
                     boxShadow: [
                       BoxShadow(
                         color: AppTheme.primaryColor.withValues(alpha: 0.38),

@@ -29,7 +29,7 @@ class AppDrawer extends StatelessWidget {
   final String roleBadge;
   final Color? roleColor;
   final int currentIndex;
-  final List<DrawerMenuItem> mainNavItems;
+  final List<DrawerMenuItem>? mainNavItems;
   final List<DrawerMenuItem>? toolNavItems;
   final ValueChanged<int>? onIndexSelected;
   final VoidCallback? onLogout;
@@ -42,7 +42,7 @@ class AppDrawer extends StatelessWidget {
     this.roleBadge = 'NHÂN VIÊN',
     this.roleColor,
     this.currentIndex = 0,
-    required this.mainNavItems,
+    this.mainNavItems,
     this.toolNavItems,
     this.onIndexSelected,
     this.onLogout,
@@ -98,6 +98,17 @@ class AppDrawer extends StatelessWidget {
     );
   }
 
+  void _showFeatureNotice(BuildContext context, String featureName) {
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$featureName đang được phát triển.'),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final activeThemeColor = roleColor ?? AppTheme.primaryColor;
@@ -106,41 +117,57 @@ class AppDrawer extends StatelessWidget {
       backgroundColor: AppTheme.cardColor,
       child: Column(
         children: [
-          // 1. Header Banner
           _buildDrawerHeader(activeThemeColor),
 
-          // 2. Body List
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 12),
               children: [
-                // Main Views Section
-                _buildSectionHeader('ĐIỀU HÀNH & CHỨC NĂNG'),
-                ...mainNavItems.map((item) => _buildMenuItem(
+                // Optional Main Nav Items (if explicitly passed)
+                if (mainNavItems != null && mainNavItems!.isNotEmpty) ...[
+                  _buildSectionHeader('ĐIỀU HÀNH MỞ RỘNG'),
+                  ...mainNavItems!.map(
+                    (item) => _buildMenuItem(
                       context: context,
                       item: item,
-                      isSelected: item.index != null && item.index == currentIndex,
+                      isSelected:
+                          item.index != null && item.index == currentIndex,
                       activeColor: activeThemeColor,
-                    )),
-
-                // Tools Section
-                if (toolNavItems != null && toolNavItems!.isNotEmpty) ...[
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  const Divider(color: AppTheme.borderColor, height: 1, indent: 16, endIndent: 16),
+                  const Divider(
+                    color: AppTheme.borderColor,
+                    height: 1,
+                    indent: 16,
+                    endIndent: 16,
+                  ),
                   const SizedBox(height: 12),
-                  _buildSectionHeader('CÔNG CỤ & TIỆN ÍCH'),
-                  ...toolNavItems!.map((item) => _buildMenuItem(
-                        context: context,
-                        item: item,
-                        isSelected: false,
-                        activeColor: activeThemeColor,
-                      )),
                 ],
 
-                const SizedBox(height: 8),
-                const Divider(color: AppTheme.borderColor, height: 1, indent: 16, endIndent: 16),
-                const SizedBox(height: 12),
-                _buildSectionHeader('TÀI KHOẢN & HỆ THỐNG'),
+                // 2.1 Tools & Utilities Section
+                if (toolNavItems != null && toolNavItems!.isNotEmpty) ...[
+                  _buildSectionHeader('CÔNG CỤ & TIỆN ÍCH'),
+                  ...toolNavItems!.map(
+                    (item) => _buildMenuItem(
+                      context: context,
+                      item: item,
+                      isSelected: false,
+                      activeColor: activeThemeColor,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Divider(
+                    color: AppTheme.borderColor,
+                    height: 1,
+                    indent: 16,
+                    endIndent: 16,
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
+                // 2.2 Account & System Section
+                _buildSectionHeader('TÀI KHOẢN & CÀI ĐẶT'),
                 _buildMenuItem(
                   context: context,
                   item: DrawerMenuItem(
@@ -157,17 +184,29 @@ class AppDrawer extends StatelessWidget {
                 _buildMenuItem(
                   context: context,
                   item: DrawerMenuItem(
+                    icon: Icons.lock_outline_rounded,
+                    title: 'Bảo Mật & Mật Khẩu',
+                    onTap: () => _showFeatureNotice(context, 'Tính năng Bảo Mật & Mật Khẩu'),
+                  ),
+                  isSelected: false,
+                  activeColor: activeThemeColor,
+                ),
+                _buildMenuItem(
+                  context: context,
+                  item: DrawerMenuItem(
+                    icon: Icons.notifications_none_rounded,
+                    title: 'Cài Đặt Thông Báo',
+                    onTap: () => _showFeatureNotice(context, 'Cài Đặt Thông Báo'),
+                  ),
+                  isSelected: false,
+                  activeColor: activeThemeColor,
+                ),
+                _buildMenuItem(
+                  context: context,
+                  item: DrawerMenuItem(
                     icon: Icons.help_outline_rounded,
-                    title: 'Hướng Dẫn Sử Dụng',
-                    onTap: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Tài liệu hướng dẫn đang được cập nhật'),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    },
+                    title: 'Hướng Dẫn & Trợ Giúp',
+                    onTap: () => _showFeatureNotice(context, 'Tài liệu Hướng Dẫn'),
                   ),
                   isSelected: false,
                   activeColor: activeThemeColor,
@@ -176,7 +215,6 @@ class AppDrawer extends StatelessWidget {
             ),
           ),
 
-          // 3. Footer Section (Logout & Version)
           _buildDrawerFooter(context),
         ],
       ),
@@ -220,7 +258,10 @@ class AppDrawer extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 3),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.3),
+                    width: 3,
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.15),
@@ -231,7 +272,9 @@ class AppDrawer extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    effectiveName.isNotEmpty ? effectiveName[0].toUpperCase() : 'U',
+                    effectiveName.isNotEmpty
+                        ? effectiveName[0].toUpperCase()
+                        : 'U',
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -246,7 +289,10 @@ class AppDrawer extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(6),
@@ -280,15 +326,16 @@ class AppDrawer extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              const Icon(Icons.mail_outline_rounded, size: 14, color: Colors.white70),
+              const Icon(
+                Icons.mail_outline_rounded,
+                size: 14,
+                color: Colors.white70,
+              ),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   effectiveEmail,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -303,7 +350,7 @@ class AppDrawer extends StatelessWidget {
               ),
               const SizedBox(width: 5),
               const Text(
-                'Onlilne',
+                'Online',
                 style: TextStyle(color: Colors.white70, fontSize: 11),
               ),
             ],
@@ -337,11 +384,15 @@ class AppDrawer extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: Material(
-        color: isSelected ? activeColor.withValues(alpha: 0.1) : Colors.transparent,
+        color: isSelected
+            ? activeColor.withValues(alpha: 0.1)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(10),
         clipBehavior: Clip.antiAlias,
         child: ListTile(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
           dense: true,
           leading: Icon(
             item.icon,
@@ -353,89 +404,89 @@ class AppDrawer extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            color: isSelected ? activeColor : AppTheme.foregroundColor,
+              color: isSelected ? activeColor : AppTheme.foregroundColor,
+            ),
           ),
-        ),
-        trailing: item.badgeCount > 0
-            ? Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                decoration: BoxDecoration(
-                  color: item.badgeColor ?? AppTheme.errorColor,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  '${item.badgeCount}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
+          trailing: item.badgeCount > 0
+              ? Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2,
                   ),
-                ),
-              )
-            : null,
-        onTap: () {
-          if (item.onTap != null) {
-            item.onTap!();
-          } else if (item.index != null) {
-            Navigator.pop(context); // Close drawer
-            if (onIndexSelected != null) {
-              onIndexSelected!(item.index!);
+                  decoration: BoxDecoration(
+                    color: item.badgeColor ?? AppTheme.errorColor,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${item.badgeCount}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                )
+              : null,
+          onTap: () {
+            if (item.onTap != null) {
+              item.onTap!();
+            } else if (item.index != null) {
+              Navigator.pop(context); // Close drawer
+              if (onIndexSelected != null) {
+                onIndexSelected!(item.index!);
+              }
             }
-          }
-        },
+          },
+        ),
       ),
-    ),
-  );
+    );
   }
 
   Widget _buildDrawerFooter(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
       decoration: const BoxDecoration(
-        border: Border(
-          top: BorderSide(color: AppTheme.borderColor, width: 1),
-        ),
+        border: Border(top: BorderSide(color: AppTheme.borderColor, width: 1)),
       ),
       child: Column(
         children: [
-          InkWell(
+          Material(
+            color: AppTheme.errorColor.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(10),
-            onTap: () => _handleLogout(context),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: AppTheme.errorColor.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: () => _handleLogout(context),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 11, horizontal: 12),
+                child: Row(
+                  children: [
+                    Icon(
                       Icons.logout_rounded,
                       color: AppTheme.errorColor,
-                      size: 18,
+                      size: 20,
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Đăng Xuất Khỏi Thiết Bị',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.errorColor,
+                    SizedBox(width: 12),
+                    Text(
+                      'Đăng Xuất Khỏi Thiết Bị',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.errorColor,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           const Text(
-            'AssetTrack Pro • Phiên bản 1.0.0',
+            'AssetTrack Mobile • v1.0.0',
             style: TextStyle(
               fontSize: 11,
               color: AppTheme.mutedForegroundColor,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
