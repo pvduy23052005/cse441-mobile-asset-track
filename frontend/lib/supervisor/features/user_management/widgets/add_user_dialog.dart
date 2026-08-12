@@ -142,7 +142,7 @@ class _AddUserModalState extends State<AddUserModal> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: _selectedRole,
+                initialValue: _selectedRole,
                 decoration: const InputDecoration(
                   labelText: 'Vai trò phân quyền *',
                   prefixIcon: Icon(Icons.badge_outlined),

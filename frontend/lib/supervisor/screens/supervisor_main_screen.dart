@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../core/routes/app_router.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_drawer.dart';
 import '../features/dashboard/widgets/supervisor_dashboard_view.dart';
 import '../features/approvals/widgets/supervisor_approval_view.dart';
 import '../features/analytics/widgets/supervisor_analytics_view.dart';
@@ -21,14 +24,14 @@ class _SupervisorMainScreenState extends State<SupervisorMainScreen> {
     SupervisorDashboardView(),
     SupervisorMachineManageView(),
     SupervisorApprovalView(),
-    SupervisorAnalyticsView(),
+    SupervisorUserManageView(),
   ];
 
   final List<String> _titles = const [
     'Trang Chủ Quản Đốc',
     'Quản Lý Máy Móc',
     'Nhiệm Vụ & Phê Duyệt',
-    'Thông Báo & Giám Sát KPI',
+    'Quản Lý Nhân Sự Phân Xưởng',
   ];
 
   final int _pendingTasksCount = 2;
@@ -125,31 +128,103 @@ class _SupervisorMainScreenState extends State<SupervisorMainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu_rounded),
+            tooltip: 'Menu',
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
         title: Text(_titles[_currentIndex]),
         actions: [
           IconButton(
-            icon: const Icon(Icons.people_alt_outlined),
-            tooltip: 'Quản Lý Nhân Sự',
+            icon: const Icon(Icons.notifications_none_rounded),
+            tooltip: 'Thông Báo & KPI',
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => Scaffold(
                     appBar: AppBar(
-                      title: const Text('Quản Lý Nhân Sự Phân Xưởng'),
+                      title: const Text('Thông Báo & Giám Sát KPI'),
                     ),
-                    body: const SupervisorUserManageView(),
+                    body: const SupervisorAnalyticsView(),
                   ),
                 ),
               );
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.notifications_none_rounded),
-            onPressed: () {
-              setState(() {
-                _currentIndex = 3;
-              });
+        ],
+      ),
+      drawer: AppDrawer(
+        userName: 'Nguyễn Văn Quản Đốc',
+        userEmail: 'supervisor@factory.com',
+        roleLabel: 'Phân Xưởng Sản Xuất',
+        roleBadge: 'QUẢN ĐỐC',
+        roleColor: AppTheme.primaryColor,
+        currentIndex: _currentIndex,
+        onIndexSelected: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        mainNavItems: [
+          const DrawerMenuItem(
+            icon: Icons.dashboard_rounded,
+            title: 'Trang Chủ & Tổng Quan',
+            index: 0,
+          ),
+          const DrawerMenuItem(
+            icon: Icons.memory_rounded,
+            title: 'Quản Lý Máy Móc',
+            index: 1,
+          ),
+          DrawerMenuItem(
+            icon: Icons.assignment_rounded,
+            title: 'Nhiệm Vụ & Phê Duyệt',
+            index: 2,
+            badgeCount: _pendingTasksCount,
+          ),
+          const DrawerMenuItem(
+            icon: Icons.people_rounded,
+            title: 'Quản Lý Nhân Sự Phân Xưởng',
+            index: 3,
+          ),
+        ],
+        toolNavItems: [
+          DrawerMenuItem(
+            icon: Icons.notifications_active_rounded,
+            title: 'Thông Báo & Giám Sát KPI',
+            badgeCount: _unreadNotificationsCount,
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Scaffold(
+                    appBar: AppBar(
+                      title: const Text('Thông Báo & Giám Sát KPI'),
+                    ),
+                    body: const SupervisorAnalyticsView(),
+                  ),
+                ),
+              );
+            },
+          ),
+          DrawerMenuItem(
+            icon: Icons.qr_code_scanner_rounded,
+            title: 'Quét Mã QR Thiết Bị',
+            onTap: () {
+              Navigator.pop(context);
+              _openQRScannerModal();
+            },
+          ),
+          DrawerMenuItem(
+            icon: Icons.manage_search_rounded,
+            title: 'Tra Cứu Máy Móc & Thiết Bị',
+            onTap: () {
+              Navigator.pop(context);
+              context.push(AppRoutes.assetLookup);
             },
           ),
         ],
@@ -211,11 +286,10 @@ class _SupervisorMainScreenState extends State<SupervisorMainScreen> {
                 onTap: () => setState(() => _currentIndex = 2),
               ),
               _buildNavItem(
-                icon: Icons.notifications_none_rounded,
-                activeIcon: Icons.notifications_rounded,
-                label: 'Thông Báo',
+                icon: Icons.people_outline_rounded,
+                activeIcon: Icons.people_rounded,
+                label: 'Nhân Sự',
                 isSelected: _currentIndex == 3,
-                badgeCount: _unreadNotificationsCount,
                 onTap: () => setState(() => _currentIndex = 3),
               ),
             ],

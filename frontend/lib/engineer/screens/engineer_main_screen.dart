@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../core/routes/app_router.dart';
+import '../../core/widgets/app_drawer.dart';
+import 'package:go_router/go_router.dart';
 import '../features/dashboard/widgets/engineer_dashboard_view.dart';
 import '../features/ticket_management/widgets/engineer_ticket_list_view.dart';
 import '../features/spare_parts/widgets/engineer_spare_parts_view.dart';
@@ -39,11 +42,64 @@ class _EngineerMainScreenState extends State<EngineerMainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu_rounded),
+            tooltip: 'Menu',
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
         title: Text(_titles[_currentIndex]),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none_rounded),
             onPressed: () {},
+          ),
+        ],
+      ),
+      drawer: AppDrawer(
+        userName: 'Lê Kỹ Sư Bảo Trì',
+        userEmail: 'engineer@factory.com',
+        roleLabel: 'Đội Kỹ Thuật Cơ Điện',
+        roleBadge: 'ENGINEER',
+        roleColor: const Color(0xFFD97706),
+        currentIndex: _currentIndex,
+        onIndexSelected: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        mainNavItems: const [
+          DrawerMenuItem(
+            icon: Icons.dashboard_rounded,
+            title: 'Dashboard Kỹ Thuật',
+            index: 0,
+          ),
+          DrawerMenuItem(
+            icon: Icons.confirmation_number_rounded,
+            title: 'Danh Sách Ticket Bảo Trì',
+            index: 1,
+            badgeCount: 3,
+          ),
+          DrawerMenuItem(
+            icon: Icons.build_rounded,
+            title: 'Yêu Cầu & Phụ Tùng',
+            index: 2,
+          ),
+          DrawerMenuItem(
+            icon: Icons.history_rounded,
+            title: 'Lịch Sử Bảo Trì',
+            index: 3,
+          ),
+        ],
+        toolNavItems: [
+          DrawerMenuItem(
+            icon: Icons.manage_search_rounded,
+            title: 'Tra Cứu Thiết Bị',
+            onTap: () {
+              Navigator.pop(context);
+              context.push(AppRoutes.assetLookup);
+            },
           ),
         ],
       ),
