@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../services/user_service.dart';
 import 'add_user_dialog.dart';
+import 'user_card.dart';
 
 class SupervisorUserManageView extends StatefulWidget {
   const SupervisorUserManageView({super.key});
@@ -73,38 +74,75 @@ class _SupervisorUserManageViewState extends State<SupervisorUserManageView> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Xác nhận xóa tài khoản'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Xác nhận xóa tài khoản',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
         content: Text('Bạn có chắc chắn muốn xóa tài khoản của "$name"?'),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor),
-            onPressed: () async {
-              Navigator.pop(ctx);
-              try {
-                await _userService.deleteUser(id);
-                _fetchUsers();
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Đã xóa người dùng thành công'),
-                    backgroundColor: AppTheme.primaryColor,
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    side: const BorderSide(color: AppTheme.borderColor),
                   ),
-                );
-              } catch (e) {
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Lỗi: ${e.toString().replaceAll("Exception: ", "")}'),
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text(
+                    'Hủy',
+                    style: TextStyle(
+                      color: AppTheme.mutedForegroundColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.errorColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
-                );
-              }
-            },
-            child: const Text('Xóa Tài Khoản'),
+                  onPressed: () async {
+                    Navigator.pop(ctx);
+                    try {
+                      await _userService.deleteUser(id);
+                      _fetchUsers();
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Đã xóa người dùng thành công'),
+                          backgroundColor: AppTheme.primaryColor,
+                        ),
+                      );
+                    } catch (e) {
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Lỗi: ${e.toString().replaceAll("Exception: ", "")}'),
+                          backgroundColor: AppTheme.errorColor,
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text(
+                    'Xác Nhận',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -117,7 +155,6 @@ class _SupervisorUserManageViewState extends State<SupervisorUserManageView> {
       backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
-          // Filter Chips Header
           Container(
             width: double.infinity,
             color: AppTheme.cardColor,
@@ -135,10 +172,7 @@ class _SupervisorUserManageViewState extends State<SupervisorUserManageView> {
               ),
             ),
           ),
-
           const Divider(height: 1, color: AppTheme.borderColor),
-
-          // User List Body
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -163,89 +197,11 @@ class _SupervisorUserManageViewState extends State<SupervisorUserManageView> {
                           itemCount: _filteredUsers.length,
                           itemBuilder: (context, index) {
                             final user = _filteredUsers[index];
-                            final role = (user['role'] ?? 'operator').toString().toLowerCase();
-
-                            final bool isEngineer = role == 'engineer';
-                            final Color roleBgColor = isEngineer ? const Color(0xFFF0F9FF) : const Color(0xFFECFDF5);
-                            final Color roleTextColor = isEngineer ? const Color(0xFF0369A1) : AppTheme.primaryColor;
-                            final String roleLabel = isEngineer ? 'Kỹ Sư ME' : 'Công Nhân';
-                            final IconData roleIcon = isEngineer ? Icons.build_outlined : Icons.engineering_outlined;
-
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 10),
-                              child: Padding(
-                                padding: const EdgeInsets.all(14),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 22,
-                                      backgroundColor: roleBgColor,
-                                      child: Icon(roleIcon, color: roleTextColor, size: 22),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Flexible(
-                                                child: Text(
-                                                  user['fullName'] ?? 'Chưa đặt tên',
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 15,
-                                                    color: AppTheme.foregroundColor,
-                                                  ),
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                              ),
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                                decoration: BoxDecoration(
-                                                  color: roleBgColor,
-                                                  borderRadius: BorderRadius.circular(6),
-                                                  border: Border.all(color: roleTextColor.withValues(alpha: 0.3)),
-                                                ),
-                                                child: Text(
-                                                  roleLabel,
-                                                  style: TextStyle(
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: roleTextColor,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 6),
-                                          Row(
-                                            children: [
-                                              const Icon(Icons.email_outlined, size: 14, color: AppTheme.mutedForegroundColor),
-                                              const SizedBox(width: 6),
-                                              Expanded(
-                                                child: Text(
-                                                  user['email'] ?? '',
-                                                  style: const TextStyle(fontSize: 13, color: AppTheme.mutedForegroundColor),
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete_outline, color: AppTheme.errorColor, size: 20),
-                                      onPressed: () => _confirmDeleteUser(
-                                        user['id'] ?? user['uid'] ?? '',
-                                        user['fullName'] ?? user['email'] ?? '',
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                            return UserCard(
+                              user: user,
+                              onDelete: () => _confirmDeleteUser(
+                                user['id'] ?? user['uid'] ?? '',
+                                user['fullName'] ?? user['email'] ?? '',
                               ),
                             );
                           },

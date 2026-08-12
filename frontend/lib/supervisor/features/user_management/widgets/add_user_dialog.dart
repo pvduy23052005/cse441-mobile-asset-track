@@ -111,8 +111,6 @@ class _AddUserModalState extends State<AddUserModal> {
                 style: TextStyle(fontSize: 12, color: AppTheme.mutedForegroundColor),
               ),
               const SizedBox(height: 18),
-
-              // Họ và tên
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
@@ -122,8 +120,6 @@ class _AddUserModalState extends State<AddUserModal> {
                 validator: (v) => v == null || v.trim().isEmpty ? 'Vui lòng nhập họ tên' : null,
               ),
               const SizedBox(height: 12),
-
-              // Email đăng nhập
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
@@ -135,8 +131,6 @@ class _AddUserModalState extends State<AddUserModal> {
                 validator: (v) => v == null || !v.contains('@') ? 'Vui lòng nhập email hợp lệ' : null,
               ),
               const SizedBox(height: 12),
-
-              // Mật khẩu khởi tạo
               TextFormField(
                 controller: _passwordController,
                 decoration: const InputDecoration(
@@ -147,8 +141,6 @@ class _AddUserModalState extends State<AddUserModal> {
                 validator: (v) => v == null || v.length < 6 ? 'Mật khẩu tối thiểu 6 ký tự' : null,
               ),
               const SizedBox(height: 12),
-
-              // Phân quyền
               DropdownButtonFormField<String>(
                 value: _selectedRole,
                 decoration: const InputDecoration(
@@ -182,8 +174,6 @@ class _AddUserModalState extends State<AddUserModal> {
                 },
               ),
               const SizedBox(height: 20),
-
-              // Nút Submit
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
