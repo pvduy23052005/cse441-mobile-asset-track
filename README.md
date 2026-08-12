@@ -7,13 +7,15 @@
 ## 1. Mô Tả Bài Toán Thực Tế (Problem Statement)
 
 Trong các nhà máy sản xuất công nghiệp, sự cố hỏng hóc máy móc đột xuất (Breakdown) gây dừng dây chuyền sản xuất (Downtime), dẫn đến thiệt hại kinh tế rất lớn. Các bất cập chính bao gồm:
+
 - **Thiếu bảo trì phòng ngừa:** Công nhân vận hành không theo dõi sát số giờ chạy thực tế của máy để thực hiện bảo dưỡng định kỳ (thay dầu, kiểm tra áp suất, siết ốc...).
 - **Quy trình báo sự cố thủ công & chậm trễ:** Báo hỏng qua giấy tờ hoặc tin nhắn chat không gửi được thông báo khẩn cấp tới kỹ sư cơ điện, gây kéo dài thời gian chờ đợi (MTTR).
 - **Thiếu lý lịch thiết bị & minh chứng nghiệm thu:** Không lưu lại lịch sử sửa chữa, vật tư đã thay thế và thiếu cam kết trách nhiệm nghiệm thu giữa Quản đốc và Kỹ sư.
 
 **Bối cảnh vận hành thực tế — Nhà xưởng Quy mô Vừa & Nhỏ (SME):**
+
 - **Đặc điểm:** Số lượng máy móc < 50 máy, đội ngũ kỹ sư bảo trì từ 3 – 7 người, không có thủ kho riêng trực ca 24/7 (hoặc thủ kho chỉ làm giờ hành chính).
-- **Quy trình lấy vật tư:** Vật tư tiêu hao cơ bản (dầu mỡ, bu-lông, gioăng, đai curoa...) được để sẵn ở *Tủ vật tư nhanh* tại phân xưởng. Kỹ sư ME là người **TỰ LẤY**: Khi máy hỏng, ME ra tủ lấy linh kiện và tự thay vào máy.
+- **Quy trình lấy vật tư:** Vật tư tiêu hao cơ bản (dầu mỡ, bu-lông, gioăng, đai curoa...) được để sẵn ở _Tủ vật tư nhanh_ tại phân xưởng. Kỹ sư ME là người **TỰ LẤY**: Khi máy hỏng, ME ra tủ lấy linh kiện và tự thay vào máy.
 - **Cách AssetTrack hỗ trợ:** ME mở app, chọn các món đồ vừa lấy để **Ghi log (Spare Parts Logging - Tính năng 6)**. Việc ghi log này giúp hệ thống lưu lại lý lịch sửa chữa của máy và trừ lùi số lượng để Quản đốc biết khi nào tủ vật tư sắp hết.
 
 **Giải pháp AssetTrack:** Xây dựng hệ thống ứng dụng di động kết nối 3 tác nhân trong nhà máy, số hóa toàn bộ Hộ chiếu thiết bị bằng mã QR, tự động hóa quy trình bảo trì định kỳ theo số giờ máy chạy, gửi thông báo SOS thời gian thực và xác thực nghiệm thu bằng chữ ký số cảm ứng.
@@ -42,6 +44,7 @@ Trong các nhà máy sản xuất công nghiệp, sự cố hỏng hóc máy mó
 ## 3. Công Nghệ Sử Dụng (Technology Stack)
 
 ### Mobile Application (Core App):
+
 - **Framework:** [Flutter](https://flutter.dev/) (Dart) — Phát triển ứng dụng di động đa nền tảng (Android / iOS).
 - **State Management:** Riverpod.
 - **QR Code Scanner:** `mobile_scanner` (decode mã QR trong < 1.5s).
@@ -49,12 +52,14 @@ Trong các nhà máy sản xuất công nghiệp, sự cố hỏng hóc máy mó
 - **Offline Storage & Sync:** SQLite (`sqflite`) lưu trữ Local Queue khi mất mạng, tự động đồng bộ khi có kết nối trở lại.
 
 ### Backend & Infrastructure:
+
 - **BaaS Platform:** [Supabase](https://supabase.com/) (PostgreSQL Database).
 - **Security:** Row-Level Security (RLS) phân quyền theo phân xưởng (`workshop_id`).
 - **Realtime & Cloud Functions:** Database Triggers, Edge Functions.
 - **Push Notification:** Firebase Cloud Messaging (FCM).
 
 ### Web Mobile Demo:
+
 - **Framework:** Next.js 16 (App Router) + TypeScript + Tailwind CSS v4 + shadcn/ui (dùng cho bản trải nghiệm giao diện Web di động tại thư mục `ui/`).
 
 ---
@@ -64,11 +69,13 @@ Trong các nhà máy sản xuất công nghiệp, sự cố hỏng hóc máy mó
 ### 4.1. Chạy Ứng Dụng Di Động Flutter (Flutter Mobile App)
 
 #### Yêu cầu tiền đề:
+
 - [Flutter SDK](https://docs.flutter.dev/get-started/install) ($\ge 3.19.0$)
 - Android Studio / Xcode / VS Code
 - Thiết bị thật hoặc Emulator (Android/iOS)
 
 #### Các bước thực hiện:
+
 ```bash
 # 1. Di chuyển vào thư mục dự án Flutter gốc
 cd /Users/macbook/Documents/hk6/mobile/project
@@ -88,10 +95,12 @@ flutter run
 ### 4.2. Chạy Bản Trải Nghiệm Giao Diện Web Mobile (Next.js Demo)
 
 #### Yêu cầu tiền đề:
+
 - Node.js ($\ge 18.x$)
 - npm ($\ge 9.x$)
 
 #### Các bước thực hiện:
+
 ```bash
 # 1. Di chuyển vào thư mục giao diện UI
 cd /Users/macbook/Documents/hk6/mobile/project/ui
