@@ -7,6 +7,7 @@ import {
 import { DecodedIdToken } from 'firebase-admin/auth';
 import { FirebaseService } from '../firebase/firebase.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { FirestoreUser } from '../auth/auth.service';
 
 @Injectable()
 export class UserService {
@@ -36,7 +37,7 @@ export class UserService {
         .get();
 
       return snapshot.docs.map((doc) => {
-        const data = doc.data();
+        const data = doc.data() as FirestoreUser;
         return {
           id: doc.id,
           uid: doc.id,

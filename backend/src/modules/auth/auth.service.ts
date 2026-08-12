@@ -17,6 +17,7 @@ export interface FirestoreUser {
   full_name?: string;
   fullName?: string;
   password?: string;
+  createdAt?: string;
 }
 
 @Injectable()
