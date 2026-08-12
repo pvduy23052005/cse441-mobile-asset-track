@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class OperatorDashboardView extends StatelessWidget {
   const OperatorDashboardView({super.key});
@@ -15,12 +16,13 @@ class OperatorDashboardView extends StatelessWidget {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
+              color: AppTheme.foregroundColor,
             ),
           ),
           const SizedBox(height: 16),
           Card(
             child: ListTile(
-              leading: const Icon(Icons.check_circle_outline, color: Colors.green),
+              leading: const Icon(Icons.check_circle_outline, color: AppTheme.primaryColor),
               title: const Text('Trạng thái ca làm việc'),
               subtitle: const Text('Ca sáng - Đang hoạt động'),
             ),
@@ -28,7 +30,7 @@ class OperatorDashboardView extends StatelessWidget {
           const SizedBox(height: 12),
           Card(
             child: ListTile(
-              leading: const Icon(Icons.pending_actions, color: Colors.orange),
+              leading: const Icon(Icons.fact_check_outlined, color: AppTheme.primaryColor),
               title: const Text('Checklist cần thực hiện'),
               subtitle: const Text('3 mục cần kiểm tra hôm nay'),
             ),

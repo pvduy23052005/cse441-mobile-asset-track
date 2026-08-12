@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_theme.dart';
 
 class ShiftBadge extends StatelessWidget {
   final String shiftName;
@@ -9,13 +10,13 @@ class ShiftBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.blue.shade100,
+        color: AppTheme.primaryColor.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         shiftName,
-        style: TextStyle(
-          color: Colors.blue.shade800,
+        style: const TextStyle(
+          color: AppTheme.primaryColor,
           fontWeight: FontWeight.bold,
           fontSize: 12,
         ),
