@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/core/routes/app_router.dart';
-import 'package:frontend/core/services/auth_service.dart';
-import 'package:frontend/core/theme/app_theme.dart';
+import '../../core/routes/app_router.dart';
+import '../../core/services/auth_service.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/utils/storage_service.dart';
 
 class LoginPortalScreen extends StatefulWidget {
   const LoginPortalScreen({super.key});
@@ -39,8 +40,18 @@ class _LoginPortalScreenState extends State<LoginPortalScreen> {
 
       if (!mounted) return;
 
-      final userData = response['user'] as Map<String, dynamic>?;
-      final userRole = userData?['role']?.toString();
+      final accessToken = response['accessToken']?.toString();
+      final userData = (response['user'] as Map<String, dynamic>?) ?? {};
+      final userRole = userData['role']?.toString();
+
+      if (accessToken != null && accessToken.isNotEmpty) {
+        await StorageService.saveAuthSession(
+          token: accessToken,
+          userData: userData,
+        );
+      }
+
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -53,6 +64,7 @@ class _LoginPortalScreenState extends State<LoginPortalScreen> {
 
       AppRouter.navigateByRole(context, userRole);
     } catch (e) {
+
       if (!mounted) return;
       final errorMessage = e.toString().replaceAll('Exception: ', '');
       ScaffoldMessenger.of(context).showSnackBar(

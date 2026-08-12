@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../routes/app_router.dart';
 import '../theme/app_theme.dart';
+import '../utils/storage_service.dart';
 
 class DrawerMenuItem {
   final IconData icon;
@@ -22,8 +23,8 @@ class DrawerMenuItem {
 }
 
 class AppDrawer extends StatelessWidget {
-  final String userName;
-  final String userEmail;
+  final String? userName;
+  final String? userEmail;
   final String roleLabel;
   final String roleBadge;
   final Color? roleColor;
@@ -35,8 +36,8 @@ class AppDrawer extends StatelessWidget {
 
   const AppDrawer({
     super.key,
-    this.userName = 'Người Dùng',
-    this.userEmail = 'user@factory.com',
+    this.userName,
+    this.userEmail,
     this.roleLabel = 'Hệ Thống Quản Lý',
     this.roleBadge = 'NHÂN VIÊN',
     this.roleColor,
@@ -80,9 +81,10 @@ class AppDrawer extends StatelessWidget {
               foregroundColor: Colors.white,
               minimumSize: const Size(100, 40),
             ),
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(dialogContext); // Close dialog
               Navigator.pop(context); // Close drawer if open
+              await StorageService.clearSession();
               if (onLogout != null) {
                 onLogout!();
               } else {
@@ -135,7 +137,6 @@ class AppDrawer extends StatelessWidget {
                       )),
                 ],
 
-                // Settings & Profile Section
                 const SizedBox(height: 8),
                 const Divider(color: AppTheme.borderColor, height: 1, indent: 16, endIndent: 16),
                 const SizedBox(height: 12),
@@ -183,6 +184,18 @@ class AppDrawer extends StatelessWidget {
   }
 
   Widget _buildDrawerHeader(Color themeColor) {
+    final profile = StorageService.getUserProfile();
+    final effectiveName = (userName != null && userName!.isNotEmpty)
+        ? userName!
+        : (profile['fullName']?.isNotEmpty == true
+            ? profile['fullName']!
+            : 'Người Dùng');
+    final effectiveEmail = (userEmail != null && userEmail!.isNotEmpty)
+        ? userEmail!
+        : (profile['email']?.isNotEmpty == true
+            ? profile['email']!
+            : 'user@factory.com');
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 56, 20, 20),
@@ -218,7 +231,7 @@ class AppDrawer extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                    effectiveName.isNotEmpty ? effectiveName[0].toUpperCase() : 'U',
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -250,7 +263,7 @@ class AppDrawer extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      userName,
+                      effectiveName,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -271,7 +284,7 @@ class AppDrawer extends StatelessWidget {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  userEmail,
+                  effectiveEmail,
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 12,
@@ -290,7 +303,7 @@ class AppDrawer extends StatelessWidget {
               ),
               const SizedBox(width: 5),
               const Text(
-                'Online',
+                'Onlilne',
                 style: TextStyle(color: Colors.white70, fontSize: 11),
               ),
             ],
@@ -321,25 +334,25 @@ class AppDrawer extends StatelessWidget {
     required bool isSelected,
     required Color activeColor,
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-      decoration: BoxDecoration(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      child: Material(
         color: isSelected ? activeColor.withValues(alpha: 0.1) : Colors.transparent,
         borderRadius: BorderRadius.circular(10),
-      ),
-      child: ListTile(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        dense: true,
-        leading: Icon(
-          item.icon,
-          color: isSelected ? activeColor : AppTheme.foregroundColor,
-          size: 22,
-        ),
-        title: Text(
-          item.title,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+        clipBehavior: Clip.antiAlias,
+        child: ListTile(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          dense: true,
+          leading: Icon(
+            item.icon,
+            color: isSelected ? activeColor : AppTheme.foregroundColor,
+            size: 22,
+          ),
+          title: Text(
+            item.title,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
             color: isSelected ? activeColor : AppTheme.foregroundColor,
           ),
         ),
@@ -371,7 +384,8 @@ class AppDrawer extends StatelessWidget {
           }
         },
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildDrawerFooter(BuildContext context) {

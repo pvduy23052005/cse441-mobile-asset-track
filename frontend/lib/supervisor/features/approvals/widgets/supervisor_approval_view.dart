@@ -19,6 +19,10 @@ class SupervisorApprovalView extends StatelessWidget {
             title: const Text('Đề xuất mua 5 vòng bi SKF 6204'),
             subtitle: const Text('Người gửi: Kỹ sư Nguyễn Văn A'),
             trailing: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                minimumSize: const Size(60, 36),
+              ),
               onPressed: () {},
               child: const Text('Duyệt'),
             ),
