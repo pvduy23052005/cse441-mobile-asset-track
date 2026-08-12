@@ -26,7 +26,7 @@ export class AuthService {
   constructor(
     private readonly firebaseService: FirebaseService,
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
 
   async findUserInUsersCollection(email: string): Promise<UserRoleData | null> {
     const firestore = this.firebaseService.firestore;

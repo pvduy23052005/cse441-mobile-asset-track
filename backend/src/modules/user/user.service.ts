@@ -59,7 +59,9 @@ export class UserService {
     const cleanRole = dto.role?.toLowerCase().trim();
 
     if (!cleanEmail || !cleanFullName || !cleanRole) {
-      throw new BadRequestException('Vui lòng nhập đầy đủ Email, Họ tên và Vai trò');
+      throw new BadRequestException(
+        'Vui lòng nhập đầy đủ Email, Họ tên và Vai trò',
+      );
     }
 
     const firestore = this.firebaseService.firestore;
@@ -72,7 +74,9 @@ export class UserService {
       .get();
 
     if (!existingSnap.empty) {
-      throw new ConflictException('Email này đã được sử dụng cho một tài khoản khác');
+      throw new ConflictException(
+        'Email này đã được sử dụng cho một tài khoản khác',
+      );
     }
 
     const userData = {
