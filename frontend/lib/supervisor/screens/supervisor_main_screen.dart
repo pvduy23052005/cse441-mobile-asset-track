@@ -4,6 +4,7 @@ import '../features/dashboard/widgets/supervisor_dashboard_view.dart';
 import '../features/approvals/widgets/supervisor_approval_view.dart';
 import '../features/analytics/widgets/supervisor_analytics_view.dart';
 import '../features/machine_management/widgets/supervisor_machine_manage_view.dart';
+import '../features/user_management/widgets/supervisor_user_manage_view.dart';
 
 class SupervisorMainScreen extends StatefulWidget {
   final int initialIndex;
@@ -126,6 +127,23 @@ class _SupervisorMainScreenState extends State<SupervisorMainScreen> {
       appBar: AppBar(
         title: Text(_titles[_currentIndex]),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.people_alt_outlined),
+            tooltip: 'Quản Lý Nhân Sự',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Scaffold(
+                    appBar: AppBar(
+                      title: const Text('Quản Lý Nhân Sự Phân Xưởng'),
+                    ),
+                    body: const SupervisorUserManageView(),
+                  ),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.notifications_none_rounded),
             onPressed: () {
