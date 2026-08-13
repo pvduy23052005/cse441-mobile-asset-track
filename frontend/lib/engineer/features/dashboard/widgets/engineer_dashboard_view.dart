@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../ticket_management/models/ticket_model.dart';
+import '../../ticket_management/widgets/modals/work_order_detail_modal.dart';
 import '../models/work_order_model.dart';
 import '../services/engineer_dashboard_service.dart';
 import 'cards/pm_checklist_card.dart';
@@ -38,6 +40,57 @@ class _EngineerDashboardViewState extends State<EngineerDashboardView> {
         _isLoading = false;
       });
     }
+  }
+
+  TicketModel _convertToTicketModel(WorkOrderModel item) {
+    TicketStatus status;
+    switch (item.status) {
+      case WorkOrderStatus.inProgress:
+        status = TicketStatus.inProgress;
+        break;
+      case WorkOrderStatus.completed:
+        status = TicketStatus.pendingApproval;
+        break;
+      case WorkOrderStatus.approved:
+        status = TicketStatus.closed;
+        break;
+      case WorkOrderStatus.rejected:
+        status = TicketStatus.rejected;
+        break;
+      case WorkOrderStatus.cancelled:
+        status = TicketStatus.cancelled;
+        break;
+      default:
+        status = TicketStatus.open;
+    }
+
+    TicketSeverity severity;
+    switch (item.severity) {
+      case WorkOrderSeverity.critical:
+      case WorkOrderSeverity.high:
+        severity = TicketSeverity.critical;
+        break;
+      case WorkOrderSeverity.low:
+        severity = TicketSeverity.low;
+        break;
+      default:
+        severity = TicketSeverity.medium;
+    }
+
+    return TicketModel(
+      id: item.id,
+      code: item.code,
+      machineId: item.machineId,
+      machineCode: item.machineId,
+      machineName: item.machineName,
+      description: item.description,
+      severity: severity,
+      status: status,
+      imageUrl: item.imageUrl,
+      rejectionReason: item.rejectionReason,
+      engineerName: item.assigneeName,
+      createdAt: item.createdAt,
+    );
   }
 
   Future<void> _handleClaimWorkOrder(WorkOrderModel wo) async {
@@ -198,13 +251,11 @@ class _EngineerDashboardViewState extends State<EngineerDashboardView> {
                             onClaim: _handleClaimWorkOrder,
                             onComplete: _handleCompleteWorkOrder,
                             onTapDetail: (item) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Mở chi tiết phiếu ${item.code} (${item.machineName})',
-                                  ),
-                                  backgroundColor: AppTheme.foregroundColor,
-                                ),
+                              WorkOrderDetailModal.show(
+                                context,
+                                ticket: _convertToTicketModel(item),
+                                onClaim: () => _handleClaimWorkOrder(item),
+                                onComplete: (parts) => _handleCompleteWorkOrder(item),
                               );
                             },
                           ),
