@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Get,
   Param,
+  Patch,
   Post,
   Req,
   UnauthorizedException,
@@ -63,5 +64,21 @@ export class OperatorTicketController {
   @Get(':id')
   async getTicketById(@Param('id') id: string): Promise<Ticket> {
     return this.ticketsService.getTicketById(id);
+  }
+
+  @Patch(':id/cancel')
+  async cancelTicket(
+    @Param('id') id: string,
+    @Req() req: JwtAuthenticatedRequest,
+    @Body('reason') reason?: string,
+  ): Promise<Ticket> {
+    const reporterId = req.user?.uid || req.user?.id;
+    if (!reporterId) {
+      throw new UnauthorizedException(
+        'Không tìm thấy ID người dùng từ thông tin xác thực JWT',
+      );
+    }
+
+    return this.ticketsService.cancelTicket(id, reporterId, reason);
   }
 }

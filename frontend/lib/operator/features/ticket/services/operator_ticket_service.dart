@@ -71,4 +71,23 @@ class OperatorTicketService {
       throw Exception('Lỗi khi lấy thông tin phiếu sự cố: $e');
     }
   }
+
+  Future<Map<String, dynamic>> cancelTicket(String id, {String? reason}) async {
+    try {
+      final response = await _dio.patch<Map<String, dynamic>>(
+        '/operator/tickets/$id/cancel',
+        data: {
+          if (reason != null && reason.isNotEmpty) 'reason': reason,
+        },
+      );
+      if (response.data != null) {
+        return response.data!;
+      }
+      throw Exception('Không thể hủy phiếu sự cố');
+    } on DioException catch (e) {
+      throw Exception(e.error ?? 'Không thể hủy phiếu sự cố');
+    } catch (e) {
+      throw Exception('Lỗi khi hủy phiếu sự cố: $e');
+    }
+  }
 }
