@@ -18,7 +18,7 @@ import { TicketsService } from '../modules/tickets/tickets.service';
 @UseGuards(JwtAuthGuard)
 @Controller('operator/tickets')
 export class OperatorTicketController {
-  constructor(private readonly ticketsService: TicketsService) {}
+  constructor(private readonly ticketsService: TicketsService) { }
 
   @Post()
   async createTicket(
@@ -26,7 +26,13 @@ export class OperatorTicketController {
     @Body() dto: CreateTicketDto,
   ): Promise<Ticket> {
     const userRole = req.user?.role?.toLowerCase();
-    if (userRole && userRole !== 'supervisor') {
+    console.log(userRole);
+    if (
+      userRole &&
+      userRole !== 'operator' &&
+      userRole !== 'admin' &&
+      userRole !== 'supervisor'
+    ) {
       throw new ForbiddenException(
         'Chỉ người vận hành (Operator) mới có quyền tạo phiếu báo cáo sự cố tại đây',
       );

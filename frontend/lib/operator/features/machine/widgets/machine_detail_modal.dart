@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/models/machine_model.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/machine_formatters.dart';
+import '../../ticket/widgets/create_sos_ticket_modal.dart';
 
 class MachineDetailModal extends StatelessWidget {
   final MachineModel machine;
@@ -363,14 +364,7 @@ class MachineDetailModal extends StatelessWidget {
                             ),
                             onPressed: () {
                               Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Đã mở biểu mẫu báo cáo sự cố cho máy "${machine.name}"',
-                                  ),
-                                  backgroundColor: AppTheme.errorColor,
-                                ),
-                              );
+                              CreateSosTicketModal.show(context, machine: machine);
                             },
                             icon: const Icon(
                               Icons.warning_amber_rounded,
