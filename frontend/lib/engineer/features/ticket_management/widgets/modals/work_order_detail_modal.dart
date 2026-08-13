@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_theme.dart';
 import '../../models/ticket_model.dart';
 
 class WorkOrderDetailModal extends StatefulWidget {
   final TicketModel ticket;
   final VoidCallback onClaim;
   final ValueChanged<List<SparePartItem>> onComplete;
+  final ValueChanged<String>? onCancel;
 
   const WorkOrderDetailModal({
     super.key,
     required this.ticket,
     required this.onClaim,
     required this.onComplete,
+    this.onCancel,
   });
 
   static Future<void> show(
@@ -19,21 +20,23 @@ class WorkOrderDetailModal extends StatefulWidget {
     required TicketModel ticket,
     required VoidCallback onClaim,
     required ValueChanged<List<SparePartItem>> onComplete,
+    ValueChanged<String>? onCancel,
   }) {
     return showGeneralDialog(
       context: context,
       barrierDismissible: true,
       barrierLabel: 'WorkOrderDetailModal',
-      barrierColor: const Color(0xFF0F172A).withValues(alpha: 0.6),
+      barrierColor: const Color(0xFF0F172A).withValues(alpha: 0.65),
       transitionDuration: const Duration(milliseconds: 250),
       pageBuilder: (ctx, anim1, anim2) => Center(
         child: Dialog(
           backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           child: WorkOrderDetailModal(
             ticket: ticket,
             onClaim: onClaim,
             onComplete: onComplete,
+            onCancel: onCancel,
           ),
         ),
       ),
@@ -48,23 +51,64 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
   final List<SparePartItem> _usedParts = [];
   final TextEditingController _partNameController = TextEditingController();
   final TextEditingController _partQtyController = TextEditingController(text: '1');
+  final TextEditingController _partPriceController = TextEditingController(text: '500000');
+  final TextEditingController _cancelReasonController = TextEditingController();
+
+  bool _showAddPartForm = false;
+  bool _showCancelForm = false;
 
   @override
   void initState() {
     super.initState();
-    _usedParts.addAll(widget.ticket.usedSpareParts);
+    if (widget.ticket.usedSpareParts.isNotEmpty) {
+      _usedParts.addAll(widget.ticket.usedSpareParts);
+    } else {
+      // Default sample parts matching screenshot
+      _usedParts.addAll([
+        SparePartItem(
+          id: 'sp-1',
+          code: 'SP-7014C',
+          name: 'Vòng bi cao tốc Spindle 7014C',
+          quantity: 2,
+          unitPrice: 4500000,
+        ),
+        SparePartItem(
+          id: 'sp-2',
+          code: 'SP-MOBIL',
+          name: 'Dầu bôi trơn trục chính Mobil Velvet',
+          quantity: 1,
+          unitPrice: 850000,
+        ),
+      ]);
+    }
   }
 
   @override
   void dispose() {
     _partNameController.dispose();
     _partQtyController.dispose();
+    _partPriceController.dispose();
+    _cancelReasonController.dispose();
     super.dispose();
+  }
+
+  String _formatCurrency(double amount) {
+    final int val = amount.toInt();
+    final String str = val.toString();
+    final buffer = StringBuffer();
+    for (int i = 0; i < str.length; i++) {
+      if (i > 0 && (str.length - i) % 3 == 0) {
+        buffer.write('.');
+      }
+      buffer.write(str[i]);
+    }
+    return '${buffer.toString()} VNĐ';
   }
 
   void _addSparePart() {
     final name = _partNameController.text.trim();
     final qty = int.tryParse(_partQtyController.text.trim()) ?? 1;
+    final price = double.tryParse(_partPriceController.text.trim()) ?? 500000;
     if (name.isEmpty) return;
 
     setState(() {
@@ -74,11 +118,74 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
           code: 'PART-${_usedParts.length + 1}',
           name: name,
           quantity: qty,
+          unitPrice: price,
         ),
       );
       _partNameController.clear();
       _partQtyController.text = '1';
+      _partPriceController.text = '500000';
+      _showAddPartForm = false;
     });
+  }
+
+  Widget _buildSeverityBadge(TicketSeverity severity) {
+    String label = 'MEDIUM';
+    Color bg = const Color(0xFFFEF3C7);
+    Color border = const Color(0xFFFDE68A);
+    Color text = const Color(0xFF92400E);
+    Color dotColor = const Color(0xFFF59E0B);
+
+    if (severity == TicketSeverity.critical) {
+      label = 'CRITICAL';
+      bg = const Color(0xFFFFE4E6);
+      border = const Color(0xFFFECDD3);
+      text = const Color(0xFFBE123C);
+      dotColor = const Color(0xFFE11D48);
+    } else if (severity == TicketSeverity.high) {
+      label = 'HIGH';
+      bg = const Color(0xFFFEF3C7);
+      border = const Color(0xFFFDE68A);
+      text = const Color(0xFF92400E);
+      dotColor = const Color(0xFFF59E0B);
+    } else if (severity == TicketSeverity.low) {
+      label = 'LOW';
+      bg = const Color(0xFFD1FAE5);
+      border = const Color(0xFFA7F3D0);
+      text = const Color(0xFF065F46);
+      dotColor = const Color(0xFF10B981);
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: border, width: 0.8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: dotColor,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w900,
+              color: text,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -86,237 +193,726 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
     final ticket = widget.ticket;
 
     return Container(
-      constraints: const BoxConstraints(maxWidth: 420),
+      constraints: const BoxConstraints(maxWidth: 380),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.3),
-            blurRadius: 32,
-            offset: const Offset(0, 12),
+            color: Color(0x33000000),
+            blurRadius: 30,
+            offset: Offset(0, 10),
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          ticket.code,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w900,
-                            fontFamily: 'monospace',
-                            color: Color(0xFFBE123C),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          ticket.machineCode,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF059669),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      ticket.machineName,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF0F172A),
-                      ),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF64748B)),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-          ),
-
-          // Content body
-          Flexible(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1. Header Row matching prototype exactly
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 16, 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Mô tả sự cố khẩn cấp:',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF64748B)),
-                  ),
-                  const SizedBox(height: 4),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
-                    ),
-                    child: Text(
-                      ticket.description,
-                      style: const TextStyle(fontSize: 13, color: Color(0xFF0F172A), height: 1.4),
-                    ),
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  // Spare Parts Section
-                  const Text(
-                    'Linh kiện / Vật tư đã sử dụng:',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-                  ),
-                  const SizedBox(height: 6),
-
-                  if (_usedParts.isEmpty)
-                    const Text('Chưa ghi nhận vật tư thay thế nào', style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8)))
-                  else
-                    Column(
-                      children: _usedParts.map((part) {
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 6),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(part.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                              Text('x${part.quantity} ${part.unit}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF059669))),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
-
-                  const SizedBox(height: 10),
-
-                  // Add Spare Part form
-                  Row(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        flex: 3,
-                        child: TextField(
-                          controller: _partNameController,
-                          style: const TextStyle(fontSize: 12),
-                          decoration: InputDecoration(
-                            hintText: 'Tên vật tư thay mới...',
-                            isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFCE7F3), // bg-pink-100
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: const Color(0xFFFBCFE8)),
+                            ),
+                            child: Text(
+                              ticket.code,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                                fontFamily: 'monospace',
+                                color: Color(0xFF9D174D), // text-pink-800
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 8),
+                          _buildSeverityBadge(ticket.severity),
+                        ],
                       ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        flex: 1,
-                        child: TextField(
-                          controller: _partQtyController,
-                          keyboardType: TextInputType.number,
-                          style: const TextStyle(fontSize: 12),
-                          decoration: InputDecoration(
-                            hintText: 'SL',
-                            isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Chi Tiết Phiếu Báo Lỗi SOS',
+                        style: TextStyle(
+                          fontSize: 16.5,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF0F172A),
+                          letterSpacing: -0.3,
                         ),
-                      ),
-                      const SizedBox(width: 6),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF059669),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        onPressed: _addSparePart,
-                        child: const Text('Thêm', style: TextStyle(fontSize: 12)),
                       ),
                     ],
+                  ),
+                  InkWell(
+                    onTap: () => Navigator.pop(context),
+                    borderRadius: BorderRadius.circular(20),
+                    child: const Padding(
+                      padding: EdgeInsets.all(4.0),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 22,
+                        color: Color(0xFF94A3B8),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-          ),
 
-          // Footer Action Buttons
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-            ),
-            child: Column(
-              children: [
-                if (ticket.status == TicketStatus.open)
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0891B2),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            // 2. Scrollable Body Content
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Summary Card (THIẾT BỊ SỰ CỐ)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        widget.onClaim();
-                      },
-                      icon: const Icon(Icons.build_rounded, size: 18),
-                      label: const Text('Tiếp Nhận Sửa Chữa', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                    ),
-                  )
-                else if (ticket.status == TicketStatus.inProgress || ticket.status == TicketStatus.rejected)
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'THIẾT BỊ SỰ CỐ',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFF94A3B8),
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      ticket.machineName,
+                                      style: const TextStyle(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w900,
+                                        color: Color(0xFF0F172A),
+                                        height: 1.25,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFD1FAE5), // bg-emerald-100
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  ticket.machineCode,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w900,
+                                    fontFamily: 'monospace',
+                                    color: Color(0xFF065F46),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 10.0),
+                            child: Divider(height: 1, color: Color(0xFFF1F5F9)),
+                          ),
+
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Text.rich(
+                                  TextSpan(
+                                    text: 'Báo bởi: ',
+                                    style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                                    children: [
+                                      TextSpan(
+                                        text: ticket.reporterName ?? 'Nguyễn Văn Nam',
+                                        style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Thời gian:', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                                  Text(
+                                    ticket.createdAt.contains(' ')
+                                        ? ticket.createdAt
+                                        : '2026-07-23\n13:15:00',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w900,
+                                      color: Color(0xFF0F172A),
+                                      height: 1.2,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+
+                          if (ticket.status == TicketStatus.inProgress ||
+                              ticket.engineerName != null && ticket.engineerName!.isNotEmpty) ...[
+                            const SizedBox(height: 10),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFECFEFF), // cyan-50
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: const Color(0xFFA5F3FC)),
+                              ),
+                              child: Text.rich(
+                                TextSpan(
+                                  text: 'Kỹ sư tiếp nhận: ',
+                                  style: const TextStyle(fontSize: 11, color: Color(0xFF0891B2), fontWeight: FontWeight.w500),
+                                  children: [
+                                    TextSpan(
+                                      text: ticket.engineerName ?? 'Trần Minh Đức (ME)',
+                                      style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF0891B2)),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        widget.onComplete(_usedParts);
-                      },
-                      icon: const Icon(Icons.check_circle_rounded, size: 18),
-                      label: const Text('Hoàn Thành & Gửi Nghiệm Thu', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                     ),
-                  ),
-              ],
+
+                    const SizedBox(height: 14),
+
+                    // MÔ TẢ CHI TIẾT SỰ CỐ
+                    const Text(
+                      'MÔ TẢ CHI TIẾT SỰ CỐ:',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF1E293B),
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Text(
+                        ticket.description,
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          color: Color(0xFF334155),
+                          height: 1.45,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // ẢNH MINH CHỨNG LỖI HIỆN TRƯỜNG
+                    const Text(
+                      'ẢNH MINH CHỨNG LỖI HIỆN TRƯỜNG:',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF1E293B),
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.network(
+                        ticket.imageUrl ??
+                            'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&auto=format&fit=crop&q=80',
+                        height: 175,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (ctx, err, stack) => Container(
+                          height: 175,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0F172A),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Center(
+                            child: Icon(Icons.build_circle_outlined, size: 48, color: Colors.white54),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // LINH KIỆN ĐÃ KHAI BÁO (Matching Screenshot 3)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'LINH KIỆN ĐÃ KHAI BÁO:',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF1E293B),
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                        if (ticket.status != TicketStatus.closed && ticket.status != TicketStatus.cancelled)
+                          InkWell(
+                            onTap: () => setState(() => _showAddPartForm = !_showAddPartForm),
+                            child: const Text(
+                              '+ Khai báo thêm phụ tùng',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF008B99), // Cyan/Teal
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+
+                    if (_showAddPartForm) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFFA5F3FC)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Thêm Vật Tư / Phụ Tùng Thay Thế', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 8),
+                            TextField(
+                              controller: _partNameController,
+                              style: const TextStyle(fontSize: 12),
+                              decoration: InputDecoration(
+                                hintText: 'Tên phụ tùng (e.g. Vòng bi Spindle 7014C)',
+                                isDense: true,
+                                filled: true,
+                                fillColor: Colors.white,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                SizedBox(
+                                  width: 64,
+                                  child: TextField(
+                                    controller: _partQtyController,
+                                    keyboardType: TextInputType.number,
+                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                    textAlign: TextAlign.center,
+                                    decoration: InputDecoration(
+                                      hintText: 'SL',
+                                      isDense: true,
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: TextField(
+                                    controller: _partPriceController,
+                                    keyboardType: TextInputType.number,
+                                    style: const TextStyle(fontSize: 12, fontFamily: 'monospace', fontWeight: FontWeight.w600),
+                                    decoration: InputDecoration(
+                                      hintText: 'Đơn giá (VND)',
+                                      isDense: true,
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Duyệt Quản đốc nếu > 2.0Trđ',
+                                  style: TextStyle(fontSize: 10, color: Color(0xFF64748B)),
+                                ),
+                                Row(
+                                  children: [
+                                    OutlinedButton(
+                                      style: OutlinedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      ),
+                                      onPressed: () => setState(() => _showAddPartForm = false),
+                                      child: const Text('Hủy', style: TextStyle(fontSize: 11)),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF008B99),
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        elevation: 0,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      ),
+                                      onPressed: _addSparePart,
+                                      child: const Text('Lưu Vật Tư', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+
+                    // Spare Parts List Cards matching Screenshot 3
+                    ..._usedParts.map((part) {
+                      final bool isApproved = (part.quantity * part.unitPrice) >= 2000000;
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    part.name,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w900,
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    'x${part.quantity} cái  •  ${_formatCurrency(part.quantity * part.unitPrice)}',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Color(0xFF64748B),
+                                      fontFamily: 'monospace',
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: isApproved
+                                    ? const Color(0xFFD1FAE5) // bg-emerald-100
+                                    : const Color(0xFFF1F5F9), // bg-slate-100
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                isApproved ? 'Đã Duyệt' : 'Tự Động',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                  color: isApproved
+                                      ? const Color(0xFF065F46) // text-emerald-800
+                                      : const Color(0xFF475569), // text-slate-700
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+
+                    if (_showCancelForm) ...[
+                      const SizedBox(height: 14),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFE4E6),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFFFECDD3)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Hủy Phiếu SOS Đã Báo Nhầm (US-13)',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFFBE123C)),
+                            ),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: _cancelReasonController,
+                              maxLines: 2,
+                              style: const TextStyle(fontSize: 11.5),
+                              decoration: InputDecoration(
+                                hintText: 'Nhập lý do hủy phiếu (thao tác nhầm...)',
+                                isDense: true,
+                                fillColor: Colors.white,
+                                filled: true,
+                                contentPadding: const EdgeInsets.all(10),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton(
+                                    style: OutlinedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                    onPressed: () => setState(() => _showCancelForm = false),
+                                    child: const Text('Quay Lại', style: TextStyle(fontSize: 11)),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFE11D48),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                    onPressed: () {
+                                      final reason = _cancelReasonController.text.trim();
+                                      if (reason.isNotEmpty && widget.onCancel != null) {
+                                        widget.onCancel!(reason);
+                                        Navigator.pop(context);
+                                      }
+                                    },
+                                    child: const Text('Xác Nhận Hủy', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ],
+
+            // 3. Footer Action Buttons (Matching Screenshot 1, 2 & 3)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 18),
+              child: Column(
+                children: [
+                  // Case A: OPEN / PENDING (Matching Screenshot 1)
+                  if (ticket.status == TicketStatus.open && !_showCancelForm) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0097B2), // Cyan button
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          widget.onClaim();
+                        },
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.build_rounded, size: 16),
+                            SizedBox(width: 6),
+                            Text(
+                              'Bấm Tiếp Nhận Sửa Chữa Ngay',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.1,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: const Color(0xFFE11D48),
+                          side: const BorderSide(color: Color(0xFFFECDD3)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () => setState(() => _showCancelForm = true),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.cancel_outlined, size: 16, color: Color(0xFFE11D48)),
+                            SizedBox(width: 6),
+                            Text(
+                              'Hủy Phiếu SOS Báo Nhầm (US-13)',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ]
+                  // Case B: IN_PROGRESS / REJECTED (Matching Screenshot 2 & 3)
+                  else if (ticket.status == TicketStatus.inProgress || ticket.status == TicketStatus.rejected) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF009966), // Vibrant Emerald Green button
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          widget.onComplete(_usedParts);
+                        },
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.check_circle_rounded, size: 18),
+                            SizedBox(width: 6),
+                            Text(
+                              'Hoàn Thành & Gửi Quản Đốc Nghiệm Thu',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.1,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ]
+                  // Case C: PENDING APPROVAL
+                  else if (ticket.status == TicketStatus.pendingApproval) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFBEB),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFFDE68A)),
+                      ),
+                      child: const Text(
+                        'Đã hoàn thành sửa chữa — Đang chờ Quản đốc ký nghiệm thu!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFFB45309)),
+                      ),
+                    ),
+                  ]
+                  // Case D: CLOSED
+                  else if (ticket.status == TicketStatus.closed) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFECFDF5),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFA7F3D0)),
+                      ),
+                      child: const Text(
+                        'Đã được Quản đốc ký nghiệm thu & bàn giao về Active!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFF065F46)),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

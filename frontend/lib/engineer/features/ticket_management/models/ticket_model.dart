@@ -9,6 +9,7 @@ enum TicketStatus {
 
 enum TicketSeverity {
   critical, // NGHIÊM TRỌNG (CRITICAL)
+  high, // CAO (HIGH)
   medium, // VỪA (MEDIUM)
   low, // THẤP (LOW)
 }
@@ -138,8 +139,9 @@ class TicketModel {
   static TicketSeverity _parseSeverity(String? str) {
     switch (str?.toUpperCase()) {
       case 'CRITICAL':
-      case 'HIGH':
         return TicketSeverity.critical;
+      case 'HIGH':
+        return TicketSeverity.high;
       case 'LOW':
         return TicketSeverity.low;
       default:
