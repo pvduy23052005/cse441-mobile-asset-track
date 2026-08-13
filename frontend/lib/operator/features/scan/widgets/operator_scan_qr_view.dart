@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../widgets/operator_qr_scanner_sheet.dart';
+import '../../../../shared_features/asset_common/asset_lookup_screen.dart';
 
 class OperatorScanQrView extends StatelessWidget {
   const OperatorScanQrView({super.key});
@@ -50,7 +50,12 @@ class OperatorScanQrView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              onPressed: () => OperatorQRScannerSheet.show(context),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AssetLookupScreen()),
+                );
+              },
               icon: const Icon(Icons.qr_code_scanner_rounded, size: 20),
               label: const Text(
                 'Mở Quét QR / Tải ảnh',

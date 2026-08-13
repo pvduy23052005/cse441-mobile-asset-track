@@ -35,6 +35,7 @@ class MachineModel {
   final double nextMaintenanceHours;
   final String lastMaintenanceDate;
   final double lastMaintenanceHours;
+  final String trackingUnit;
   final Map<String, dynamic> specifications;
   final List<TroubleshootingItem> quickTroubleshooting;
 
@@ -49,9 +50,12 @@ class MachineModel {
     required this.nextMaintenanceHours,
     required this.lastMaintenanceDate,
     required this.lastMaintenanceHours,
+    this.trackingUnit = 'HOURS',
     required this.specifications,
     required this.quickTroubleshooting,
   });
+
+  String get unitLabel => trackingUnit == 'KM' ? 'Số Km vận hành' : 'Số giờ vận hành';
 
   factory MachineModel.fromJson(Map<String, dynamic> json) {
     final specs = (json['specifications'] as Map<String, dynamic>?) ?? {
@@ -95,6 +99,7 @@ class MachineModel {
       nextMaintenanceHours: (json['next_maintenance_hours'] as num?)?.toDouble() ?? (json['nextMaintenanceHours'] as num?)?.toDouble() ?? 1000.0,
       lastMaintenanceDate: json['lastMaintenanceDate']?.toString() ?? '12/06/2026',
       lastMaintenanceHours: (json['lastMaintenanceHours'] as num?)?.toDouble() ?? 500.0,
+      trackingUnit: json['trackingUnit']?.toString() ?? json['tracking_unit']?.toString() ?? 'HOURS',
       specifications: specs,
       quickTroubleshooting: troubleList,
     );

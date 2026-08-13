@@ -5,23 +5,16 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../core/models/machine_model.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../supervisor/features/machine_management/services/machine_service.dart';
-import '../features/machine/widgets/machine_detail_modal.dart';
+import '../../../shared_features/asset_common/asset_lookup_screen.dart';
 
 class OperatorQRScannerSheet extends StatefulWidget {
   const OperatorQRScannerSheet({super.key});
 
-  static Future<MachineModel?> show(BuildContext context) async {
-    final machine = await showModalBottomSheet<MachineModel>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const OperatorQRScannerSheet(),
+  static Future<void> show(BuildContext context) async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AssetLookupScreen()),
     );
-
-    if (machine != null && context.mounted) {
-      MachineDetailModal.show(context, machine);
-    }
-    return machine;
   }
 
   @override
