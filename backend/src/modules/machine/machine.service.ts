@@ -1,0 +1,164 @@
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import * as QRCode from 'qrcode';
+import { FirebaseService } from '../firebase/firebase.service';
+
+export interface Machine {
+  id: string;
+  code: string;
+  name: string;
+  model: string;
+  location?: string;
+  next_maintenance_hours?: number;
+  specifications: Record<string, any>;
+  status: string;
+  running_hours: number;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: any;
+}
+
+export interface FirestoreMachine {
+  code?: string;
+  name?: string;
+  model?: string;
+  location?: string;
+  next_maintenance_hours?: number;
+  specifications?: Record<string, any>;
+  status?: string;
+  running_hours?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface MachineQrCodeResponse {
+  machineId: string;
+  code: string;
+  name: string;
+  qrCode: string;
+}
+
+@Injectable()
+export class MachineService {
+  private readonly logger = new Logger(MachineService.name);
+  private readonly collectionName = 'machines';
+
+  constructor(private readonly firebaseService: FirebaseService) {}
+
+  async getAllMachines(): Promise<Machine[]> {
+    try {
+      const snapshot = await this.firebaseService.firestore
+        .collection(this.collectionName)
+        .get();
+
+      return snapshot.docs.map((doc) => {
+        const data = doc.data() as FirestoreMachine;
+        return {
+          id: doc.id,
+          code: data.code || '',
+          name: data.name || '',
+          model: data.model || '',
+          location: data.location || '',
+          next_maintenance_hours: data.next_maintenance_hours,
+          specifications: data.specifications || {},
+          status: data.status || 'ACTIVE',
+          running_hours: data.running_hours ?? 0,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
+        };
+      });
+    } catch (error) {
+      this.logger.error(`Error fetching machines from Firestore: ${error}`);
+      return [];
+    }
+  }
+
+  async getMachineById(id: string): Promise<Machine> {
+    const doc = await this.firebaseService.firestore
+      .collection(this.collectionName)
+      .doc(id)
+      .get();
+
+    if (!doc.exists) {
+      throw new NotFoundException(`Machine with ID '${id}' not found`);
+    }
+
+    const data = (doc.data() as FirestoreMachine) || {};
+    return {
+      id: doc.id,
+      code: data.code || '',
+      name: data.name || '',
+      model: data.model || '',
+      location: data.location || '',
+      next_maintenance_hours: data.next_maintenance_hours,
+      specifications: data.specifications || {},
+      status: data.status || 'ACTIVE',
+      running_hours: data.running_hours ?? 0,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+    };
+  }
+
+  async updateMachineStatus(id: string, status: string): Promise<Machine> {
+    const docRef = this.firebaseService.firestore
+      .collection(this.collectionName)
+      .doc(id);
+
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      throw new NotFoundException(`Machine with ID '${id}' not found`);
+    }
+
+    const updatedAt = new Date().toISOString();
+    await docRef.update({
+      status: status.toUpperCase(),
+      updatedAt,
+    });
+
+    return this.getMachineById(id);
+  }
+
+  async updateMachine(
+    id: string,
+    data: Partial<FirestoreMachine>,
+  ): Promise<Machine> {
+    const docRef = this.firebaseService.firestore
+      .collection(this.collectionName)
+      .doc(id);
+
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      throw new NotFoundException(`Machine with ID '${id}' not found`);
+    }
+
+    const updatedAt = new Date().toISOString();
+    await docRef.update({
+      ...data,
+      updatedAt,
+    });
+
+    return this.getMachineById(id);
+  }
+
+  async generateMachineQrCode(id: string): Promise<MachineQrCodeResponse> {
+    const machine = await this.getMachineById(id);
+
+    // Sử dụng ID của machine để sinh mã QR
+    const qrDataUrl = await QRCode.toDataURL(machine.id, {
+      errorCorrectionLevel: 'H',
+      type: 'image/png',
+      margin: 2,
+      width: 320,
+      color: {
+        dark: '#000000',
+        light: '#ffffff',
+      },
+    });
+
+    return {
+      machineId: machine.id,
+      code: machine.code,
+      name: machine.name,
+      qrCode: qrDataUrl,
+    };
+  }
+}

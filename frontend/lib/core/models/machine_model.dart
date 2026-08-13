@@ -1,31 +1,113 @@
+import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
+
 class MachineModel {
   final String id;
-  final String name;
   final String code;
+  final String name;
+  final String model;
+  final String location;
+  final num? nextMaintenanceHours;
   final String status;
+  final num runningHours;
+  final Map<String, dynamic> specifications;
+  final String? createdAt;
+  final String? updatedAt;
 
   MachineModel({
     required this.id,
-    required this.name,
     required this.code,
+    required this.name,
+    this.model = '',
+    this.location = '',
+    this.nextMaintenanceHours,
     required this.status,
+    this.runningHours = 0,
+    this.specifications = const {},
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory MachineModel.fromJson(Map<String, dynamic> json) {
+    final specs = json['specifications'] is Map
+        ? Map<String, dynamic>.from(json['specifications'] as Map)
+        : <String, dynamic>{};
+
+    num? parsedNextMaint;
+    if (json['next_maintenance_hours'] != null) {
+      parsedNextMaint = json['next_maintenance_hours'] as num?;
+    } else if (specs['next_maintenance_hours'] != null) {
+      parsedNextMaint = specs['next_maintenance_hours'] as num?;
+    } else if (specs['next_maintenance'] != null) {
+      final val = specs['next_maintenance'].toString().replaceAll(RegExp(r'[^0-9]'), '');
+      parsedNextMaint = num.tryParse(val);
+    }
+
     return MachineModel(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      code: json['code'] ?? '',
-      status: json['status'] ?? '',
+      id: json['id']?.toString() ?? '',
+      code: json['code']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      model: json['model']?.toString() ?? '',
+      location: json['location']?.toString() ??
+          specs['location']?.toString() ??
+          specs['area']?.toString() ??
+          '',
+      nextMaintenanceHours: parsedNextMaint,
+      status: json['status']?.toString() ?? 'ACTIVE',
+      runningHours: json['running_hours'] as num? ?? 0,
+      specifications: specs,
+      createdAt: json['createdAt']?.toString(),
+      updatedAt: json['updatedAt']?.toString(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'name': name,
       'code': code,
+      'name': name,
+      'model': model,
+      'location': location,
+      if (nextMaintenanceHours != null) 'next_maintenance_hours': nextMaintenanceHours,
       'status': status,
+      'running_hours': runningHours,
+      'specifications': specifications,
+      if (createdAt != null) 'createdAt': createdAt,
+      if (updatedAt != null) 'updatedAt': updatedAt,
     };
+  }
+
+  String get statusLabel {
+    switch (status.toUpperCase()) {
+      case 'ACTIVE':
+        return 'Hoạt động';
+      case 'MAINTENANCE':
+        return 'Bảo trì';
+      case 'INACTIVE':
+        return 'Tạm dừng';
+      case 'ERROR':
+        return 'Lỗi / Cần sửa';
+      default:
+        return status.isNotEmpty ? status : 'Không xác định';
+    }
+  }
+
+  Color get statusColor {
+    switch (status.toUpperCase()) {
+      case 'ACTIVE':
+        return AppTheme.primaryColor;
+      case 'MAINTENANCE':
+        return const Color(0xFFD97706); // Amber
+      case 'INACTIVE':
+        return AppTheme.mutedForegroundColor;
+      case 'ERROR':
+        return AppTheme.errorColor;
+      default:
+        return AppTheme.mutedForegroundColor;
+    }
+  }
+
+  Color get statusBgColor {
+    return statusColor.withValues(alpha: 0.12);
   }
 }
