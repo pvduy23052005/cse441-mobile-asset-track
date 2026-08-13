@@ -22,6 +22,28 @@ class _LoginPortalScreenState extends State<LoginPortalScreen> {
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  Future<void> _loadSavedCredentials() async {
+    await StorageService.init();
+    final isRemembered = StorageService.getIsRememberMe();
+    if (isRemembered) {
+      final savedEmail = StorageService.getSavedEmail();
+      final savedPassword = await StorageService.getSavedPassword();
+      if (savedEmail != null && savedEmail.isNotEmpty) {
+        _emailController.text = savedEmail;
+      }
+      if (savedPassword != null && savedPassword.isNotEmpty) {
+        _passwordController.text = savedPassword;
+      }
+      if (mounted) setState(() => _rememberMe = true);
+    }
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
@@ -44,6 +66,12 @@ class _LoginPortalScreenState extends State<LoginPortalScreen> {
       final accessToken = response['accessToken']?.toString();
       final userData = (response['user'] as Map<String, dynamic>?) ?? {};
       final userRole = userData['role']?.toString();
+
+      await StorageService.saveRememberedCredentials(
+        rememberMe: _rememberMe,
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
 
       if (accessToken != null && accessToken.isNotEmpty) {
         await StorageService.saveAuthSession(

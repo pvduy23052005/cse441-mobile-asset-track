@@ -16,6 +16,11 @@ class StorageService {
   static const String _keyUserUid = 'user_uid';
   static const String _keyIsLoggedIn = 'is_logged_in';
 
+  // Keys for Remember Me
+  static const String _keyRememberMe = 'remember_me';
+  static const String _keySavedEmail = 'saved_email';
+  static const String _keySavedPassword = 'saved_password';
+
   static Future<void> init() async {
     _prefs ??= await SharedPreferences.getInstance();
   }
@@ -45,6 +50,40 @@ class StorageService {
     await _prefs?.setString(_keyUserFullName, fullName);
     await _prefs?.setString(_keyUserUid, uid);
     await _prefs?.setBool(_keyIsLoggedIn, true);
+  }
+
+  static Future<void> saveRememberedCredentials({
+    required bool rememberMe,
+    required String email,
+    required String password,
+  }) async {
+    await init();
+    await _prefs?.setBool(_keyRememberMe, rememberMe);
+    if (rememberMe) {
+      await _prefs?.setString(_keySavedEmail, email);
+      await _secureStorage.write(key: _keySavedPassword, value: password);
+    } else {
+      await _prefs?.remove(_keySavedEmail);
+      try {
+        await _secureStorage.delete(key: _keySavedPassword);
+      } catch (_) {}
+    }
+  }
+
+  static bool getIsRememberMe() {
+    return _prefs?.getBool(_keyRememberMe) ?? false;
+  }
+
+  static String? getSavedEmail() {
+    return _prefs?.getString(_keySavedEmail);
+  }
+
+  static Future<String?> getSavedPassword() async {
+    try {
+      return await _secureStorage.read(key: _keySavedPassword);
+    } catch (_) {
+      return null;
+    }
   }
 
   static Future<String?> getToken() async {
