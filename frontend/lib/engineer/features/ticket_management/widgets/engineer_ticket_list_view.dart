@@ -38,53 +38,6 @@ class _EngineerTicketListViewState extends State<EngineerTicketListView> {
     ),
   ];
 
-  final List<TicketModel> _sampleTickets = [
-    TicketModel(
-      id: 't1',
-      code: 'SOS-2026-001',
-      machineId: 'm1',
-      machineCode: 'CNC-2024-001',
-      machineName: 'Máy Trung Tâm Gia Công CNC 5 Trục',
-      description: 'Trục chính Spindle phát ra tiếng kêu rít lớn khi quay tốc độ > 8000...',
-      severity: TicketSeverity.low, // HIGH
-      status: TicketStatus.open,
-      createdAt: '10 phút trước',
-    ),
-    TicketModel(
-      id: 't2',
-      code: 'SOS-2026-002',
-      machineId: 'm2',
-      machineCode: 'PRESS-2024-002',
-      machineName: 'Máy Dập Thủy Lực 500 Tấn',
-      description: 'Rò rỉ dầu thủy lực xi lanh ép chính, áp suất hạ dốc nguy cơ rơi khuôn...',
-      severity: TicketSeverity.critical,
-      status: TicketStatus.open,
-      createdAt: '25 phút trước',
-    ),
-    TicketModel(
-      id: 't3',
-      code: 'SOS-2026-003',
-      machineId: 'm3',
-      machineCode: 'COMP-2024-003',
-      machineName: 'Máy Nén Khí Trục Vít Công Nghiệp',
-      description: 'Áp suất khí nén đầu ra tụt giảm dưới 4.5 Bar, bình tách dầu phát tiến...',
-      severity: TicketSeverity.medium,
-      status: TicketStatus.open,
-      createdAt: '40 phút trước',
-    ),
-    TicketModel(
-      id: 't4',
-      code: 'SOS-2026-004',
-      machineId: 'm4',
-      machineCode: 'ROBOT-2024-004',
-      machineName: 'Dây Chuyền Hàn Robot Tự Động',
-      description: 'Béc hàn bị nghẹt tia lửa, đã kiểm tra vệ sinh tay gắp Robot và thay...',
-      severity: TicketSeverity.low, // HIGH
-      status: TicketStatus.open,
-      createdAt: '1 giờ trước',
-    ),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -97,7 +50,7 @@ class _EngineerTicketListViewState extends State<EngineerTicketListView> {
 
     if (mounted) {
       setState(() {
-        _tickets = apiList.isNotEmpty ? apiList : _sampleTickets;
+        _tickets = apiList; // Lấy 100% từ API backend
         _isLoading = false;
       });
     }
@@ -254,26 +207,41 @@ class _EngineerTicketListViewState extends State<EngineerTicketListView> {
                       ),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(10, 0, 10, 12),
-                        child: Column(
-                          children: _tickets.map((t) {
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 6.0),
-                              child: TicketCard(
-                                ticket: t,
-                                onTap: () {
-                                  WorkOrderDetailModal.show(
-                                    context,
-                                    ticket: t,
-                                    onClaim: () => _handleClaimTicket(t),
-                                    onComplete: (parts) => _handleCompleteTicket(t, parts),
+                        child: _tickets.isEmpty
+                            ? Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(vertical: 24),
+                                child: const Center(
+                                  child: Text(
+                                    'Không có phiếu sự cố SOS nào',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : Column(
+                                children: _tickets.map((t) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 6.0),
+                                    child: TicketCard(
+                                      ticket: t,
+                                      onTap: () {
+                                        WorkOrderDetailModal.show(
+                                          context,
+                                          ticket: t,
+                                          onClaim: () => _handleClaimTicket(t),
+                                          onComplete: (parts) => _handleCompleteTicket(t, parts),
+                                        );
+                                      },
+                                      onClaim: () => _handleClaimTicket(t),
+                                      onComplete: () => _handleCompleteTicket(t),
+                                    ),
                                   );
-                                },
-                                onClaim: () => _handleClaimTicket(t),
-                                onComplete: () => _handleCompleteTicket(t),
+                                }).toList(),
                               ),
-                            );
-                          }).toList(),
-                        ),
                       ),
                     ],
                   ),
@@ -312,30 +280,45 @@ class _EngineerTicketListViewState extends State<EngineerTicketListView> {
                       ),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(10, 0, 10, 12),
-                        child: Column(
-                          children: _pmChecklists.map((pm) {
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 6.0),
-                              child: PMCard(
-                                pm: pm,
-                                onTap: () {
-                                  PMChecklistModal.show(
-                                    context,
-                                    pm: pm,
-                                    onCompletePM: (updatedPM) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text('Đã hoàn thành bảo trì PM ${updatedPM.code}!'),
-                                          backgroundColor: const Color(0xFFD97706),
-                                        ),
-                                      );
-                                    },
+                        child: _pmChecklists.isEmpty
+                            ? Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(vertical: 24),
+                                child: const Center(
+                                  child: Text(
+                                    'Không có nhiệm vụ bảo trì PM nào',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : Column(
+                                children: _pmChecklists.map((pm) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 6.0),
+                                    child: PMCard(
+                                      pm: pm,
+                                      onTap: () {
+                                        PMChecklistModal.show(
+                                          context,
+                                          pm: pm,
+                                          onCompletePM: (updatedPM) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Text('Đã hoàn thành bảo trì PM ${updatedPM.code}!'),
+                                                backgroundColor: const Color(0xFFD97706),
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      },
+                                    ),
                                   );
-                                },
+                                }).toList(),
                               ),
-                            );
-                          }).toList(),
-                        ),
                       ),
                     ],
                   ),

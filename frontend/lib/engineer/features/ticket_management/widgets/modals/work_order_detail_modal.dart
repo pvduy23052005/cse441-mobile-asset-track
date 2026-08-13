@@ -60,27 +60,8 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
   @override
   void initState() {
     super.initState();
-    if (widget.ticket.usedSpareParts.isNotEmpty) {
-      _usedParts.addAll(widget.ticket.usedSpareParts);
-    } else {
-      // Default sample parts matching screenshot
-      _usedParts.addAll([
-        SparePartItem(
-          id: 'sp-1',
-          code: 'SP-7014C',
-          name: 'Vòng bi cao tốc Spindle 7014C',
-          quantity: 2,
-          unitPrice: 4500000,
-        ),
-        SparePartItem(
-          id: 'sp-2',
-          code: 'SP-MOBIL',
-          name: 'Dầu bôi trơn trục chính Mobil Velvet',
-          quantity: 1,
-          unitPrice: 850000,
-        ),
-      ]);
-    }
+    // Lấy 100% dữ liệu linh kiện thật từ phiếu Backend API
+    _usedParts.addAll(widget.ticket.usedSpareParts);
   }
 
   @override
@@ -212,7 +193,7 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Header Row matching prototype exactly
+            // 1. Header Row
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 18, 16, 12),
               child: Row(
@@ -227,7 +208,7 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFCE7F3), // bg-pink-100
+                              color: const Color(0xFFFCE7F3),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(color: const Color(0xFFFBCFE8)),
                             ),
@@ -237,7 +218,7 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                                 fontSize: 11,
                                 fontWeight: FontWeight.w900,
                                 fontFamily: 'monospace',
-                                color: Color(0xFF9D174D), // text-pink-800
+                                color: Color(0xFF9D174D),
                               ),
                             ),
                           ),
@@ -326,7 +307,7 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFD1FAE5), // bg-emerald-100
+                                  color: const Color(0xFFD1FAE5),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
@@ -357,7 +338,7 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                                     style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
                                     children: [
                                       TextSpan(
-                                        text: ticket.reporterName ?? 'Nguyễn Văn Nam',
+                                        text: ticket.reporterName ?? 'Không xác định',
                                         style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
                                       ),
                                     ],
@@ -369,9 +350,7 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                                 children: [
                                   const Text('Thời gian:', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
                                   Text(
-                                    ticket.createdAt.contains(' ')
-                                        ? ticket.createdAt
-                                        : '2026-07-23\n13:15:00',
+                                    ticket.createdAt,
                                     style: const TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w900,
@@ -384,14 +363,13 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                             ],
                           ),
 
-                          if (ticket.status == TicketStatus.inProgress ||
-                              ticket.engineerName != null && ticket.engineerName!.isNotEmpty) ...[
+                          if (ticket.engineerName != null && ticket.engineerName!.isNotEmpty) ...[
                             const SizedBox(height: 10),
                             Container(
                               width: double.infinity,
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFECFEFF), // cyan-50
+                                color: const Color(0xFFECFEFF),
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(color: const Color(0xFFA5F3FC)),
                               ),
@@ -401,7 +379,7 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                                   style: const TextStyle(fontSize: 11, color: Color(0xFF0891B2), fontWeight: FontWeight.w500),
                                   children: [
                                     TextSpan(
-                                      text: ticket.engineerName ?? 'Trần Minh Đức (ME)',
+                                      text: ticket.engineerName,
                                       style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF0891B2)),
                                     ),
                                   ],
@@ -445,44 +423,34 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                       ),
                     ),
 
-                    const SizedBox(height: 14),
-
-                    // ẢNH MINH CHỨNG LỖI HIỆN TRƯỜNG
-                    const Text(
-                      'ẢNH MINH CHỨNG LỖI HIỆN TRƯỜNG:',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF1E293B),
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Image.network(
-                        ticket.imageUrl ??
-                            'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&auto=format&fit=crop&q=80',
-                        height: 175,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (ctx, err, stack) => Container(
-                          height: 175,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0F172A),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Center(
-                            child: Icon(Icons.build_circle_outlined, size: 48, color: Colors.white54),
-                          ),
+                    // ẢNH MINH CHỨNG LỖI HIỆN TRƯỜNG (Chỉ hiển thị nếu từ API thật có ảnh)
+                    if (ticket.imageUrl != null && ticket.imageUrl!.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      const Text(
+                        'ẢNH MINH CHỨNG LỖI HIỆN TRƯỜNG:',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF1E293B),
+                          letterSpacing: 0.2,
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 6),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.network(
+                          ticket.imageUrl!,
+                          height: 175,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (ctx, err, stack) => const SizedBox.shrink(),
+                        ),
+                      ),
+                    ],
 
                     const SizedBox(height: 14),
 
-                    // LINH KIỆN ĐÃ KHAI BÁO (Matching Screenshot 3)
+                    // LINH KIỆN ĐÃ KHAI BÁO
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -503,7 +471,7 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF008B99), // Cyan/Teal
+                                color: Color(0xFF008B99),
                               ),
                             ),
                           ),
@@ -627,69 +595,85 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                       const SizedBox(height: 8),
                     ],
 
-                    // Spare Parts List Cards matching Screenshot 3
-                    ..._usedParts.map((part) {
-                      final bool isApproved = (part.quantity * part.unitPrice) >= 2000000;
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    // Spare Parts List Cards (Nếu API chưa có linh kiện thì báo chưa khai báo)
+                    if (_usedParts.isEmpty)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: const Color(0xFFE2E8F0)),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    part.name,
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w900,
-                                      color: Color(0xFF0F172A),
+                        child: const Text(
+                          'Chưa khai báo linh kiện thay thế cho phiếu này.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 11.5, color: Color(0xFF94A3B8), fontStyle: FontStyle.italic),
+                        ),
+                      )
+                    else
+                      ..._usedParts.map((part) {
+                        final bool isApproved = (part.quantity * part.unitPrice) >= 2000000;
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      part.name,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w900,
+                                        color: Color(0xFF0F172A),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 3),
-                                  Text(
-                                    'x${part.quantity} cái  •  ${_formatCurrency(part.quantity * part.unitPrice)}',
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: Color(0xFF64748B),
-                                      fontFamily: 'monospace',
-                                      fontWeight: FontWeight.w600,
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      'x${part.quantity} cái  •  ${_formatCurrency(part.quantity * part.unitPrice)}',
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: Color(0xFF64748B),
+                                        fontFamily: 'monospace',
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: isApproved
-                                    ? const Color(0xFFD1FAE5) // bg-emerald-100
-                                    : const Color(0xFFF1F5F9), // bg-slate-100
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                isApproved ? 'Đã Duyệt' : 'Tự Động',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w900,
-                                  color: isApproved
-                                      ? const Color(0xFF065F46) // text-emerald-800
-                                      : const Color(0xFF475569), // text-slate-700
+                                  ],
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: isApproved
+                                      ? const Color(0xFFD1FAE5)
+                                      : const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  isApproved ? 'Đã Duyệt' : 'Tự Động',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w900,
+                                    color: isApproved
+                                        ? const Color(0xFF065F46)
+                                        : const Color(0xFF475569),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
 
                     if (_showCancelForm) ...[
                       const SizedBox(height: 14),
@@ -767,19 +751,18 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
               ),
             ),
 
-            // 3. Footer Action Buttons (Matching Screenshot 1, 2 & 3)
+            // 3. Footer Action Buttons
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 18),
               child: Column(
                 children: [
-                  // Case A: OPEN / PENDING (Matching Screenshot 1)
                   if (ticket.status == TicketStatus.open && !_showCancelForm) ...[
                     SizedBox(
                       width: double.infinity,
                       height: 44,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0097B2), // Cyan button
+                          backgroundColor: const Color(0xFF0097B2),
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
@@ -838,14 +821,13 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                       ),
                     ),
                   ]
-                  // Case B: IN_PROGRESS / REJECTED (Matching Screenshot 2 & 3)
                   else if (ticket.status == TicketStatus.inProgress || ticket.status == TicketStatus.rejected) ...[
                     SizedBox(
                       width: double.infinity,
                       height: 44,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF009966), // Vibrant Emerald Green button
+                          backgroundColor: const Color(0xFF009966),
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
@@ -874,7 +856,6 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                       ),
                     ),
                   ]
-                  // Case C: PENDING APPROVAL
                   else if (ticket.status == TicketStatus.pendingApproval) ...[
                     Container(
                       width: double.infinity,
@@ -891,7 +872,6 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                       ),
                     ),
                   ]
-                  // Case D: CLOSED
                   else if (ticket.status == TicketStatus.closed) ...[
                     Container(
                       width: double.infinity,
