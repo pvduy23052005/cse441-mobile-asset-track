@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../models/work_order_model.dart';
+import '../../../../../core/theme/app_theme.dart';
+import '../../models/work_order_model.dart';
 
 class SosWorkOrderCard extends StatelessWidget {
   final WorkOrderModel workOrder;
@@ -22,7 +22,7 @@ class SosWorkOrderCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10.0),
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC), // slate-50
+        color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(12.0),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
@@ -31,7 +31,6 @@ class SosWorkOrderCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Row: Code (Red Monospace) & Severity Badge
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -41,15 +40,13 @@ class SosWorkOrderCard extends StatelessWidget {
                     fontSize: 12,
                     fontWeight: FontWeight.w900,
                     fontFamily: 'monospace',
-                    color: Color(0xFFBE123C), // Rose-700
+                    color: Color(0xFFBE123C),
                   ),
                 ),
                 _buildSeverityBadge(workOrder.severity),
               ],
             ),
             const SizedBox(height: 6),
-
-            // Machine Name & Description
             Text(
               workOrder.machineName,
               style: const TextStyle(
@@ -72,7 +69,6 @@ class SosWorkOrderCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
 
-            // Image Preview (if present)
             if (workOrder.imageUrl != null && workOrder.imageUrl!.isNotEmpty) ...[
               ClipRRect(
                 borderRadius: BorderRadius.circular(8.0),
@@ -104,7 +100,6 @@ class SosWorkOrderCard extends StatelessWidget {
               const SizedBox(height: 8),
             ],
 
-            // Rejection reason banner if rejected by supervisor
             if (workOrder.status == WorkOrderStatus.rejected &&
                 workOrder.rejectionReason != null) ...[
               Container(
@@ -139,7 +134,6 @@ class SosWorkOrderCard extends StatelessWidget {
               const SizedBox(height: 8),
             ],
 
-            // Action Button matching UI prototype
             _buildActionButton(context),
           ],
         ),
@@ -148,13 +142,13 @@ class SosWorkOrderCard extends StatelessWidget {
   }
 
   Widget _buildSeverityBadge(WorkOrderSeverity severity) {
-    Color bg = const Color(0xFFFEF3C7); // Amber-100
-    Color text = const Color(0xFF92400E); // Amber-800
+    Color bg = const Color(0xFFFEF3C7);
+    Color text = const Color(0xFF92400E);
     String label = 'HIGH';
 
     if (severity == WorkOrderSeverity.critical) {
-      bg = const Color(0xFFFFE4E6); // Rose-100
-      text = const Color(0xFF9F1239); // Rose-800
+      bg = const Color(0xFFFFE4E6);
+      text = const Color(0xFF9F1239);
       label = 'CRITICAL';
     } else if (severity == WorkOrderSeverity.medium) {
       bg = const Color(0xFFFEF3C7);
@@ -196,7 +190,7 @@ class SosWorkOrderCard extends StatelessWidget {
             style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
           ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF0284C7), // Cyan/Sky blue matching UI
+            backgroundColor: const Color(0xFF0284C7),
             foregroundColor: Colors.white,
             elevation: 0,
             shape: RoundedRectangleBorder(
@@ -220,7 +214,7 @@ class SosWorkOrderCard extends StatelessWidget {
             style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
           ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primaryColor, // Emerald Green matching UI
+            backgroundColor: AppTheme.primaryColor,
             foregroundColor: Colors.white,
             elevation: 0,
             shape: RoundedRectangleBorder(

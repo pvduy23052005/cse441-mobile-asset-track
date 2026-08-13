@@ -2,7 +2,7 @@ enum WorkOrderSeverity { critical, high, medium, low }
 
 enum WorkOrderStatus { pending, inProgress, completed, rejected, approved, cancelled }
 
-enum PMChecklistStatus { pending, inProgress, completed }
+enum PMChecklistStatus { pending, inProgress, completed, approved }
 
 class WorkOrderModel {
   final String id;

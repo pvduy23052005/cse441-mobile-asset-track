@@ -16,6 +16,8 @@ import {
   Machine,
   MachineQrCodeResponse,
   MachineService,
+  PMChecklist,
+  WorkOrder,
 } from './machine.service';
 
 @UseGuards(JwtAuthGuard)
@@ -26,6 +28,24 @@ export class MachineController {
   @Get()
   async getAllMachines(): Promise<Machine[]> {
     return this.machineService.getAllMachines();
+  }
+
+  @Get('work-orders')
+  async getWorkOrders(): Promise<WorkOrder[]> {
+    return this.machineService.getWorkOrders();
+  }
+
+  @Patch('work-orders/:id/status')
+  async updateWorkOrderStatus(
+    @Param('id') id: string,
+    @Body('status') status: string,
+  ): Promise<WorkOrder> {
+    return this.machineService.updateWorkOrderStatus(id, status);
+  }
+
+  @Get('pm-checklists')
+  async getPMChecklists(): Promise<PMChecklist[]> {
+    return this.machineService.getPMChecklists();
   }
 
   @Get(':id')
