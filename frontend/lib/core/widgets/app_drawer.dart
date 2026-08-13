@@ -87,7 +87,7 @@ class AppDrawer extends StatelessWidget {
               await StorageService.clearSession();
               if (onLogout != null) {
                 onLogout!();
-              } else {
+              } else if (context.mounted) {
                 context.go(AppRoutes.loginPortal);
               }
             },

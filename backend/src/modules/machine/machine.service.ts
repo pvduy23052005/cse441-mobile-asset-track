@@ -6,6 +6,8 @@ export interface Machine {
   code: string;
   name: string;
   model: string;
+  location?: string;
+  next_maintenance_hours?: number;
   specifications: Record<string, any>;
   status: string;
   running_hours: number;
@@ -16,8 +18,10 @@ export interface Machine {
 
 export interface FirestoreMachine {
   code?: string;
-  name: string;
+  name?: string;
   model?: string;
+  location?: string;
+  next_maintenance_hours?: number;
   specifications?: Record<string, any>;
   status?: string;
   running_hours?: number;
@@ -45,6 +49,8 @@ export class MachineService {
           code: data.code || '',
           name: data.name || '',
           model: data.model || '',
+          location: data.location || '',
+          next_maintenance_hours: data.next_maintenance_hours,
           specifications: data.specifications || {},
           status: data.status || 'ACTIVE',
           running_hours: data.running_hours ?? 0,
@@ -74,6 +80,8 @@ export class MachineService {
       code: data.code || '',
       name: data.name || '',
       model: data.model || '',
+      location: data.location || '',
+      next_maintenance_hours: data.next_maintenance_hours,
       specifications: data.specifications || {},
       status: data.status || 'ACTIVE',
       running_hours: data.running_hours ?? 0,

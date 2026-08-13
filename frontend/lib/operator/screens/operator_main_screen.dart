@@ -5,7 +5,7 @@ import '../../core/utils/storage_service.dart';
 import '../../core/widgets/app_drawer.dart';
 import 'package:go_router/go_router.dart';
 import '../features/dashboard/widgets/operator_dashboard_view.dart';
-import '../features/scan/widgets/operator_scan_qr_view.dart';
+import '../features/machine/widgets/operator_machine_view.dart';
 import '../features/checklist/widgets/operator_checklist_view.dart';
 import '../features/history/widgets/operator_history_view.dart';
 import '../widgets/operator_bottom_nav_bar.dart';
@@ -24,7 +24,7 @@ class _OperatorMainScreenState extends State<OperatorMainScreen> {
 
   final List<Widget> _views = const [
     OperatorDashboardView(),
-    OperatorScanQrView(),
+    OperatorMachineView(),
     OperatorChecklistView(),
     OperatorHistoryView(),
   ];
