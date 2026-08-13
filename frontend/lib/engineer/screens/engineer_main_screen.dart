@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/routes/app_router.dart';
 import '../../core/utils/storage_service.dart';
+import '../../core/widgets/app_bottom_nav_bar.dart';
 import '../../core/widgets/app_drawer.dart';
-import 'package:go_router/go_router.dart';
+import '../../core/widgets/role_header.dart';
 import '../features/dashboard/widgets/engineer_dashboard_view.dart';
-import '../features/ticket_management/widgets/engineer_ticket_list_view.dart';
-import '../features/spare_parts/widgets/engineer_spare_parts_view.dart';
 import '../features/history/widgets/engineer_history_view.dart';
+import '../features/spare_parts/widgets/engineer_spare_parts_view.dart';
+import '../features/ticket_management/widgets/engineer_ticket_list_view.dart';
 
 class EngineerMainScreen extends StatefulWidget {
   final int initialIndex;
@@ -26,13 +28,6 @@ class _EngineerMainScreenState extends State<EngineerMainScreen> {
     EngineerHistoryView(),
   ];
 
-  final List<String> _titles = const [
-    'Dashboard Kỹ Thuật',
-    'Danh Sách Ticket Bảo Trì',
-    'Yêu Cầu & Quản Lý Phụ Tùng',
-    'Lịch Sử Bảo Trì',
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -44,38 +39,23 @@ class _EngineerMainScreenState extends State<EngineerMainScreen> {
     final userProfile = StorageService.getUserProfile();
     final displayName = userProfile['fullName']?.isNotEmpty == true
         ? userProfile['fullName']!
-        : 'Kỹ Sư Bảo Trì';
+        : 'Kỹ Sư ME Trần Minh Đức';
     final displayEmail = userProfile['email']?.isNotEmpty == true
         ? userProfile['email']!
-        : 'engineer@factory.com';
+        : 'me.duc@factory.com';
 
     return Scaffold(
-      appBar: AppBar(
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu_rounded),
-            tooltip: 'Menu',
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-        title: Text(_titles[_currentIndex]),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none_rounded),
-            onPressed: () {},
-          ),
-        ],
-      ),
+      backgroundColor: const Color(0xFFF8FAFC),
       drawer: AppDrawer(
         userName: displayName,
         userEmail: displayEmail,
         roleLabel: 'Đội Kỹ Thuật Cơ Điện',
         roleBadge: 'ENGINEER',
-        roleColor: const Color(0xFFD97706),
+        roleColor: const Color(0xFF0284C7),
         toolNavItems: [
           DrawerMenuItem(
             icon: Icons.manage_search_rounded,
-            title: 'Tra Cứu Thiết Bị',
+            title: 'Tra Cứu Thiết Bị (Quét QR)',
             onTap: () {
               Navigator.pop(context);
               context.push(AppRoutes.assetLookup);
@@ -83,40 +63,45 @@ class _EngineerMainScreenState extends State<EngineerMainScreen> {
           ),
         ],
       ),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _views,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // 1. Role Header dùng chung chuẩn Wireframe UI
+            RoleHeader(
+              roleName: 'Kỹ Sư ME',
+              userEmail: displayEmail,
+              roleIcon: Icons.build_rounded,
+              roleColor: const Color(0xFF0284C7),
+              onChangeAccount: () async {
+                await StorageService.clearSession();
+                if (context.mounted) context.go(AppRoutes.loginPortal);
+              },
+            ),
+
+            // 2. Nội dung các tab (IndexedStack)
+            Expanded(
+              child: IndexedStack(
+                index: _currentIndex,
+                children: _views,
+              ),
+            ),
+          ],
+        ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
+
+      // 3. Navigation Bar dùng chung chuẩn Wireframe UI (có nút Quét QR nổi ở giữa)
+      bottomNavigationBar: AppBottomNavBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
+        onItemSelected: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            activeIcon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.confirmation_number_outlined),
-            activeIcon: Icon(Icons.confirmation_number),
-            label: 'Tickets',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.build_outlined),
-            activeIcon: Icon(Icons.build),
-            label: 'Phụ Tùng',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history_outlined),
-            activeIcon: Icon(Icons.history),
-            label: 'Lịch Sử',
-          ),
-        ],
+        onQRTapped: () {
+          context.push(AppRoutes.assetLookup);
+        },
+        pendingTasksCount: 2,
+        unreadNotificationsCount: 2,
       ),
     );
   }
