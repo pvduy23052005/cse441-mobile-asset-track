@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
@@ -213,5 +214,43 @@ export class TicketsService {
 
   async getMyTickets(reporterId: string): Promise<Ticket[]> {
     return this.getAllTickets({ reporter_id: reporterId });
+  }
+
+  async cancelTicket(
+    id: string,
+    reporterId: string,
+    reason?: string,
+  ): Promise<Ticket> {
+    const docRef = this.firebaseService.firestore
+      .collection(this.collectionName)
+      .doc(id);
+
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      throw new NotFoundException(`Ticket with ID '${id}' not found`);
+    }
+
+    const data = doc.data() as FirestoreTicket;
+    if (data.reporter_id !== reporterId) {
+      throw new ForbiddenException(
+        'Bạn chỉ có thể hủy phiếu sự cố do chính mình tạo ra',
+      );
+    }
+
+    if (data.status !== TicketStatus.OPEN) {
+      throw new BadRequestException(
+        'Chỉ có thể hủy phiếu sự cố khi đang ở trạng thái OPEN',
+      );
+    }
+
+    const now = new Date().toISOString();
+    await docRef.update({
+      status: TicketStatus.CANCELLED,
+      cancelled_at: now,
+      cancelled_reason: reason || 'Người vận hành hủy báo nhầm',
+      updated_at: now,
+    });
+
+    return this.getTicketById(id);
   }
 }
