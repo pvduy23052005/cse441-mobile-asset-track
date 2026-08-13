@@ -3,6 +3,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../models/machine_model.dart';
 import '../services/engineer_machine_service.dart';
 import 'machine_card.dart';
+import 'modals/machine_passport_modal.dart';
 
 class EngineerMachinesView extends StatefulWidget {
   const EngineerMachinesView({super.key});
@@ -103,13 +104,19 @@ class _EngineerMachinesViewState extends State<EngineerMachinesView> {
                   (m) => MachineCard(
                     machine: m,
                     onTap: (item) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Mở lý lịch thiết bị ${item.code} - ${item.name}',
-                          ),
-                          backgroundColor: AppTheme.foregroundColor,
-                        ),
+                      MachinePassportModal.show(
+                        context,
+                        machine: item,
+                        onSaveTroubleshooting: (updatedList) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Đã cập nhật cẩm nang lỗi cho ${item.code}!',
+                              ),
+                              backgroundColor: AppTheme.primaryColor,
+                            ),
+                          );
+                        },
                       );
                     },
                   ),
