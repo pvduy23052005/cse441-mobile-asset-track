@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/models/machine_model.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/machine_formatters.dart';
 
 class MachineDetailModal extends StatelessWidget {
   final MachineModel machine;
@@ -21,9 +22,22 @@ class MachineDetailModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Determine location and maintenance info
+    final String locationText = machine.location.isNotEmpty
+        ? machine.location
+        : (machine.specifications['location']?.toString() ??
+            machine.specifications['area']?.toString() ??
+            'Chưa cập nhật vị trí');
+
+    final String nextMaintText = machine.nextMaintenanceHours != null
+        ? '${machine.nextMaintenanceHours} giờ'
+        : (machine.runningHours > 0
+            ? '${machine.runningHours + 500} giờ'
+            : 'Chưa thiết lập');
+
     return Container(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.85,
+        maxHeight: MediaQuery.of(context).size.height * 0.88,
       ),
       decoration: const BoxDecoration(
         color: AppTheme.cardColor,
@@ -53,7 +67,7 @@ class MachineDetailModal extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Thông Tin Thiết Bị',
+                    'Thông Tin Chi Tiết Thiết Bị',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -88,6 +102,7 @@ class MachineDetailModal extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Header: Name + Code + Status Chip
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,7 +114,7 @@ class MachineDetailModal extends StatelessWidget {
                                     Text(
                                       machine.name.isNotEmpty
                                           ? machine.name
-                                          : 'Chưa đặt tên',
+                                          : 'Chưa đặt tên thiết bị',
                                       style: const TextStyle(
                                         fontSize: 17,
                                         fontWeight: FontWeight.bold,
@@ -111,13 +126,14 @@ class MachineDetailModal extends StatelessWidget {
                                       'Mã: ${machine.code.isNotEmpty ? machine.code : "N/A"}',
                                       style: const TextStyle(
                                         fontSize: 13,
-                                        color: AppTheme.mutedForegroundColor,
-                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF059669),
+                                        fontWeight: FontWeight.w700,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
+                              const SizedBox(width: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 10,
@@ -140,10 +156,11 @@ class MachineDetailModal extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           const Divider(height: 1, color: AppTheme.borderColor),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 14),
 
-                          // Quick Metrics
+                          // Row 1: Model & Giờ vận hành
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Expanded(
                                 child: _buildStatItem(
@@ -154,11 +171,35 @@ class MachineDetailModal extends StatelessWidget {
                                       : 'Tiêu chuẩn',
                                 ),
                               ),
+                              const SizedBox(width: 12),
                               Expanded(
                                 child: _buildStatItem(
                                   icon: Icons.timer_outlined,
                                   label: 'Giờ vận hành',
                                   value: '${machine.runningHours} giờ',
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Row 2: Vị trí & Mốc bảo trì kế
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: _buildStatItem(
+                                  icon: Icons.location_on_outlined,
+                                  label: 'Vị trí lắp đặt',
+                                  value: locationText,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildStatItem(
+                                  icon: Icons.build_circle_outlined,
+                                  label: 'Mốc bảo trì kế',
+                                  value: nextMaintText,
                                 ),
                               ),
                             ],
@@ -197,11 +238,13 @@ class MachineDetailModal extends StatelessWidget {
                               color: AppTheme.mutedForegroundColor,
                             ),
                             SizedBox(width: 8),
-                            Text(
-                              'Không có thông số kỹ thuật bổ sung',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: AppTheme.mutedForegroundColor,
+                            Expanded(
+                              child: Text(
+                                'Không có thông số kỹ thuật bổ sung',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppTheme.mutedForegroundColor,
+                                ),
                               ),
                             ),
                           ],
@@ -216,6 +259,11 @@ class MachineDetailModal extends StatelessWidget {
                         ),
                         child: Column(
                           children: machine.specifications.entries.map((entry) {
+                            final readableKey =
+                                MachineFormatters.formatSpecKey(entry.key);
+                            final readableValue =
+                                MachineFormatters.formatSpecValue(entry.value);
+
                             return Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16.0,
@@ -230,23 +278,30 @@ class MachineDetailModal extends StatelessWidget {
                                 ),
                               ),
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    entry.key,
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      color: AppTheme.mutedForegroundColor,
-                                      fontWeight: FontWeight.w500,
+                                  Expanded(
+                                    flex: 5,
+                                    child: Text(
+                                      readableKey,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: AppTheme.mutedForegroundColor,
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
                                   ),
-                                  Text(
-                                    entry.value.toString(),
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppTheme.foregroundColor,
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    flex: 6,
+                                    child: Text(
+                                      readableValue,
+                                      textAlign: TextAlign.end,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.foregroundColor,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -258,42 +313,6 @@ class MachineDetailModal extends StatelessWidget {
 
                     const SizedBox(height: 20),
 
-                    // Additional metadata if available
-                    if (machine.createdAt != null || machine.updatedAt != null) ...[
-                      const Text(
-                        'Thông Tin Hệ Thống',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.foregroundColor,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        padding: const EdgeInsets.all(14.0),
-                        decoration: BoxDecoration(
-                          color: AppTheme.cardColor,
-                          borderRadius: BorderRadius.circular(12.0),
-                          border: Border.all(color: AppTheme.borderColor),
-                        ),
-                        child: Column(
-                          children: [
-                            if (machine.createdAt != null)
-                              _buildMetadataRow(
-                                'Ngày tạo',
-                                machine.createdAt!,
-                              ),
-                            if (machine.updatedAt != null)
-                              _buildMetadataRow(
-                                'Cập nhật lần cuối',
-                                machine.updatedAt!,
-                              ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                    ],
-
                     // Action Buttons
                     Row(
                       children: [
@@ -301,7 +320,8 @@ class MachineDetailModal extends StatelessWidget {
                           child: OutlinedButton.icon(
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 12),
-                              side: const BorderSide(color: AppTheme.borderColor),
+                              side: const BorderSide(
+                                  color: AppTheme.borderColor),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -371,56 +391,40 @@ class MachineDetailModal extends StatelessWidget {
     required String value,
   }) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 18, color: AppTheme.mutedForegroundColor),
+        Padding(
+          padding: const EdgeInsets.only(top: 2.0),
+          child: Icon(icon, size: 17, color: AppTheme.mutedForegroundColor),
+        ),
         const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 11,
-                color: AppTheme.mutedForegroundColor,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppTheme.mutedForegroundColor,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.foregroundColor,
+              const SizedBox(height: 2),
+              Text(
+                value,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.foregroundColor,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
-    );
-  }
-
-  Widget _buildMetadataRow(String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppTheme.mutedForegroundColor,
-            ),
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.foregroundColor,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
