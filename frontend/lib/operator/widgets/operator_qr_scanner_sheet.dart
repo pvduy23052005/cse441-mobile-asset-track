@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -9,13 +10,18 @@ import '../features/machine/widgets/machine_detail_modal.dart';
 class OperatorQRScannerSheet extends StatefulWidget {
   const OperatorQRScannerSheet({super.key});
 
-  static Future<void> show(BuildContext context) {
-    return showModalBottomSheet(
+  static Future<MachineModel?> show(BuildContext context) async {
+    final machine = await showModalBottomSheet<MachineModel>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const OperatorQRScannerSheet(),
     );
+
+    if (machine != null && context.mounted) {
+      MachineDetailModal.show(context, machine);
+    }
+    return machine;
   }
 
   @override
@@ -39,45 +45,83 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet> {
     super.dispose();
   }
 
+  String _extractMachineId(String raw) {
+    final trimmed = raw.trim();
+    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+      try {
+        final data = jsonDecode(trimmed);
+        if (data is Map) {
+          return (data['id'] ?? data['machineId'] ?? data['code'] ?? trimmed)
+              .toString()
+              .trim();
+        }
+      } catch (_) {}
+    }
+    if (trimmed.contains('/')) {
+      final segments = Uri.tryParse(trimmed)?.pathSegments;
+      if (segments != null && segments.isNotEmpty) {
+        return segments.last.trim();
+      }
+    }
+    return trimmed;
+  }
+
   Future<void> _handleBarcodeDetected(String rawCode) async {
     if (_isProcessing) return;
+    await _processDecodedCode(rawCode);
+  }
 
-    final trimmedCode = rawCode.trim();
-    if (trimmedCode.isEmpty) return;
+  Future<void> _processDecodedCode(String rawCode) async {
+    final targetId = _extractMachineId(rawCode);
+    if (targetId.isEmpty) return;
 
     setState(() {
       _isProcessing = true;
-      _statusText = 'Đang tìm thông tin thiết bị...';
+      _statusText = 'Đang tìm thông tin thiết bị: $targetId...';
     });
 
     try {
+      // Pause camera scanner while looking up machine
+      try {
+        await _scannerController.stop();
+      } catch (_) {}
+
+      debugPrint('[QR Scanner] Looking up machine with ID/Code: $targetId (Raw: $rawCode)');
+
       MachineModel? machine;
 
       // 1. Try to fetch directly by ID
       try {
-        machine = await _machineService.getMachineById(trimmedCode);
-      } catch (_) {
-        // 2. Fallback: search in machine list by code or id
-        final machines = await _machineService.getMachines();
-        for (final m in machines) {
-          if (m.id == trimmedCode ||
-              m.code.toLowerCase() == trimmedCode.toLowerCase()) {
-            machine = m;
-            break;
+        machine = await _machineService.getMachineById(targetId);
+      } catch (e) {
+        debugPrint('[QR Scanner] getMachineById failed: $e, falling back to full list search');
+        // 2. Fallback: search in full machine list by code or id
+        try {
+          final machines = await _machineService.getMachines();
+          for (final m in machines) {
+            if (m.id.toLowerCase() == targetId.toLowerCase() ||
+                m.code.toLowerCase() == targetId.toLowerCase()) {
+              machine = m;
+              break;
+            }
           }
+        } catch (listErr) {
+          debugPrint('[QR Scanner] getMachines list search failed: $listErr');
         }
       }
 
       if (!mounted) return;
 
       if (machine != null) {
-        // Close scanner bottom sheet and show machine details
-        Navigator.pop(context);
-        MachineDetailModal.show(context, machine);
+        debugPrint('[QR Scanner] Machine found: ${machine.name} (${machine.code}). Showing details.');
+        // Close scanner bottom sheet and return found machine to opener
+        Navigator.pop(context, machine);
       } else {
-        _showNotFoundDialog(trimmedCode);
+        debugPrint('[QR Scanner] No machine found for: $targetId');
+        _showNotFoundDialog(targetId);
       }
     } catch (e) {
+      debugPrint('[QR Scanner] Error while processing QR code: $e');
       if (mounted) {
         _showErrorSnackBar('Lỗi khi tra cứu thiết bị: $e');
       }
@@ -110,12 +154,22 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet> {
         image.path,
       );
 
-      if (capture != null &&
-          capture.barcodes.isNotEmpty &&
-          capture.barcodes.first.rawValue != null) {
-        final code = capture.barcodes.first.rawValue!;
-        await _handleBarcodeDetected(code);
+      final barcodes = capture?.barcodes ?? [];
+      String? foundCode;
+      for (final b in barcodes) {
+        final val = b.rawValue ?? b.displayValue;
+        if (val != null && val.trim().isNotEmpty) {
+          foundCode = val.trim();
+          break;
+        }
+      }
+
+      if (foundCode != null) {
+        debugPrint('[QR Scanner] Decoded QR from image: $foundCode');
+        _isProcessing = false; // Reset so _processDecodedCode can proceed
+        await _processDecodedCode(foundCode);
       } else {
+        debugPrint('[QR Scanner] No barcode found in image: ${image.path}');
         if (mounted) {
           _showErrorSnackBar(
             'Không tìm thấy mã QR trong ảnh đã chọn. Vui lòng chọn ảnh khác rõ nét hơn.',
@@ -123,11 +177,12 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet> {
         }
       }
     } catch (e) {
+      debugPrint('[QR Scanner] Error analyzing image: $e');
       if (mounted) {
         _showErrorSnackBar('Không thể đọc ảnh: $e');
       }
     } finally {
-      if (mounted) {
+      if (mounted && _statusText != null) {
         setState(() {
           _isProcessing = false;
           _statusText = null;
@@ -158,7 +213,12 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet> {
               backgroundColor: AppTheme.primaryColor,
               foregroundColor: Colors.white,
             ),
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () {
+              Navigator.pop(ctx);
+              try {
+                _scannerController.start();
+              } catch (_) {}
+            },
             child: const Text('Thử lại'),
           ),
         ],
