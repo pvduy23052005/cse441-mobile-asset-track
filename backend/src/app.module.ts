@@ -4,6 +4,8 @@ import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { FirebaseModule } from './modules/firebase/firebase.module';
 import { MachineModule } from './modules/machine/machine.module';
+import { TicketsModule } from './modules/tickets/tickets.module';
+import { OperatorModule } from './operator/operator.module';
 import { UserModule } from './modules/user/user.module';
 
 @Module({
@@ -15,6 +17,8 @@ import { UserModule } from './modules/user/user.module';
     AuthModule,
     UserModule,
     MachineModule,
+    TicketsModule,
+    OperatorModule,
   ],
   providers: [AppService],
 })

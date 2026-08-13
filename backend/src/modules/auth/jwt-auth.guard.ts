@@ -9,8 +9,10 @@ import { Request } from 'express';
 
 export interface JwtPayload {
   uid: string;
+  id?: string;
   email: string;
   role: string;
+  fullName?: string;
 }
 
 export interface JwtAuthenticatedRequest extends Request {
