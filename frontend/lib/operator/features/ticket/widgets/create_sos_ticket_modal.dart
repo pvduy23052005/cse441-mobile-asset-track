@@ -1,10 +1,11 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/models/machine_model.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../services/operator_ticket_service.dart';
+import 'sos_image_attachment_section.dart';
+import 'sos_severity_selector.dart';
 
 class CreateSosTicketModal extends StatefulWidget {
   final MachineModel machine;
@@ -15,6 +16,7 @@ class CreateSosTicketModal extends StatefulWidget {
     required this.machine,
     this.onTicketCreated,
   });
+
   static Future<bool?> show(
     BuildContext context, {
     required MachineModel machine,
@@ -44,23 +46,6 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
   String _selectedSeverity = 'LOW';
   final List<XFile> _selectedImages = [];
   bool _isSubmitting = false;
-
-  final List<String> _severityLevels = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
-
-  Color _getSeverityColor(String level) {
-    switch (level.toUpperCase()) {
-      case 'LOW':
-        return const Color(0xFF059669);
-      case 'MEDIUM':
-        return const Color(0xFFD97706);
-      case 'HIGH':
-        return const Color(0xFFEA580C);
-      case 'CRITICAL':
-        return const Color(0xFFDC2626);
-      default:
-        return const Color(0xFF059669);
-    }
-  }
 
   @override
   void dispose() {
@@ -239,7 +224,7 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
       ),
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
         top: false,
@@ -248,8 +233,8 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(height: 12),
-              // Drag Handle
+              // Top drag indicator
+              const SizedBox(height: 10),
               Container(
                 width: 40,
                 height: 4,
@@ -258,24 +243,23 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 12),
 
               // Header
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                padding: const EdgeInsets.fromLTRB(20, 14, 16, 12),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppTheme.errorColor.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
+                        color: const Color(0xFFFEE2E2),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
                         Icons.shield_outlined,
                         color: AppTheme.errorColor,
-                        size: 26,
+                        size: 24,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -296,30 +280,27 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                             'Báo hỏng máy dừng chuyền đột xuất',
                             style: TextStyle(
                               fontSize: 13,
-                              fontWeight: FontWeight.w600,
                               color: AppTheme.errorColor,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded,
-                          color: Color(0xFF64748B)),
+                      icon: const Icon(Icons.close, color: Color(0xFF64748B)),
                       onPressed: () => Navigator.pop(context),
-                      visualDensity: VisualDensity.compact,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 14),
-              const Divider(height: 1, color: Color(0xFFE2E8F0)),
 
-              // Form Body
+              const Divider(height: 1, color: Color(0xFFF1F5F9)),
+
+              // Scrollable Form Content
               Flexible(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20.0, vertical: 16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -327,10 +308,10 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                       children: [
                         // Section: Thiết Bị Sự Cố
                         Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF8FAFC),
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
                           child: Column(
@@ -340,22 +321,18 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                                 'Thiết Bị Sự Cố:',
                                 style: TextStyle(
                                   fontSize: 13,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w600,
                                   color: Color(0xFF64748B),
                                 ),
                               ),
                               const SizedBox(height: 6),
                               Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      widget.machine.name.isNotEmpty
-                                          ? widget.machine.name
-                                          : 'Thiết Bị Không Tên',
+                                      widget.machine.name,
                                       style: const TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 15,
                                         fontWeight: FontWeight.w800,
                                         color: Color(0xFF0F172A),
                                       ),
@@ -364,7 +341,7 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                                   if (widget.machine.code.isNotEmpty)
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 10, vertical: 4),
+                                          horizontal: 8, vertical: 3),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFFFE4E6),
                                         borderRadius: BorderRadius.circular(6),
@@ -372,9 +349,9 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                                       child: Text(
                                         widget.machine.code,
                                         style: const TextStyle(
-                                          fontSize: 13,
+                                          fontSize: 12,
                                           fontWeight: FontWeight.w800,
-                                          color: Color(0xFFBE123C),
+                                          color: Color(0xFFE11D48),
                                         ),
                                       ),
                                     ),
@@ -395,63 +372,13 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        Row(
-                          children: _severityLevels.map((level) {
-                            final isSelected = _selectedSeverity == level;
-                            final activeColor = _getSeverityColor(level);
-                            return Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 3.0),
-                                child: InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedSeverity = level;
-                                    });
-                                  },
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 180),
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 10),
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? activeColor
-                                          : Colors.white,
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                        color: isSelected
-                                            ? activeColor
-                                            : const Color(0xFFE2E8F0),
-                                        width: isSelected ? 1.5 : 1.0,
-                                      ),
-                                      boxShadow: isSelected
-                                          ? [
-                                              BoxShadow(
-                                                color: activeColor
-                                                    .withValues(alpha: 0.3),
-                                                blurRadius: 6,
-                                                offset: const Offset(0, 2),
-                                              ),
-                                            ]
-                                          : null,
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      level,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w800,
-                                        color: isSelected
-                                            ? Colors.white
-                                            : const Color(0xFF475569),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
+                        SosSeveritySelector(
+                          selectedSeverity: _selectedSeverity,
+                          onSeverityChanged: (level) {
+                            setState(() {
+                              _selectedSeverity = level;
+                            });
+                          },
                         ),
                         const SizedBox(height: 20),
 
@@ -518,182 +445,61 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                           ),
                         ),
                         const SizedBox(height: 10),
-
-                        // Image list preview or picker box
-                        if (_selectedImages.isNotEmpty) ...[
-                          SizedBox(
-                            height: 90,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: _selectedImages.length + 1,
-                              separatorBuilder: (context, index) =>
-                                  const SizedBox(width: 10),
-                              itemBuilder: (ctx, idx) {
-                                if (idx == _selectedImages.length) {
-                                  return InkWell(
-                                    onTap: _showImageSourceActionSheet,
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Container(
-                                      width: 90,
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFF8FAFC),
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(
-                                          color: const Color(0xFFCBD5E1),
-                                          style: BorderStyle.solid,
-                                        ),
-                                      ),
-                                      child: const Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.add_a_photo_outlined,
-                                              color: AppTheme.errorColor,
-                                              size: 24),
-                                          SizedBox(height: 4),
-                                          Text(
-                                            'Thêm ảnh',
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              color: Color(0xFF64748B),
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                }
-
-                                final imageFile = _selectedImages[idx];
-                                return Stack(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: Image.file(
-                                        File(imageFile.path),
-                                        width: 90,
-                                        height: 90,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                    Positioned(
-                                      top: 4,
-                                      right: 4,
-                                      child: InkWell(
-                                        onTap: () {
-                                          setState(() {
-                                            _selectedImages.removeAt(idx);
-                                          });
-                                        },
-                                        child: Container(
-                                          padding: const EdgeInsets.all(3),
-                                          decoration: const BoxDecoration(
-                                            color: Colors.black54,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: const Icon(
-                                            Icons.close_rounded,
-                                            size: 14,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                          ),
-                        ] else ...[
-                          InkWell(
-                            onTap: _showImageSourceActionSheet,
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 22, horizontal: 16),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF8FAFC),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: const Color(0xFFCBD5E1),
-                                  width: 1.2,
-                                ),
-                              ),
-                              child: const Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.camera_alt_outlined,
-                                    size: 32,
-                                    color: AppTheme.errorColor,
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    'Chụp / Đính kèm ảnh hiện trạng sự cố',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF0F172A),
-                                    ),
-                                  ),
-                                  SizedBox(height: 4),
-                                  Text(
-                                    '(Tự động nén < 5MB per NFR-04)',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF64748B),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 24),
-
-                        // Section: Submit SOS Button
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.errorColor,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              elevation: 0,
-                            ),
-                            onPressed: _isSubmitting ? null : _handleSubmit,
-                            child: _isSubmitting
-                                ? const SizedBox(
-                                    width: 22,
-                                    height: 22,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.5,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.navigation_rounded, size: 20),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'Gửi Yêu Cầu SOS Tức Thời',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                          ),
+                        SosImageAttachmentSection(
+                          selectedImages: _selectedImages,
+                          onAddImageTap: _showImageSourceActionSheet,
+                          onRemoveImageTap: (idx) {
+                            setState(() {
+                              _selectedImages.removeAt(idx);
+                            });
+                          },
                         ),
+                        const SizedBox(height: 16),
                       ],
                     ),
+                  ),
+                ),
+              ),
+
+              // Bottom Action Button
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                    top: BorderSide(color: Color(0xFFF1F5F9)),
+                  ),
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.errorColor,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: _isSubmitting ? null : _handleSubmit,
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Text(
+                            'Gửi Yêu Cầu SOS Tức Thời',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                   ),
                 ),
               ),
