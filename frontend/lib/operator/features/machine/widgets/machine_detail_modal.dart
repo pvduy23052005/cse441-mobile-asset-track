@@ -5,18 +5,27 @@ import '../../../../core/utils/machine_formatters.dart';
 
 class MachineDetailModal extends StatelessWidget {
   final MachineModel machine;
+  final ValueChanged<MachineModel>? onStatusUpdated;
 
   const MachineDetailModal({
     super.key,
     required this.machine,
+    this.onStatusUpdated,
   });
 
-  static Future<void> show(BuildContext context, MachineModel machine) {
+  static Future<void> show(
+    BuildContext context,
+    MachineModel machine, {
+    ValueChanged<MachineModel>? onStatusUpdated,
+  }) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => MachineDetailModal(machine: machine),
+      builder: (ctx) => MachineDetailModal(
+        machine: machine,
+        onStatusUpdated: onStatusUpdated,
+      ),
     );
   }
 

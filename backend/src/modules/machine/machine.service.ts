@@ -89,4 +89,45 @@ export class MachineService {
       updatedAt: data.updatedAt,
     };
   }
+
+  async updateMachineStatus(id: string, status: string): Promise<Machine> {
+    const docRef = this.firebaseService.firestore
+      .collection(this.collectionName)
+      .doc(id);
+
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      throw new NotFoundException(`Machine with ID '${id}' not found`);
+    }
+
+    const updatedAt = new Date().toISOString();
+    await docRef.update({
+      status: status.toUpperCase(),
+      updatedAt,
+    });
+
+    return this.getMachineById(id);
+  }
+
+  async updateMachine(
+    id: string,
+    data: Partial<FirestoreMachine>,
+  ): Promise<Machine> {
+    const docRef = this.firebaseService.firestore
+      .collection(this.collectionName)
+      .doc(id);
+
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      throw new NotFoundException(`Machine with ID '${id}' not found`);
+    }
+
+    const updatedAt = new Date().toISOString();
+    await docRef.update({
+      ...data,
+      updatedAt,
+    });
+
+    return this.getMachineById(id);
+  }
 }
