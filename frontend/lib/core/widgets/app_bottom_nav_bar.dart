@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class AppBottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -20,9 +21,9 @@ class AppBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cardColor,
         border: Border(
-          top: BorderSide(color: Color(0xFFE2E8F0), width: 1.0),
+          top: BorderSide(color: AppTheme.borderColor, width: 1.0),
         ),
         boxShadow: [
           BoxShadow(
@@ -86,8 +87,8 @@ class AppBottomNavBar extends StatelessWidget {
     int badgeCount = 0,
   }) {
     final Color color = isSelected
-        ? const Color(0xFF047857) // Emerald-700
-        : const Color(0xFF64748B); // Slate-500
+        ? AppTheme.primaryColor
+        : AppTheme.mutedForegroundColor;
 
     return Expanded(
       child: InkWell(
@@ -112,7 +113,7 @@ class AppBottomNavBar extends StatelessWidget {
                         vertical: 1,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF43F5E), // Rose-500
+                        color: AppTheme.errorColor,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       constraints: const BoxConstraints(
@@ -166,15 +167,15 @@ class AppBottomNavBar extends StatelessWidget {
                   height: 50,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF059669), Color(0xFF0D9488)],
+                      colors: [AppTheme.primaryColor, Color(0xFF0D9488)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 3),
+                    border: Border.all(color: AppTheme.cardColor, width: 3),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF059669).withValues(alpha: 0.35),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.35),
                         blurRadius: 10,
                         spreadRadius: 1,
                         offset: const Offset(0, 4),
@@ -197,7 +198,7 @@ class AppBottomNavBar extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF047857),
+                    color: AppTheme.primaryColor,
                     letterSpacing: -0.2,
                   ),
                 ),

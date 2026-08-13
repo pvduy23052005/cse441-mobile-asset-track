@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class RoleHeader extends StatelessWidget {
   final String roleName; // e.g. 'Kỹ Sư ME', 'Công Nhân', 'Quản Đốc'
@@ -23,7 +24,7 @@ class RoleHeader extends StatelessWidget {
         : userEmail;
 
     return Container(
-      color: Colors.white,
+      color: AppTheme.cardColor,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -65,7 +66,7 @@ class RoleHeader extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w900,
-                          color: Color(0xFF0F172A),
+                          color: AppTheme.foregroundColor,
                           letterSpacing: -0.3,
                         ),
                       ),
@@ -74,7 +75,7 @@ class RoleHeader extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w500,
-                          color: Color(0xFF64748B),
+                          color: AppTheme.mutedForegroundColor,
                         ),
                       ),
                     ],
@@ -116,9 +117,9 @@ class RoleHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
+              color: AppTheme.backgroundColor,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(color: AppTheme.borderColor),
             ),
             child: Row(
               children: [
@@ -140,7 +141,7 @@ class RoleHeader extends StatelessWidget {
                       fontSize: 11,
                       fontFamily: 'monospace',
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF0F172A),
+                      color: AppTheme.foregroundColor,
                     ),
                   ),
                 ),
@@ -152,7 +153,7 @@ class RoleHeader extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF64748B),
+                        color: AppTheme.mutedForegroundColor,
                         decoration: TextDecoration.underline,
                       ),
                     ),
