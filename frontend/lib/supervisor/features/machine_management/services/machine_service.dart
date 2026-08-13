@@ -36,6 +36,21 @@ class MachineService {
     }
   }
 
+  Future<Map<String, dynamic>> getMachineQrCode(String id) async {
+    try {
+      final response =
+          await _dio.get<Map<String, dynamic>>('/machines/$id/qrcode');
+      if (response.data != null) {
+        return Map<String, dynamic>.from(response.data!);
+      }
+      throw Exception('Không nhận được dữ liệu mã QR');
+    } on DioException catch (e) {
+      throw Exception(e.error ?? 'Không thể tạo mã QR cho thiết bị');
+    } catch (e) {
+      throw Exception('Lỗi khi sinh mã QR: $e');
+    }
+  }
+
   Future<MachineModel> updateMachineStatus(String id, String status) async {
     try {
       final response = await _dio.patch<Map<String, dynamic>>(

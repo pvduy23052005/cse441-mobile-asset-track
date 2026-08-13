@@ -1,4 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import * as QRCode from 'qrcode';
 import { FirebaseService } from '../firebase/firebase.service';
 
 export interface Machine {
@@ -27,6 +28,13 @@ export interface FirestoreMachine {
   running_hours?: number;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface MachineQrCodeResponse {
+  machineId: string;
+  code: string;
+  name: string;
+  qrCode: string;
 }
 
 @Injectable()
@@ -129,5 +137,28 @@ export class MachineService {
     });
 
     return this.getMachineById(id);
+  }
+
+  async generateMachineQrCode(id: string): Promise<MachineQrCodeResponse> {
+    const machine = await this.getMachineById(id);
+
+    // Sử dụng ID của machine để sinh mã QR
+    const qrDataUrl = await QRCode.toDataURL(machine.id, {
+      errorCorrectionLevel: 'H',
+      type: 'image/png',
+      margin: 2,
+      width: 320,
+      color: {
+        dark: '#000000',
+        light: '#ffffff',
+      },
+    });
+
+    return {
+      machineId: machine.id,
+      code: machine.code,
+      name: machine.name,
+      qrCode: qrDataUrl,
+    };
   }
 }

@@ -3,6 +3,7 @@ import '../../../../core/models/machine_model.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../operator/features/machine/widgets/machine_detail_modal.dart';
 import 'change_status_dialog.dart';
+import 'machine_qr_modal.dart';
 
 class SupervisorMachineCard extends StatelessWidget {
   final MachineModel machine;
@@ -30,6 +31,10 @@ class SupervisorMachineCard extends StatelessWidget {
         onStatusUpdated: onStatusUpdated!,
       );
     }
+  }
+
+  void _openQrModal(BuildContext context) {
+    MachineQrModal.show(context, machine);
   }
 
   @override
@@ -78,21 +83,36 @@ class SupervisorMachineCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Row 1: Code + Name
-                      RichText(
-                        text: TextSpan(
-                          children: [
-                            if (machine.code.isNotEmpty)
-                              TextSpan(
-                                text: '${machine.code}  ',
+                      Row(
+                        children: [
+                          if (machine.code.isNotEmpty)
+                            Container(
+                              margin: const EdgeInsets.only(right: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFECFDF5),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  color: const Color(0xFFA7F3D0),
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Text(
+                                machine.code,
                                 style: const TextStyle(
                                   color: Color(0xFF059669),
                                   fontWeight: FontWeight.w800,
-                                  fontSize: 15,
+                                  fontSize: 13,
                                   letterSpacing: 0.2,
                                 ),
                               ),
-                            TextSpan(
-                              text: machine.name.isNotEmpty
+                            ),
+                          Expanded(
+                            child: Text(
+                              machine.name.isNotEmpty
                                   ? machine.name
                                   : 'Thiết bị chưa đặt tên',
                               style: const TextStyle(
@@ -100,9 +120,11 @@ class SupervisorMachineCard extends StatelessWidget {
                                 fontWeight: FontWeight.w700,
                                 fontSize: 15,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 5),
 
@@ -144,7 +166,7 @@ class SupervisorMachineCard extends StatelessWidget {
                   ),
                 ),
 
-                // Right: Status Chip (Clickable) & Arrow
+                // Right: Status Chip & QR Code Button
                 const SizedBox(width: 8),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -196,11 +218,51 @@ class SupervisorMachineCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    const Icon(
-                      Icons.chevron_right_rounded,
-                      color: Color(0xFF94A3B8),
-                      size: 20,
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(6),
+                          onTap: () => _openQrModal(context),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppTheme.secondaryColor,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: AppTheme.borderColor),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.qr_code_rounded,
+                                  size: 14,
+                                  color: AppTheme.primaryColor,
+                                ),
+                                SizedBox(width: 3),
+                                Text(
+                                  'QR',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppTheme.primaryColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        const Icon(
+                          Icons.chevron_right_rounded,
+                          color: Color(0xFF94A3B8),
+                          size: 20,
+                        ),
+                      ],
                     ),
                   ],
                 ),
