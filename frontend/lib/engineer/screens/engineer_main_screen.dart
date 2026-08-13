@@ -6,7 +6,9 @@ import '../../core/widgets/app_bottom_nav_bar.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../../core/widgets/role_header.dart';
 import '../features/dashboard/widgets/engineer_dashboard_view.dart';
+import '../features/history/widgets/engineer_history_view.dart';
 import '../features/machines/widgets/engineer_machines_view.dart';
+import '../features/ticket_management/widgets/engineer_ticket_list_view.dart';
 
 class EngineerMainScreen extends StatefulWidget {
   final int initialIndex;
@@ -22,8 +24,8 @@ class _EngineerMainScreenState extends State<EngineerMainScreen> {
   final List<Widget> _views = const [
     EngineerDashboardView(),
     EngineerMachinesView(),
-    Center(child: Text('Chức năng Nhiệm Vụ đang phát triển')),
-    Center(child: Text('Chức năng Thông Báo đang phát triển')),
+    EngineerTicketListView(),
+    EngineerHistoryView(),
   ];
 
   @override
