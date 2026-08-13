@@ -20,9 +20,6 @@ export class TicketsService {
 
   constructor(private readonly firebaseService: FirebaseService) {}
 
-  /**
-   * Operator tạo phiếu sự cố cho thiết bị
-   */
   async create(
     reporterId: string,
     dto: CreateTicketDto,
@@ -39,13 +36,11 @@ export class TicketsService {
       throw new BadRequestException('Vui lòng cung cấp mã thiết bị (machine_id)');
     }
 
-    // 1. Kiểm tra thiết bị có tồn tại trong Firestore hay không
     let machineDoc = await firestore
       .collection(FirestoreCollection.MACHINES)
       .doc(machineId)
       .get();
 
-    // Nếu không tìm thấy theo Document ID, thử tìm theo trường "code"
     if (!machineDoc.exists) {
       const queryByCode = await firestore
         .collection(FirestoreCollection.MACHINES)
@@ -65,7 +60,6 @@ export class TicketsService {
     const machineData = (machineDoc.data() as FirestoreMachine) || {};
     const actualMachineId = machineDoc.id;
 
-    // 2. Lấy thông tin người báo cáo (Reporter) từ Firestore
     let reporterName = '';
     let reporterEmail = '';
     try {
@@ -83,7 +77,6 @@ export class TicketsService {
       this.logger.warn(`Không thể lấy thông tin user '${reporterId}': ${err}`);
     }
 
-    // 3. Chuẩn bị dữ liệu ticket theo đúng Schema
     const now = new Date().toISOString();
     const ticketData: FirestoreTicket = {
       machine_id: actualMachineId,
@@ -182,9 +175,6 @@ export class TicketsService {
     }
   }
 
-  /**
-   * Lấy chi tiết một Ticket theo ID
-   */
   async getTicketById(id: string): Promise<Ticket> {
     const doc = await this.firebaseService.firestore
       .collection(this.collectionName)
@@ -221,9 +211,6 @@ export class TicketsService {
     };
   }
 
-  /**
-   * Lấy danh sách ticket do chính người dùng hiện tại báo cáo
-   */
   async getMyTickets(reporterId: string): Promise<Ticket[]> {
     return this.getAllTickets({ reporter_id: reporterId });
   }
