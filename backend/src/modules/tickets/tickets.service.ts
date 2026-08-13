@@ -253,4 +253,86 @@ export class TicketsService {
 
     return this.getTicketById(id);
   }
+
+  async claimTicket(id: string, engineerId: string): Promise<Ticket> {
+    const docRef = this.firebaseService.firestore
+      .collection(this.collectionName)
+      .doc(id);
+
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      throw new NotFoundException(`Ticket with ID '${id}' not found`);
+    }
+
+    let engineerName = '';
+    try {
+      const userDoc = await this.firebaseService.firestore
+        .collection('users')
+        .doc(engineerId)
+        .get();
+      if (userDoc.exists) {
+        const u = userDoc.data() || {};
+        engineerName = u.fullName || u.full_name || u.email || '';
+      }
+    } catch (_) {}
+
+    const now = new Date().toISOString();
+    await docRef.update({
+      status: TicketStatus.IN_PROGRESS,
+      engineer_id: engineerId,
+      engineer_name: engineerName,
+      claimed_at: now,
+      updated_at: now,
+    });
+
+    this.logger.log(`Ticket '${id}' đã được Kỹ sư '${engineerId}' tiếp nhận xử lý.`);
+    return this.getTicketById(id);
+  }
+
+  async completeTicket(
+    id: string,
+    engineerId: string,
+    usedSpareParts?: any[],
+  ): Promise<Ticket> {
+    const docRef = this.firebaseService.firestore
+      .collection(this.collectionName)
+      .doc(id);
+
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      throw new NotFoundException(`Ticket with ID '${id}' not found`);
+    }
+
+    const now = new Date().toISOString();
+    await docRef.update({
+      status: TicketStatus.PENDING_APPROVAL,
+      downtime_end: now,
+      used_spare_parts: usedSpareParts || [],
+      updated_at: now,
+    });
+
+    this.logger.log(`Ticket '${id}' đã được Kỹ sư '${engineerId}' hoàn thành và gửi nghiệm thu.`);
+    return this.getTicketById(id);
+  }
+
+  async rejectTicket(id: string, rejectionReason?: string): Promise<Ticket> {
+    const docRef = this.firebaseService.firestore
+      .collection(this.collectionName)
+      .doc(id);
+
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      throw new NotFoundException(`Ticket with ID '${id}' not found`);
+    }
+
+    const now = new Date().toISOString();
+    await docRef.update({
+      status: TicketStatus.REJECTED,
+      rejection_reason: rejectionReason || 'Chưa đạt yêu cầu nghiệm thu',
+      updated_at: now,
+    });
+
+    this.logger.log(`Ticket '${id}' đã bị Quản đốc từ chối nghiệm thu.`);
+    return this.getTicketById(id);
+  }
 }
