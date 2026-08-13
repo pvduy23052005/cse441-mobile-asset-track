@@ -7,4 +7,4 @@ import { OperatorTicketController } from './operator.controller';
   imports: [AuthModule, TicketsModule],
   controllers: [OperatorTicketController],
 })
-export class OperatorModule { }
+export class OperatorModule {}

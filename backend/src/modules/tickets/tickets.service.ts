@@ -33,7 +33,9 @@ export class TicketsService {
     const machineId = dto.machine_id?.trim();
 
     if (!machineId) {
-      throw new BadRequestException('Vui lòng cung cấp mã thiết bị (machine_id)');
+      throw new BadRequestException(
+        'Vui lòng cung cấp mã thiết bị (machine_id)',
+      );
     }
 
     let machineDoc = await firestore
@@ -114,16 +116,15 @@ export class TicketsService {
       ...ticketData,
     };
   }
-  
+
   async getAllTickets(filters?: {
     status?: TicketStatus;
     machine_id?: string;
     reporter_id?: string;
   }): Promise<Ticket[]> {
     try {
-      let query: FirebaseFirestore.Query = this.firebaseService.firestore.collection(
-        this.collectionName,
-      );
+      let query: FirebaseFirestore.Query =
+        this.firebaseService.firestore.collection(this.collectionName);
 
       if (filters?.status) {
         query = query.where('status', '==', filters.status);
@@ -164,7 +165,6 @@ export class TicketsService {
         };
       });
 
-      // Sắp xếp giảm dần theo thời gian tạo
       return tickets.sort(
         (a, b) =>
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),

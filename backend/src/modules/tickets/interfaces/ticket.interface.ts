@@ -18,8 +18,6 @@ export interface Ticket {
   cancelled_reason?: string | null;
   created_at: string;
   updated_at: string;
-
-  // Metadata hỗ trợ hiển thị phía client
   machine_name?: string;
   machine_code?: string;
   reporter_name?: string;
