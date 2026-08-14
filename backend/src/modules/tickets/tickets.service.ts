@@ -121,16 +121,22 @@ export class TicketsService {
 
     // Tự động tạo bản ghi thông báo thật trên Firestore collection 'notifications'
     try {
-      const isCritical = severity === TicketSeverity.CRITICAL || severity === TicketSeverity.HIGH;
+      const isCritical =
+        severity === TicketSeverity.CRITICAL ||
+        severity === TicketSeverity.HIGH;
       await this.notificationsService.createNotification({
         title: isCritical ? 'SỰ CỐ KHẨN CẤP (SOS)' : 'BÁO SỰ CỐ MỚI',
         message: `Máy ${machineData.code || actualMachineId} (${machineData.name || 'Thiết bị'}) vừa báo sự cố [${severity}]: ${dto.description || 'Cần xử lý'}`,
-        type: isCritical ? NotificationTypeEnum.SOS : NotificationTypeEnum.SYSTEM,
+        type: isCritical
+          ? NotificationTypeEnum.SOS
+          : NotificationTypeEnum.SYSTEM,
         target_role: 'ME_ENGINEER',
         target_id: docRef.id,
       });
     } catch (notiErr) {
-      this.logger.warn(`Không thể tạo notification tự động cho Ticket ${docRef.id}: ${notiErr}`);
+      this.logger.warn(
+        `Không thể tạo notification tự động cho Ticket ${docRef.id}: ${notiErr}`,
+      );
     }
 
     return {
@@ -306,7 +312,9 @@ export class TicketsService {
       updated_at: now,
     });
 
-    this.logger.log(`Ticket '${id}' đã được Kỹ sư '${engineerId}' tiếp nhận xử lý.`);
+    this.logger.log(
+      `Ticket '${id}' đã được Kỹ sư '${engineerId}' tiếp nhận xử lý.`,
+    );
     return this.getTicketById(id);
   }
 
@@ -332,7 +340,9 @@ export class TicketsService {
       updated_at: now,
     });
 
-    this.logger.log(`Ticket '${id}' đã được Kỹ sư '${engineerId}' hoàn thành và gửi nghiệm thu.`);
+    this.logger.log(
+      `Ticket '${id}' đã được Kỹ sư '${engineerId}' hoàn thành và gửi nghiệm thu.`,
+    );
     return this.getTicketById(id);
   }
 

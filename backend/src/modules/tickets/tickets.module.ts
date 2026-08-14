@@ -12,4 +12,3 @@ import { TicketsService } from './tickets.service';
   exports: [TicketsService],
 })
 export class TicketsModule {}
-

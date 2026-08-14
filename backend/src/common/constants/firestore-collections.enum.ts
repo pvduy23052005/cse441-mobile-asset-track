@@ -7,4 +7,3 @@ export enum FirestoreCollection {
   MACHINES = 'machines',
   NOTIFICATIONS = 'notifications',
 }
-

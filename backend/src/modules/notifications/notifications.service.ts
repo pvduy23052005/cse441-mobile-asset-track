@@ -128,7 +128,9 @@ export class NotificationsService {
    */
   async markAsRead(notificationId: string): Promise<NotificationItem> {
     const firestore = this.firebaseService.firestore;
-    const docRef = firestore.collection(this.collectionName).doc(notificationId);
+    const docRef = firestore
+      .collection(this.collectionName)
+      .doc(notificationId);
     const doc = await docRef.get();
 
     if (!doc.exists) {

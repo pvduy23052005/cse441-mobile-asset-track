@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
 import * as QRCode from 'qrcode';
 import { FirebaseService } from '../firebase/firebase.service';
 
@@ -160,10 +165,10 @@ export class MachineService implements OnModuleInit {
   private readonly sparePartsRequestsCollection = 'spare_parts_requests';
   private readonly workshopConfigsCollection = 'workshop_configs';
 
-  constructor(private readonly firebaseService: FirebaseService) { }
+  constructor(private readonly firebaseService: FirebaseService) {}
 
   async onModuleInit() {
-    this.logger.log('MachineService initialized. Checking Firebase Firestore collections...');
+
     await this.seedAllFirebaseCollections();
   }
 
@@ -348,7 +353,9 @@ export class MachineService implements OnModuleInit {
         };
       });
     } catch (error) {
-      this.logger.error(`Error fetching PM checklists from Firestore: ${error}`);
+      this.logger.error(
+        `Error fetching PM checklists from Firestore: ${error}`,
+      );
       return [];
     }
   }
@@ -384,7 +391,9 @@ export class MachineService implements OnModuleInit {
         .get();
 
       if (woSnap.empty) {
-        this.logger.log('Seeding collection: work_orders into Firebase Firestore...');
+        this.logger.log(
+          'Seeding collection: work_orders into Firebase Firestore...',
+        );
         const defaultWorkOrders = [
           {
             code: 'SOS-2026-001',
@@ -436,7 +445,9 @@ export class MachineService implements OnModuleInit {
         .get();
 
       if (pmSnap.empty) {
-        this.logger.log('Seeding collection: pm_checklists into Firebase Firestore...');
+        this.logger.log(
+          'Seeding collection: pm_checklists into Firebase Firestore...',
+        );
         const pmDocRef = await this.firebaseService.firestore
           .collection(this.pmChecklistsCollection)
           .add({
@@ -458,13 +469,15 @@ export class MachineService implements OnModuleInit {
           },
           {
             pmChecklistId: pmDocRef.id,
-            taskDescription: 'Kiểm tra áp suất khí nén đầu vào và điều chỉnh van an toàn',
+            taskDescription:
+              'Kiểm tra áp suất khí nén đầu vào và điều chỉnh van an toàn',
             isChecked: false,
             photoRequired: false,
           },
           {
             pmChecklistId: pmDocRef.id,
-            taskDescription: 'Siết chặt bu-lông chân máy và kiểm tra độ chùng dây curoa',
+            taskDescription:
+              'Siết chặt bu-lông chân máy và kiểm tra độ chùng dây curoa',
             isChecked: false,
             photoRequired: true,
           },
@@ -483,7 +496,9 @@ export class MachineService implements OnModuleInit {
         .get();
 
       if (rhlSnap.empty) {
-        this.logger.log('Seeding collection: running_hours_logs into Firebase Firestore...');
+        this.logger.log(
+          'Seeding collection: running_hours_logs into Firebase Firestore...',
+        );
         await this.firebaseService.firestore
           .collection(this.runningHoursLogsCollection)
           .add({
@@ -503,7 +518,9 @@ export class MachineService implements OnModuleInit {
         .get();
 
       if (splSnap.empty) {
-        this.logger.log('Seeding collection: spare_part_logs into Firebase Firestore...');
+        this.logger.log(
+          'Seeding collection: spare_part_logs into Firebase Firestore...',
+        );
         await this.firebaseService.firestore
           .collection(this.sparePartLogsCollection)
           .add({
@@ -522,7 +539,9 @@ export class MachineService implements OnModuleInit {
         .get();
 
       if (sprSnap.empty) {
-        this.logger.log('Seeding collection: spare_parts_requests into Firebase Firestore...');
+        this.logger.log(
+          'Seeding collection: spare_parts_requests into Firebase Firestore...',
+        );
         await this.firebaseService.firestore
           .collection(this.sparePartsRequestsCollection)
           .add({
@@ -544,7 +563,9 @@ export class MachineService implements OnModuleInit {
         .get();
 
       if (cfgSnap.empty) {
-        this.logger.log('Seeding collection: workshop_configs into Firebase Firestore...');
+        this.logger.log(
+          'Seeding collection: workshop_configs into Firebase Firestore...',
+        );
         await this.firebaseService.firestore
           .collection(this.workshopConfigsCollection)
           .add({
@@ -556,7 +577,9 @@ export class MachineService implements OnModuleInit {
           });
       }
 
-      this.logger.log('All missing Firebase collections checked & seeded successfully!');
+      this.logger.log(
+        'All missing Firebase collections checked & seeded successfully!',
+      );
     } catch (e) {
       this.logger.error(`Error seeding Firebase collections: ${e}`);
     }
