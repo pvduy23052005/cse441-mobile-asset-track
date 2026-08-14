@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { FirebaseModule } from './modules/firebase/firebase.module';
 import { MachineModule } from './modules/machine/machine.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { TicketsModule } from './modules/tickets/tickets.module';
 import { OperatorModule } from './operator/operator.module';
 import { UserModule } from './modules/user/user.module';
@@ -19,7 +20,9 @@ import { UserModule } from './modules/user/user.module';
     MachineModule,
     TicketsModule,
     OperatorModule,
+    NotificationsModule,
   ],
   providers: [AppService],
 })
 export class AppModule {}
+
