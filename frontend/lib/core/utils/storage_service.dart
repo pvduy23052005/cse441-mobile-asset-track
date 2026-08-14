@@ -57,17 +57,23 @@ class StorageService {
     required String email,
     required String password,
   }) async {
-    await init();
-    await _prefs?.setBool(_keyRememberMe, rememberMe);
-    if (rememberMe) {
-      await _prefs?.setString(_keySavedEmail, email);
-      await _secureStorage.write(key: _keySavedPassword, value: password);
-    } else {
-      await _prefs?.remove(_keySavedEmail);
-      try {
-        await _secureStorage.delete(key: _keySavedPassword);
-      } catch (_) {}
-    }
+    try {
+      await init();
+      await _prefs?.setBool(_keyRememberMe, rememberMe);
+      if (rememberMe) {
+        await _prefs?.setString(_keySavedEmail, email);
+        try {
+          await _secureStorage.write(key: _keySavedPassword, value: password);
+        } catch (e) {
+          // Fallback if secure storage encounters key store error on emulator
+        }
+      } else {
+        await _prefs?.remove(_keySavedEmail);
+        try {
+          await _secureStorage.delete(key: _keySavedPassword);
+        } catch (_) {}
+      }
+    } catch (_) {}
   }
 
   static bool getIsRememberMe() {

@@ -67,17 +67,25 @@ class _LoginPortalScreenState extends State<LoginPortalScreen> {
       final userData = (response['user'] as Map<String, dynamic>?) ?? {};
       final userRole = userData['role']?.toString();
 
-      await StorageService.saveRememberedCredentials(
-        rememberMe: _rememberMe,
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
+      try {
+        await StorageService.saveRememberedCredentials(
+          rememberMe: _rememberMe,
+          email: _emailController.text,
+          password: _passwordController.text,
+        );
+      } catch (err) {
+        debugPrint('[Auth] Lỗi lưu credentials: $err');
+      }
 
       if (accessToken != null && accessToken.isNotEmpty) {
-        await StorageService.saveAuthSession(
-          token: accessToken,
-          userData: userData,
-        );
+        try {
+          await StorageService.saveAuthSession(
+            token: accessToken,
+            userData: userData,
+          );
+        } catch (err) {
+          debugPrint('[Auth] Lỗi lưu session: $err');
+        }
       }
 
       if (!mounted) return;

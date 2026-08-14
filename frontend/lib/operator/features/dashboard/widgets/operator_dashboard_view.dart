@@ -64,8 +64,11 @@ class _OperatorDashboardViewState extends State<OperatorDashboardView> {
     }
   }
 
-  void _openQRScanner() {
-    OperatorQRScannerSheet.show(context);
+  void _openQRScanner() async {
+    final machine = await OperatorQRScannerSheet.show(context);
+    if (machine != null && mounted) {
+      MachineDetailModal.show(context, machine);
+    }
   }
 
   @override

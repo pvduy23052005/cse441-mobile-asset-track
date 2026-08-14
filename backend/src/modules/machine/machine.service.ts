@@ -45,6 +45,20 @@ export interface WorkOrder {
   updatedAt?: string;
 }
 
+export interface FirestoreWorkOrder {
+  code?: string;
+  machineId?: string;
+  machineName?: string;
+  severity?: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED' | 'REJECTED';
+  description?: string;
+  imageUrl?: string;
+  assigneeName?: string;
+  rejectionReason?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface PMChecklist {
   id: string;
   code: string;
@@ -53,6 +67,18 @@ export interface PMChecklist {
   scheduledHours: number;
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED';
   itemCount: number;
+  items?: PMChecklistItem[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface FirestorePMChecklist {
+  code?: string;
+  machineId?: string;
+  machineName?: string;
+  scheduledHours?: number;
+  status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED';
+  itemCount?: number;
   items?: PMChecklistItem[];
   createdAt?: string;
   updatedAt?: string;
@@ -134,7 +160,7 @@ export class MachineService implements OnModuleInit {
   private readonly sparePartsRequestsCollection = 'spare_parts_requests';
   private readonly workshopConfigsCollection = 'workshop_configs';
 
-  constructor(private readonly firebaseService: FirebaseService) {}
+  constructor(private readonly firebaseService: FirebaseService) { }
 
   async onModuleInit() {
     this.logger.log('MachineService initialized. Checking Firebase Firestore collections...');
@@ -244,15 +270,15 @@ export class MachineService implements OnModuleInit {
         .get();
 
       return snapshot.docs.map((doc) => {
-        const data = doc.data();
+        const data = doc.data() as FirestoreWorkOrder;
         return {
           id: doc.id,
-          code: data.code,
-          machineId: data.machineId,
-          machineName: data.machineName,
-          severity: data.severity,
-          status: data.status,
-          description: data.description,
+          code: data.code || '',
+          machineId: data.machineId || '',
+          machineName: data.machineName || '',
+          severity: data.severity || 'LOW',
+          status: data.status || 'PENDING',
+          description: data.description || '',
           imageUrl: data.imageUrl,
           assigneeName: data.assigneeName,
           rejectionReason: data.rejectionReason,
@@ -283,15 +309,15 @@ export class MachineService implements OnModuleInit {
     });
 
     const updatedDoc = await docRef.get();
-    const data = updatedDoc.data()!;
+    const data = (updatedDoc.data() as FirestoreWorkOrder) || {};
     return {
       id: updatedDoc.id,
-      code: data.code,
-      machineId: data.machineId,
-      machineName: data.machineName,
-      severity: data.severity,
-      status: data.status,
-      description: data.description,
+      code: data.code || '',
+      machineId: data.machineId || '',
+      machineName: data.machineName || '',
+      severity: data.severity || 'LOW',
+      status: data.status || 'PENDING',
+      description: data.description || '',
       imageUrl: data.imageUrl,
       assigneeName: data.assigneeName,
       rejectionReason: data.rejectionReason,
@@ -308,15 +334,15 @@ export class MachineService implements OnModuleInit {
         .get();
 
       return snapshot.docs.map((doc) => {
-        const data = doc.data();
+        const data = doc.data() as FirestorePMChecklist;
         return {
           id: doc.id,
-          code: data.code,
-          machineId: data.machineId,
-          machineName: data.machineName,
-          scheduledHours: data.scheduledHours,
-          status: data.status,
-          itemCount: data.itemCount,
+          code: data.code || '',
+          machineId: data.machineId || '',
+          machineName: data.machineName || '',
+          scheduledHours: data.scheduledHours || 0,
+          status: data.status || 'PENDING',
+          itemCount: data.itemCount || 0,
           createdAt: data.createdAt,
           updatedAt: data.updatedAt,
         };

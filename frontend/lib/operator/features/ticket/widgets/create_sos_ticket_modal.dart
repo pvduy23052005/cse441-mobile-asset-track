@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/models/machine_model.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -43,9 +44,21 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
   final _ticketService = OperatorTicketService();
   final _imagePicker = ImagePicker();
 
-  String _selectedSeverity = 'LOW';
+  String _selectedSeverity = 'CRITICAL';
   final List<XFile> _selectedImages = [];
   bool _isSubmitting = false;
+
+  final List<String> _presetIssueTags = [
+    'Kẹt băng chuyền / phôi',
+    'Rò rỉ dầu / nhớt thủy lực',
+    'Động cơ quá nhiệt (>80°C)',
+    'Phát tiếng ồn / Rung lắc mạnh',
+    'Mất nguồn / Lỗi mạch điện',
+    'Lỗi cảm biến / Sensor',
+    'Dừng khẩn cấp (E-Stop)',
+  ];
+
+  final Set<String> _selectedTags = {};
 
   @override
   void dispose() {
@@ -53,13 +66,54 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
     super.dispose();
   }
 
+  void _togglePresetTag(String tag) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      if (_selectedTags.contains(tag)) {
+        _selectedTags.remove(tag);
+      } else {
+        _selectedTags.add(tag);
+      }
+      _syncDescriptionWithTags();
+    });
+  }
+
+  void _syncDescriptionWithTags() {
+    if (_selectedTags.isEmpty) return;
+    final currentText = _descriptionController.text.trim();
+    final tagSummary = _selectedTags.join(', ');
+    
+    if (currentText.isEmpty) {
+      _descriptionController.text = 'Hiện tượng: $tagSummary.';
+    } else {
+      // If already contains "Hiện tượng:", update it or append
+      if (!currentText.contains(tagSummary)) {
+        _descriptionController.text = '$currentText\n[Triệu chứng: $tagSummary]';
+      }
+    }
+    _descriptionController.selection = TextSelection.fromPosition(
+      TextPosition(offset: _descriptionController.text.length),
+    );
+  }
+
   Future<void> _pickImage(ImageSource source) async {
+    if (_selectedImages.length >= 3) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Tối đa 3 ảnh minh chứng cho một phiếu sự cố.'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     try {
       final pickedFile = await _imagePicker.pickImage(
         source: source,
         maxWidth: 1920,
         maxHeight: 1080,
-        imageQuality: 85,
+        imageQuality: 80,
       );
       if (pickedFile != null) {
         setState(() {
@@ -72,6 +126,7 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
           SnackBar(
             content: Text('Không thể chọn ảnh: $e'),
             backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -101,7 +156,7 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
               ),
               const SizedBox(height: 16),
               const Text(
-                'Đính Kèm Ảnh Minh Chứng',
+                'Đính Kèm Ảnh Minh Chứng Hiện Trường',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -116,10 +171,16 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                     color: AppTheme.errorColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.camera_alt_rounded,
-                      color: AppTheme.errorColor),
+                  child: const Icon(
+                    Icons.camera_alt_rounded,
+                    color: AppTheme.errorColor,
+                  ),
                 ),
-                title: const Text('Chụp ảnh từ Camera'),
+                title: const Text(
+                  'Chụp ảnh trực tiếp từ Camera',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: const Text('Khuyên dùng để kỹ thuật viên nắm rõ hiện trường'),
                 onTap: () {
                   Navigator.pop(ctx);
                   _pickImage(ImageSource.camera);
@@ -132,10 +193,16 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                     color: AppTheme.primaryColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.photo_library_rounded,
-                      color: AppTheme.primaryColor),
+                  child: const Icon(
+                    Icons.photo_library_rounded,
+                    color: AppTheme.primaryColor,
+                  ),
                 ),
-                title: const Text('Chọn ảnh từ Thư viện'),
+                title: const Text(
+                  'Chọn ảnh từ Thư viện máy',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: const Text('Tải ảnh sự cố đã chụp trước đó'),
                 onTap: () {
                   Navigator.pop(ctx);
                   _pickImage(ImageSource.gallery);
@@ -150,9 +217,11 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
 
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) {
-      debugPrint('[SOS Ticket] Form validation failed: Mô tả sự cố đang để trống');
+      HapticFeedback.heavyImpact();
       return;
     }
+
+    HapticFeedback.mediumImpact();
 
     setState(() {
       _isSubmitting = true;
@@ -171,7 +240,8 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
           : widget.machine.code;
 
       debugPrint(
-          '[SOS Ticket] Gửi yêu cầu SOS cho thiết bị: $targetMachineId | Severity: $_selectedSeverity | Ảnh: ${base64Images.length}');
+        '[SOS Ticket] Gửi yêu cầu SOS cho thiết bị: $targetMachineId | Severity: $_selectedSeverity | Ảnh: ${base64Images.length}',
+      );
 
       final result = await _ticketService.createTicket(
         machineId: targetMachineId,
@@ -187,11 +257,21 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'Đã tạo phiếu SOS thành công cho "${widget.machine.name}"!',
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle_rounded, color: Colors.white),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Đã gửi cảnh báo SOS cho máy "${widget.machine.name}"!',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
             ),
             backgroundColor: const Color(0xFF059669),
-            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -202,6 +282,7 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
           SnackBar(
             content: Text('Lỗi: $e'),
             backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -220,7 +301,7 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
 
     return Container(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.92,
+        maxHeight: MediaQuery.of(context).size.height * 0.94,
       ),
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -233,7 +314,7 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Top drag indicator
+              // Top drag handle
               const SizedBox(height: 10),
               Container(
                 width: 40,
@@ -246,9 +327,9 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
 
               // Header
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 14, 16, 12),
+                padding: const EdgeInsets.fromLTRB(20, 12, 16, 12),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Container(
                       padding: const EdgeInsets.all(8),
@@ -257,7 +338,7 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
-                        Icons.shield_outlined,
+                        Icons.warning_rounded,
                         color: AppTheme.errorColor,
                         size: 24,
                       ),
@@ -268,18 +349,18 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Tạo Phiếu SOS Khẩn Cấp',
+                            'Báo Hỏng Khẩn Cấp (SOS)',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 17,
                               fontWeight: FontWeight.w800,
                               color: Color(0xFF0F172A),
                             ),
                           ),
                           SizedBox(height: 2),
                           Text(
-                            'Báo hỏng máy dừng chuyền đột xuất',
+                            'Tạo phiếu điều phối kỹ thuật viên tức thì',
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 12.5,
                               color: AppTheme.errorColor,
                               fontWeight: FontWeight.w500,
                             ),
@@ -288,7 +369,7 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, color: Color(0xFF64748B)),
+                      icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B)),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -306,72 +387,115 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Section: Thiết Bị Sự Cố
+                        // Section 1: Thông tin thiết bị gặp sự cố
                         Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF8FAFC),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(14),
                             border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Thiết Bị Sự Cố:',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF64748B),
-                                ),
-                              ),
-                              const SizedBox(height: 6),
                               Row(
                                 children: [
-                                  Expanded(
-                                    child: Text(
-                                      widget.machine.name,
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w800,
-                                        color: Color(0xFF0F172A),
-                                      ),
+                                  const Icon(
+                                    Icons.precision_manufacturing_rounded,
+                                    size: 18,
+                                    color: AppTheme.primaryColor,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  const Text(
+                                    'THIẾT BỊ SỰ CỐ',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF64748B),
+                                      letterSpacing: 0.5,
                                     ),
                                   ),
+                                  const Spacer(),
                                   if (widget.machine.code.isNotEmpty)
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 3),
+                                        horizontal: 8,
+                                        vertical: 3,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFFFFE4E6),
+                                        color: const Color(0xFFEFF6FF),
                                         borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: const Color(0xFFBFDBFE),
+                                        ),
                                       ),
                                       child: Text(
-                                        widget.machine.code,
+                                        '#${widget.machine.code}',
                                         style: const TextStyle(
-                                          fontSize: 12,
+                                          fontSize: 11.5,
                                           fontWeight: FontWeight.w800,
-                                          color: Color(0xFFE11D48),
+                                          color: Color(0xFF2563EB),
                                         ),
                                       ),
                                     ),
                                 ],
                               ),
+                              const SizedBox(height: 8),
+                              Text(
+                                widget.machine.name,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              ),
+                              if (widget.machine.location.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.location_on_outlined,
+                                      size: 14,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      widget.machine.location,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF64748B),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ],
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 18),
 
-                        // Section: Mức Độ Nghiêm Trọng
-                        const Text(
-                          'Mức Độ Nghiêm Trọng:',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF0F172A),
-                          ),
+                        // Section 2: Mức độ nghiêm trọng
+                        const Row(
+                          children: [
+                            Text(
+                              'Mức Độ Nghiêm Trọng',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF0F172A),
+                              ),
+                            ),
+                            Text(
+                              ' *',
+                              style: TextStyle(
+                                color: AppTheme.errorColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 8),
                         SosSeveritySelector(
                           selectedSeverity: _selectedSeverity,
                           onSeverityChanged: (level) {
@@ -380,28 +504,109 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                             });
                           },
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 18),
 
-                        // Section: Mô Tả Chi Tiết Sự Cố
-                        const Text(
-                          'Mô Tả Chi Tiết Sự Cố:',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF0F172A),
-                          ),
+                        // Section 3: Preset Quick Tags (Gợi ý nhanh sự cố)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Triệu Chứng Phổ Biến (Chọn nhanh)',
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF0F172A),
+                              ),
+                            ),
+                            if (_selectedTags.isNotEmpty)
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedTags.clear();
+                                    _descriptionController.clear();
+                                  });
+                                },
+                                child: const Text(
+                                  'Xóa chọn',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    color: Color(0xFFEF4444),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: _presetIssueTags.map((tag) {
+                            final isSelected = _selectedTags.contains(tag);
+                            return FilterChip(
+                              label: Text(tag),
+                              selected: isSelected,
+                              onSelected: (_) => _togglePresetTag(tag),
+                              labelStyle: TextStyle(
+                                fontSize: 12,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: isSelected
+                                    ? const Color(0xFFB91C1C)
+                                    : const Color(0xFF334155),
+                              ),
+                              backgroundColor: const Color(0xFFF1F5F9),
+                              selectedColor: const Color(0xFFFEE2E2),
+                              checkmarkColor: const Color(0xFFB91C1C),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: BorderSide(
+                                  color: isSelected
+                                      ? const Color(0xFFFCA5A5)
+                                      : const Color(0xFFE2E8F0),
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 18),
+
+                        // Section 4: Mô tả chi tiết sự cố
+                        const Row(
+                          children: [
+                            Text(
+                              'Mô Tả Chi Tiết Sự Cố',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF0F172A),
+                              ),
+                            ),
+                            Text(
+                              ' *',
+                              style: TextStyle(
+                                color: AppTheme.errorColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
                         TextFormField(
                           controller: _descriptionController,
-                          maxLines: 4,
+                          maxLines: 3,
                           style: const TextStyle(
                             fontSize: 14,
                             color: Color(0xFF0F172A),
                           ),
                           decoration: InputDecoration(
                             hintText:
-                                'Ví dụ: Rò rỉ dầu thủy lực xi lanh ép, máy rít lớn kêu lạch cạch...',
+                                'Ví dụ: Kẹt trục cuốn, rò dầu thuỷ lực xilanh ép, máy rung lắc lớn...',
                             hintStyle: TextStyle(
                               fontSize: 13,
                               color: Colors.grey.shade400,
@@ -409,7 +614,7 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                             ),
                             filled: true,
                             fillColor: const Color(0xFFF8FAFC),
-                            contentPadding: const EdgeInsets.all(14),
+                            contentPadding: const EdgeInsets.all(12),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide:
@@ -423,28 +628,30 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: const BorderSide(
-                                  color: AppTheme.errorColor, width: 1.5),
+                                color: AppTheme.errorColor,
+                                width: 1.5,
+                              ),
                             ),
                           ),
                           validator: (val) {
                             if (val == null || val.trim().isEmpty) {
-                              return 'Vui lòng nhập mô tả chi tiết sự cố';
+                              return 'Vui lòng nhập mô tả hoặc chọn triệu chứng';
                             }
                             return null;
                           },
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 18),
 
-                        // Section: Hình Ảnh Minh Chứng Lỗi
+                        // Section 5: Hình ảnh minh chứng lỗi
                         const Text(
-                          'Hình Ảnh Minh Chứng Lỗi:',
+                          'Ảnh Hiện Trường Minh Chứng',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF0F172A),
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 8),
                         SosImageAttachmentSection(
                           selectedImages: _selectedImages,
                           onAddImageTap: _showImageSourceActionSheet,
@@ -461,7 +668,7 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                 ),
               ),
 
-              // Bottom Action Button
+              // Bottom Sticky Action Button
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: const BoxDecoration(
@@ -493,12 +700,19 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                                   AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
-                        : const Text(
-                            'Gửi Yêu Cầu SOS Tức Thời',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                            ),
+                        : const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.send_rounded, size: 18),
+                              SizedBox(width: 8),
+                              Text(
+                                'Gửi Yêu Cầu SOS Khẩn Cấp',
+                                style: TextStyle(
+                                  fontSize: 15.5,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
                           ),
                   ),
                 ),
@@ -510,3 +724,4 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
     );
   }
 }
+
