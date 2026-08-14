@@ -18,8 +18,8 @@ class MachineDetailModal extends StatelessWidget {
     BuildContext context,
     MachineModel machine, {
     ValueChanged<MachineModel>? onStatusUpdated,
-  }) {
-    return showModalBottomSheet(
+  }) async {
+    final result = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -28,6 +28,10 @@ class MachineDetailModal extends StatelessWidget {
         onStatusUpdated: onStatusUpdated,
       ),
     );
+
+    if (result == 'OPEN_SOS' && context.mounted) {
+      CreateSosTicketModal.show(context, machine: machine);
+    }
   }
 
   @override
@@ -363,8 +367,7 @@ class MachineDetailModal extends StatelessWidget {
                               ),
                             ),
                             onPressed: () {
-                              Navigator.pop(context);
-                              CreateSosTicketModal.show(context, machine: machine);
+                              Navigator.pop(context, 'OPEN_SOS');
                             },
                             icon: const Icon(
                               Icons.warning_amber_rounded,

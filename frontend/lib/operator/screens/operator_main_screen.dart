@@ -10,6 +10,7 @@ import '../features/checklist/widgets/operator_checklist_view.dart';
 import '../features/history/widgets/operator_history_view.dart';
 import '../widgets/operator_bottom_nav_bar.dart';
 import '../widgets/operator_qr_scanner_sheet.dart';
+import '../features/machine/widgets/machine_detail_modal.dart';
 
 class OperatorMainScreen extends StatefulWidget {
   final int initialIndex;
@@ -45,8 +46,11 @@ class _OperatorMainScreenState extends State<OperatorMainScreen> {
     _currentIndex = widget.initialIndex;
   }
 
-  void _openQRScannerModal() {
-    OperatorQRScannerSheet.show(context);
+  void _openQRScannerModal() async {
+    final machine = await OperatorQRScannerSheet.show(context);
+    if (machine != null && mounted) {
+      MachineDetailModal.show(context, machine);
+    }
   }
 
   @override

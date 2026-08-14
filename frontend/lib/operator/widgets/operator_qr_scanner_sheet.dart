@@ -6,23 +6,17 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../core/models/machine_model.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../supervisor/features/machine_management/services/machine_service.dart';
-import '../features/machine/widgets/machine_detail_modal.dart';
 
 class OperatorQRScannerSheet extends StatefulWidget {
   const OperatorQRScannerSheet({super.key});
 
-  static Future<MachineModel?> show(BuildContext context) async {
-    final machine = await showModalBottomSheet<MachineModel>(
+  static Future<MachineModel?> show(BuildContext context) {
+    return showModalBottomSheet<MachineModel>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const OperatorQRScannerSheet(),
     );
-
-    if (machine != null && context.mounted) {
-      MachineDetailModal.show(context, machine);
-    }
-    return machine;
   }
 
   @override
@@ -40,6 +34,7 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
 
   late TabController _tabController;
   late AnimationController _animController;
+  int _selectedTabIndex = 0;
 
   bool _isProcessing = false;
   bool _isTorchOn = false;
@@ -54,6 +49,11 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
+      if (_tabController.index != _selectedTabIndex) {
+        setState(() {
+          _selectedTabIndex = _tabController.index;
+        });
+      }
       if (_tabController.index == 1 && _allMachines.isEmpty) {
         _fetchAllMachines();
       }
@@ -69,7 +69,9 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
   void dispose() {
     _tabController.dispose();
     _animController.dispose();
-    _scannerController.dispose();
+    try {
+      _scannerController.dispose();
+    } catch (_) {}
     _manualIdController.dispose();
     super.dispose();
   }
@@ -421,15 +423,15 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
               ),
             ),
 
-            // Tab Views
+            // Tab Content using IndexedStack for smooth performance
             Expanded(
-              child: TabBarView(
-                controller: _tabController,
+              child: IndexedStack(
+                index: _selectedTabIndex,
                 children: [
-                  // Tab 1: Camera Scanner
+                  // Tab 0: Camera Scanner
                   _buildCameraScannerTab(),
 
-                  // Tab 2: Manual ID Lookup
+                  // Tab 1: Manual ID Lookup
                   _buildManualLookupTab(),
                 ],
               ),
