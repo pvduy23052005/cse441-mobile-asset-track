@@ -4,9 +4,9 @@ import '../../core/routes/app_router.dart';
 import '../../core/utils/storage_service.dart';
 import '../../core/widgets/app_bottom_nav_bar.dart';
 import '../../core/widgets/app_drawer.dart';
+import '../../core/widgets/app_notifications_view.dart';
 import '../../core/widgets/role_header.dart';
 import '../features/dashboard/widgets/engineer_dashboard_view.dart';
-import '../features/history/widgets/engineer_history_view.dart';
 import '../features/machines/widgets/engineer_machines_view.dart';
 import '../features/ticket_management/widgets/engineer_ticket_list_view.dart';
 
@@ -25,7 +25,7 @@ class _EngineerMainScreenState extends State<EngineerMainScreen> {
     EngineerDashboardView(),
     EngineerMachinesView(),
     EngineerTicketListView(),
-    EngineerHistoryView(),
+    AppNotificationsView(userRole: 'ME_ENGINEER'),
   ];
 
   @override
