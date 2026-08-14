@@ -6,17 +6,18 @@ import {
   FirestoreNotification,
   NotificationItem,
 } from './interfaces/notification.interface';
+import { NotificationsGateway } from './notifications.gateway';
 
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
   private readonly collectionName = FirestoreCollection.NOTIFICATIONS;
 
-  constructor(private readonly firebaseService: FirebaseService) {}
+  constructor(
+    private readonly firebaseService: FirebaseService,
+    private readonly notificationsGateway: NotificationsGateway,
+  ) {}
 
-  /**
-   * Tạo 1 bản ghi notification mới trong Firestore DB
-   */
   async createNotification(
     dto: CreateNotificationDto,
   ): Promise<NotificationItem> {
@@ -41,15 +42,20 @@ export class NotificationsService {
 
     this.logger.log(`Tạo thông báo ID: ${docRef.id} thành công`);
 
-    return {
+    const result: NotificationItem = {
       id: docRef.id,
       ...dataToSave,
     };
+
+    try {
+      this.notificationsGateway.emitNotification(result);
+    } catch (err) {
+      this.logger.warn(`Lỗi bắn WebSocket notification: ${err}`);
+    }
+
+    return result;
   }
 
-  /**
-   * Lấy danh sách thông báo cho người dùng (theo userId hoặc targetRole)
-   */
   async getNotificationsForUser(
     userId: string,
     userRole?: string,
@@ -57,7 +63,6 @@ export class NotificationsService {
     const firestore = this.firebaseService.firestore;
     const notificationsMap = new Map<string, NotificationItem>();
 
-    // Query 1: Lấy các thông báo theo userId cụ thể
     if (userId) {
       const userSnapshot = await firestore
         .collection(this.collectionName)
@@ -73,7 +78,6 @@ export class NotificationsService {
       });
     }
 
-    // Query 2: Lấy các thông báo dành cho role của user (nếu có)
     if (userRole) {
       const roleSnapshot = await firestore
         .collection(this.collectionName)
@@ -89,7 +93,6 @@ export class NotificationsService {
       });
     }
 
-    // Nếu không có kết quả lọc, lấy thông báo chung (Global system notifications)
     if (notificationsMap.size === 0) {
       const globalSnapshot = await firestore
         .collection(this.collectionName)
@@ -105,7 +108,6 @@ export class NotificationsService {
       });
     }
 
-    // Chuyển Map thành mảng & sắp xếp theo thời gian mới nhất lên đầu
     const list = Array.from(notificationsMap.values());
     list.sort(
       (a, b) =>
@@ -115,17 +117,11 @@ export class NotificationsService {
     return list;
   }
 
-  /**
-   * Đếm số lượng thông báo chưa đọc
-   */
   async getUnreadCount(userId: string, userRole?: string): Promise<number> {
     const notifications = await this.getNotificationsForUser(userId, userRole);
     return notifications.filter((item) => !item.is_read).length;
   }
 
-  /**
-   * Đánh dấu 1 thông báo là đã đọc
-   */
   async markAsRead(notificationId: string): Promise<NotificationItem> {
     const firestore = this.firebaseService.firestore;
     const docRef = firestore
@@ -149,9 +145,6 @@ export class NotificationsService {
     };
   }
 
-  /**
-   * Đánh dấu tất cả thông báo của user là đã đọc
-   */
   async markAllAsRead(
     userId: string,
     userRole?: string,
