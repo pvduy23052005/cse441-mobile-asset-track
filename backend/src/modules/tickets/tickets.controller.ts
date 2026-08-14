@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -66,5 +67,50 @@ export class TicketsController {
       machine_id: machineId,
       reporter_id: reporterId,
     });
+  }
+
+  @Patch(':id/claim')
+  async claimTicket(
+    @Param('id') id: string,
+    @Req() req: JwtAuthenticatedRequest,
+  ): Promise<Ticket> {
+    const engineerId = req.user?.uid || req.user?.id;
+
+    if (!engineerId) {
+      throw new UnauthorizedException(
+        'Không tìm thấy ID Kỹ sư từ thông tin xác thực JWT',
+      );
+    }
+
+    return this.ticketsService.claimTicket(id, engineerId);
+  }
+
+  @Patch(':id/complete')
+  async completeTicket(
+    @Param('id') id: string,
+    @Req() req: JwtAuthenticatedRequest,
+    @Body() body: { used_spare_parts?: any[] },
+  ): Promise<Ticket> {
+    const engineerId = req.user?.uid || req.user?.id;
+
+    if (!engineerId) {
+      throw new UnauthorizedException(
+        'Không tìm thấy ID Kỹ sư từ thông tin xác thực JWT',
+      );
+    }
+
+    return this.ticketsService.completeTicket(
+      id,
+      engineerId,
+      body?.used_spare_parts,
+    );
+  }
+
+  @Patch(':id/reject')
+  async rejectTicket(
+    @Param('id') id: string,
+    @Body() body: { rejection_reason?: string },
+  ): Promise<Ticket> {
+    return this.ticketsService.rejectTicket(id, body?.rejection_reason);
   }
 }
