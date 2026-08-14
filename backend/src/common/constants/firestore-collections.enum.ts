@@ -5,4 +5,6 @@ export enum FirestoreCollection {
   TICKETS = 'tickets',
   ASSETS = 'assets',
   MACHINES = 'machines',
+  NOTIFICATIONS = 'notifications',
 }
+

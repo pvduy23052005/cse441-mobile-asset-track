@@ -9,6 +9,8 @@ import { FirestoreCollection } from '../../common/constants/firestore-collection
 import { FirestoreUser } from '../auth/auth.service';
 import { FirebaseService } from '../firebase/firebase.service';
 import { FirestoreMachine } from '../machine/machine.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationTypeEnum } from '../notifications/interfaces/notification.interface';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { TicketSeverity } from './enums/ticket-severity.enum';
 import { TicketStatus } from './enums/ticket-status.enum';
@@ -19,7 +21,10 @@ export class TicketsService {
   private readonly logger = new Logger(TicketsService.name);
   private readonly collectionName = FirestoreCollection.TICKETS;
 
-  constructor(private readonly firebaseService: FirebaseService) {}
+  constructor(
+    private readonly firebaseService: FirebaseService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async create(
     reporterId: string,
@@ -81,13 +86,15 @@ export class TicketsService {
     }
 
     const now = new Date().toISOString();
+    const severity = dto.severity || TicketSeverity.MEDIUM;
+
     const ticketData: FirestoreTicket = {
       machine_id: actualMachineId,
       reporter_id: reporterId,
       engineer_id: null,
-      severity: dto.severity || TicketSeverity.MEDIUM,
+      severity,
       status: TicketStatus.OPEN,
-      description: dto.description.trim(),
+      description: dto.description || '',
       images_urls: dto.images_urls || [],
       downtime_start: dto.downtime_start || now,
       downtime_end: null,
@@ -111,6 +118,20 @@ export class TicketsService {
     this.logger.log(
       `Đã tạo Ticket mới với ID: ${docRef.id} cho thiết bị: ${actualMachineId} bởi User: ${reporterId} (Role: ${userRole || 'N/A'})`,
     );
+
+    // Tự động tạo bản ghi thông báo thật trên Firestore collection 'notifications'
+    try {
+      const isCritical = severity === TicketSeverity.CRITICAL || severity === TicketSeverity.HIGH;
+      await this.notificationsService.createNotification({
+        title: isCritical ? 'SỰ CỐ KHẨN CẤP (SOS)' : 'BÁO SỰ CỐ MỚI',
+        message: `Máy ${machineData.code || actualMachineId} (${machineData.name || 'Thiết bị'}) vừa báo sự cố [${severity}]: ${dto.description || 'Cần xử lý'}`,
+        type: isCritical ? NotificationTypeEnum.SOS : NotificationTypeEnum.SYSTEM,
+        target_role: 'ME_ENGINEER',
+        target_id: docRef.id,
+      });
+    } catch (notiErr) {
+      this.logger.warn(`Không thể tạo notification tự động cho Ticket ${docRef.id}: ${notiErr}`);
+    }
 
     return {
       id: docRef.id,
