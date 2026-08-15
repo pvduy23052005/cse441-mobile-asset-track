@@ -8,21 +8,21 @@ Tài liệu này tập trung chuyên sâu vào các sơ đồ mô hình hóa ph�
 
 ### 1.1. Yêu cầu Chức năng (Functional Requirements - FR)
 * **FR-1 (Quản lý Lý lịch Máy móc):** Hệ thống phải định danh từng máy bằng mã QR duy nhất và hiển thị lịch sử sửa chữa/bảo trì khi quét.
-* **FR-2 (Báo cáo Sự cố khẩn cấp SOS):** Operator phải tạo được yêu cầu sửa chữa tức thời khi máy gặp sự cố (gồm mô tả, mức độ nghiêm trọng và ảnh chụp lỗi).
-* **FR-3 (Thông báo thời gian thực):** Hệ thống phải tự động gửi thông báo đẩy đến kỹ sư ME khi có phiếu SOS phát sinh.
+* **FR-2 (Báo cáo Sự cố khẩn cấp SOS):** Operator phải tạo được Ticket sự cố tức thời khi máy gặp sự cố (gồm mô tả, mức độ nghiêm trọng và ảnh chụp lỗi).
+* **FR-3 (Thông báo thời gian thực):** Hệ thống phải tự động gửi thông báo đẩy đến kỹ sư ME khi có Ticket SOS phát sinh.
 * **FR-4 (Thực thi PM Checklist):** Hệ thống phải tự động sinh nhiệm vụ bảo trì định kỳ dựa trên số giờ chạy máy và bắt buộc kỹ sư ME tích chọn checklist kèm ảnh minh chứng.
-* **FR-5 (Nghiệm thu Chữ ký số):** Quản đốc phân xưởng phải ký tên điện tử trực tiếp trên app để nghiệm thu phiếu sửa chữa/bảo trì trước khi đưa máy hoạt động lại.
+* **FR-5 (Nghiệm thu Chữ ký số):** Quản đốc phân xưởng phải ký tên điện tử trực tiếp trên app để nghiệm thu Ticket sửa chữa / Phiếu bảo trì trước khi đưa máy hoạt động lại.
 * **FR-6 (Giám sát & Thống kê):** Quản đốc phải xem được thời gian dừng máy (Downtime) và trạng thái phân xưởng thời gian thực thông qua dashboard.
 * **FR-7 (Ghi Log Vật tư & Tủ vật tư nhanh SME):** Đối với nhà xưởng vừa & nhỏ (SME), Kỹ sư ME tự lấy linh kiện từ *Tủ vật tư nhanh* tại phân xưởng để thay thế và dùng app ghi log phụ tùng (`Spare Parts Logging`), giúp lưu lý lịch sửa chữa của máy và trừ lùi tồn tủ để Quản đốc chủ động nhập bổ sung.
 * **FR-8 (Cấu hình Ngưỡng Hệ thống Phân xưởng):** Supervisor cài đặt các mốc số giờ/km bảo trì định kỳ cho các model máy và ngưỡng duyệt giá trị chi phí linh kiện của phân xưởng.
 
 ### 1.2. Yêu cầu Phi Chức năng (Non-functional Requirements - NFR)
 * **NFR-1 (Bảo mật & Phân quyền):** Ràng buộc truy cập dữ liệu bằng **Firebase Security Rules** và phân quyền người dùng qua **Firebase Auth (Custom Claims / Role)** theo 3 vai trò (`Operator`, `ME Engineer`, `Supervisor`) trong phân xưởng.
-* **NFR-2 (Thời gian thực):** Thông báo đẩy về sự cố SOS phải được gửi đi trong vòng **< 3 giây** kể từ khi Operator gửi yêu cầu.
+* **NFR-2 (Thời gian thực):** Thông báo đẩy về sự cố SOS phải được gửi đi trong vòng **< 3 giây** kể từ khi Operator tạo Ticket.
 * **NFR-3 (Hiệu năng quét mã):** Camera nhận diện và decode mã QR trong **< 1.5 giây** trong điều kiện ánh sáng nhà máy bình thường.
 * **NFR-4 (Dung lượng ảnh):** Mỗi ảnh đính kèm không vượt quá **5MB**; app tự nén trước khi upload.
 * **NFR-5 (Tính khả dụng UI):** Giao diện tối ưu cho màn hình cảm ứng ≥ 5 inch; các nút hành động quan trọng có kích thước tối thiểu **48×48dp**.
-* **NFR-6 (Offline & Tự đồng bộ):** Thao tác ghi khi mất mạng lưu vào **SQLite / Firestore Offline Queue**; khi có mạng app tự upload theo thứ tự. Ảnh offline lưu vào app storage dưới dạng file, SQLite chỉ lưu đường dẫn. App đọc lại queue khi khởi động. SOS tạo offline sẽ không gửi notification ngay — chỉ gửi sau khi đồng bộ lên Firebase.
+* **NFR-6 (Offline & Tự đồng bộ):** Thao tác ghi khi mất mạng lưu vào **SQLite / Firestore Offline Queue**; khi có mạng app tự upload theo thứ tự. Ảnh offline lưu vào app storage dưới dạng file, SQLite chỉ lưu đường dẫn. App đọc lại queue khi khởi động. Ticket tạo offline sẽ không gửi notification ngay — chỉ gửi sau khi đồng bộ lên Firebase.
 
 ---
 
@@ -41,12 +41,11 @@ flowchart LR
     subgraph System["Hệ thống AssetTrack - Single Workshop"]
         UC_ScanQR["Quét QR & Xem lý lịch máy"]
         UC_LogHours["Cập nhật chỉ số máy (Giờ/Km)"]
-        UC_CreateSOS["Tạo phiếu SOS báo hỏng"]
-        UC_ClaimSOS["Tiếp nhận phiếu sửa chữa SOS"]
+        UC_CreateTicket["Tạo Ticket báo lỗi SOS"]
+        UC_ClaimTicket["Tiếp nhận Ticket sửa chữa SOS"]
         UC_ExecutePM["Thực hiện PM Checklist"]
         UC_LogParts["Khai báo vật tư thay thế"]
         UC_SubmitSpareParts["Gửi đề xuất linh kiện đắt tiền"]
-        UC_ViewWorkOrderList["Xem danh sách Work Order"]
         UC_SignOff["Nghiệm thu & Ký tên điện tử"]
         UC_ApproveParts["Phê duyệt đề xuất linh kiện"]
         UC_ViewDashboard["Xem Dashboard Downtime"]
@@ -55,14 +54,13 @@ flowchart LR
 
     Operator --> UC_ScanQR
     Operator --> UC_LogHours
-    Operator --> UC_CreateSOS
+    Operator --> UC_CreateTicket
 
     ME --> UC_ScanQR
-    ME --> UC_ClaimSOS
+    ME --> UC_ClaimTicket
     ME --> UC_ExecutePM
     ME --> UC_LogParts
     ME --> UC_SubmitSpareParts
-    ME --> UC_ViewWorkOrderList
 
     Supervisor --> UC_SignOff
     Supervisor --> UC_ApproveParts
@@ -74,11 +72,11 @@ flowchart LR
 
 | Thành phần đặc tả | Mô tả chi tiết |
 | :--- | :--- |
-| **Tên Use Case** | Tạo phiếu SOS và Nghiệm thu sửa chữa (SOS Breakdown & Sign-off Flow) |
+| **Tên Use Case** | Tạo Ticket SOS và Nghiệm thu sửa chữa (SOS Breakdown Ticket & Sign-off Flow) |
 | **Tác nhân** | Operator (Người tạo), ME Engineer (Người sửa), Supervisor (Người nghiệm thu) |
 | **Tiền điều kiện** | Máy móc đã được dán mã QR; Người dùng đã đăng nhập vào hệ thống với đúng vai trò. |
-| **Luồng sự kiện chính** | 1. **Operator** quét mã QR trên máy, chọn "Báo lỗi khẩn cấp SOS".<br>2. **Operator** điền mô tả sự cố, chụp ảnh hiện trạng lỗi và bấm gửi.<br>3. Hệ thống lưu Work Order ở trạng thái `pending` và đổi trạng thái máy sang `repairing`.<br>4. Hệ thống kích hoạt Trigger gửi thông báo push notification đến các **ME Engineer**.<br>5. **ME Engineer** bấm tiếp nhận phiếu — DB thực hiện `UPDATE ... WHERE status='pending'`; nếu 2 ME bấm cùng lúc, chỉ 1 người thắng (race condition handled), người còn lại thấy thông báo "Phiếu đã được tiếp nhận" (trạng thái chuyển sang `in_progress`).<br>6. **ME Engineer** sửa máy xong, khai báo vật tư đã thay thế, chụp ảnh máy đã sửa, bấm hoàn thành (`completed`).<br>7. **Supervisor** kiểm tra máy, mở app và thực hiện ký tên điện tử lên màn hình cảm ứng để phê duyệt (`approved`).<br>8. Trạng thái máy tự động cập nhật về `active` (Hoạt động). |
-| **Hậu điều kiện** | Phiếu sửa chữa được lưu trữ vĩnh viễn kèm ảnh chữ ký của Quản đốc; Máy móc trở lại sản xuất. |
+| **Luồng sự kiện chính** | 1. **Operator** quét mã QR trên máy, chọn "Báo lỗi khẩn cấp SOS".<br>2. **Operator** điền mô tả sự cố, chụp ảnh hiện trạng lỗi và bấm gửi.<br>3. Hệ thống lưu Ticket ở trạng thái `pending` và đổi trạng thái máy sang `repairing`.<br>4. Hệ thống kích hoạt Trigger gửi thông báo push notification đến các **ME Engineer**.<br>5. **ME Engineer** bấm tiếp nhận Ticket — DB thực hiện `UPDATE ... WHERE status='pending'`; nếu 2 ME bấm cùng lúc, chỉ 1 người thắng (race condition handled), người còn lại thấy thông báo "Ticket đã được tiếp nhận" (trạng thái chuyển sang `in_progress`).<br>6. **ME Engineer** sửa máy xong, khai báo vật tư đã thay thế, chụp ảnh máy đã sửa, bấm hoàn thành (`completed`).<br>7. **Supervisor** kiểm tra máy, mở app và thực hiện ký tên điện tử lên màn hình cảm ứng để phê duyệt (`approved`).<br>8. Trạng thái máy tự động cập nhật về `active` (Hoạt động). |
+| **Hậu điều kiện** | Ticket sửa chữa được lưu trữ vĩnh viễn kèm ảnh chữ ký của Quản đốc; Máy móc trở lại sản xuất. |
 
 ---
 
@@ -91,25 +89,25 @@ flowchart TD
     B --> C[Hệ thống hiển thị Hộ chiếu thiết bị]
     C --> D["Operator chọn 'Báo lỗi SOS', điền mô tả & chụp hình lỗi"]
     D --> E{Có kết nối mạng?}
-    E -- Có --> F["Hệ thống tạo phiếu SOS (Trạng thái: Pending)"]
+    E -- Có --> F["Hệ thống tạo Ticket SOS (Trạng thái: Pending)"]
     E -- Không --> E2["Lưu vào SQLite offline queue (hiển thị banner cảnh báo đỏ)"]
     E2 --> E3{Có mạng trở lại?}
     E3 -- Có --> F
     F --> G["Hệ thống chuyển trạng thái máy sang 'Repairing'"]
     G --> H[Hệ thống gửi Push Notification tới ME]
-    H --> I{ME tiếp nhận phiếu}
+    H --> I{ME tiếp nhận Ticket}
     I -- Không ai nhận --> I
     I -- ME bấm Tiếp nhận --> J["ME tiến hành sửa chữa (Trạng thái: In Progress)"]
     J --> K[ME hoàn thành sửa chữa, cập nhật vật tư tiêu hao]
-    K --> L["ME chụp ảnh bàn giao, chuyển trạng thái phiếu sang 'Completed'"]
+    K --> L["ME chụp ảnh bàn giao, chuyển trạng thái Ticket sang 'Completed'"]
     L --> M{Supervisor xét nghiệm thu}
     M -- Ký nghiệm thu --> N["Hệ thống lưu chữ ký, chuyển sang 'Approved'"]
-    M -- Từ chối kèm lý do --> O["Phiếu về 'Rejected' → lưu rejection_reason"]
+    M -- Từ chối kèm lý do --> O["Ticket về 'Rejected' → lưu rejection_reason"]
     O --> J
     N --> P["Hệ thống tự động chuyển trạng thái máy về 'Active'"]
     P --> Q([Kết thúc])
     D --> R{Báo nhầm / Hủy?}
-    R -- Hủy phiếu khi còn Pending --> S["Trạng thái: Cancelled — Máy về Active"]
+    R -- Hủy Ticket khi còn Pending --> S["Trạng thái: Cancelled — Máy về Active"]
     S --> Q
 ```
 
@@ -154,18 +152,18 @@ sequenceDiagram
 
     OP->>App: Quét mã QR & Chọn Báo lỗi SOS
     OP->>App: Nhập mô tả, chọn độ nghiêm trọng & chụp ảnh lỗi
-    App->>DB: addDoc / setDoc(work_orders collection, status: 'pending')
+    App->>DB: addDoc / setDoc(tickets collection, status: 'pending')
     Note over DB: Cloud Function lắng nghe onCreate
     DB-->>App: Xác nhận tạo thành công
-    App-->>OP: Hiển thị "Đã gửi yêu cầu thành công"
+    App-->>OP: Hiển thị "Đã gửi Ticket thành công"
 
     activate Function
-    DB->>Function: Event onCreate (work_order)
-    Function->>FCM: Gửi Push Payload (Tiêu đề: Máy X gặp sự cố SOS!)
+    DB->>Function: Event onCreate (ticket)
+    Function->>FCM: Gửi Push Payload (Tiêu đề: Ticket SOS: Máy X gặp sự cố!)
     deactivate Function
     FCM->>ME: Đẩy Notification thời gian thực tới điện thoại ME
-    ME->>App: Nhấn Notification → Xem chi tiết sự cố
-    App->>DB: runTransaction UPDATE work_orders (status='in_progress', assignee_id=me_id)
+    ME->>App: Nhấn Notification → Xem chi tiết Ticket
+    App->>DB: runTransaction UPDATE tickets (status='in_progress', assignee_id=me_id)
     Note over DB: Nếu đã có ME khác nhận trước → Transaction abort (Race condition handled)
 ```
 
@@ -179,7 +177,7 @@ sequenceDiagram
     participant DB as Cloud Firestore
     participant Store as Firebase Storage
 
-    ME->>App: Xem danh sách Work Order & Chọn "Tiếp nhận"
+    ME->>App: Xem danh sách Ticket & Chọn "Tiếp nhận"
     App->>DB: runTransaction UPDATE status='in_progress'
     DB-->>App: Cập nhật thành công — ghi nhận claimed_at
     ME->>App: Tiến hành sửa chữa & cập nhật vật tư tiêu hao
@@ -187,7 +185,7 @@ sequenceDiagram
     App->>Store: Upload ảnh bằng chứng lên Firebase Storage
     Store-->>App: Trả về Download URL
     ME->>App: Chọn "Hoàn thành"
-    App->>DB: UPDATE work_orders document (status='completed', downtime_end=now())
+    App->>DB: UPDATE tickets document (status='completed', downtime_end=now())
     DB-->>App: Ghi nhận dữ liệu thành công
     App-->>ME: Hiển thị "Đang đợi Quản đốc nghiệm thu"
 ```
@@ -203,7 +201,7 @@ sequenceDiagram
     participant Store as Firebase Storage
 
     Note over DB: Cloud Function tự sinh PM khi running_hours >= scheduled_hours
-    ME->>App: Xem danh sách Work Order & Chọn phiếu PM
+    ME->>App: Xem danh sách bảo trì PM & Chọn phiếu PM
     App->>DB: UPDATE pm_checklists SET status='in_progress'
     ME->>App: Tick từng hạng mục checklist
     ME->>App: Chụp ảnh linh kiện mới thay thế (bắt buộc với mục photo_required)
@@ -226,20 +224,20 @@ sequenceDiagram
     participant Store as Firebase Storage
     participant DB as Cloud Firestore
 
-    SV->>App: Mở danh sách chờ nghiệm thu → Chọn phiếu
+    SV->>App: Mở danh sách chờ nghiệm thu → Chọn Ticket
     SV->>App: Xem tóm tắt: máy, kỹ sư, vật tư đã thay, tổng downtime
     SV->>App: Vẽ chữ ký tay trực tiếp lên màn hình cảm ứng
     alt Supervisor chấp nhận
         SV->>App: Xác nhận nghiệm thu
         App->>Store: Upload ảnh chữ ký lên Firebase Storage (signatures/)
         Store-->>App: Trả về Signature Image URL
-        App->>DB: UPDATE work_orders SET status='approved', signature_url=url
+        App->>DB: UPDATE tickets SET status='approved', signature_url=url
         Note over DB: Cloud Function tự động đổi trạng thái máy về 'active'
         DB-->>App: Cập nhật thành công
         App-->>SV: "Thiết bị đã hoạt động trở lại"
     else Supervisor từ chối
         SV->>App: Bấm "Từ chối" & nhập lý do
-        App->>DB: UPDATE work_orders SET status='rejected', rejection_reason=reason, rejected_by=sv_id
+        App->>DB: UPDATE tickets SET status='rejected', rejection_reason=reason, rejected_by=sv_id
         DB-->>App: Cập nhật thành công
         App-->>SV: "Đã gửi yêu cầu làm lại cho kỹ sư"
     end
@@ -258,20 +256,20 @@ stateDiagram-v2
     Active --> Maintenance : Đến mốc số giờ chạy máy tự động sinh PM
     Repairing --> Active : Sửa xong & Supervisor ký nghiệm thu (Approved)
     Maintenance --> Active : Bảo trì xong & Supervisor ký nghiệm thu (Approved)
-    Repairing --> Active : Phiếu SOS bị hủy (Cancelled)
+    Repairing --> Active : Ticket SOS bị hủy (Cancelled)
     Active --> Inactive : Ngừng hoạt động (Thanh lý / Hỏng nặng)
     Repairing --> Inactive : Đánh giá không thể sửa chữa
     Inactive --> [*]
 ```
 
-### 5.2. Trạng thái Phiếu công việc (Work Order / PM Checklist States)
+### 5.2. Trạng thái Ticket Sự cố & Phiếu Bảo trì (Ticket / PM Checklist States)
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Pending : Operator tạo phiếu SOS / Hệ thống tự sinh PM
+    [*] --> Pending : Operator tạo Ticket SOS / Hệ thống tự sinh PM
     Pending --> In_Progress : ME bấm "Tiếp nhận" (optimistic lock)
     Pending --> Cancelled : Operator/Supervisor hủy khi chưa có ME nhận
-    In_Progress --> Pending : ME trả lại phiếu (chưa có người khác nhận)
+    In_Progress --> Pending : ME trả lại Ticket (chưa có người khác nhận)
     In_Progress --> Completed : ME hoàn thành & chụp ảnh bằng chứng
     Completed --> Approved : Supervisor ký nghiệm thu
     Completed --> Rejected : Supervisor từ chối kèm lý do
@@ -346,7 +344,7 @@ classDiagram
         +changeStatus()
     }
 
-    class WorkOrder {
+    class Ticket {
         +UUID id
         +UUID clientGeneratedId
         +UUID workshopId
@@ -404,7 +402,7 @@ classDiagram
 
     class SparePartLog {
         +UUID id
-        +UUID workOrderId
+        +UUID ticketId
         +UUID pmChecklistId
         +String partName
         +int quantity
@@ -415,7 +413,7 @@ classDiagram
 
     class SparePartsRequest {
         +UUID id
-        +UUID workOrderId
+        +UUID ticketId
         +UUID pmChecklistId
         +UUID requestedBy
         +String partName
@@ -437,14 +435,14 @@ classDiagram
         +UUID updatedBy
     }
 
-    UserProfile "1" -- "0..*" WorkOrder : "báo lỗi / tiếp nhận / nghiệm thu"
+    UserProfile "1" -- "0..*" Ticket : "báo lỗi / tiếp nhận / nghiệm thu"
     UserProfile "1" -- "0..*" PmChecklist : "thực hiện / nghiệm thu"
-    Machine "1" -- "0..*" WorkOrder : "phát sinh sự cố"
+    Machine "1" -- "0..*" Ticket : "phát sinh sự cố"
     Machine "1" -- "0..*" PmChecklist : "bảo trì định kỳ"
     PmChecklist "1" *-- "1..*" PmChecklistItem : "bao gồm các hạng mục"
-    WorkOrder "1" -- "0..*" SparePartLog : "ghi nhận vật tư"
+    Ticket "1" -- "0..*" SparePartLog : "ghi nhận vật tư"
     PmChecklist "1" -- "0..*" SparePartLog : "ghi nhận vật tư"
-    WorkOrder "1" -- "0..*" SparePartsRequest : "đề xuất linh kiện"
+    Ticket "1" -- "0..*" SparePartsRequest : "đề xuất linh kiện"
     Machine "1" -- "1" WorkshopConfig : "cấu hình theo model"
 ```
 
@@ -502,11 +500,11 @@ Tài liệu này chi tiết hóa cấu trúc lưu trữ NoSQL trên **Cloud Fire
 
 ```mermaid
 erDiagram
-    users ||--o{ work_orders : "reporter / assignee / supervisor"
+    users ||--o{ tickets : "reporter / assignee / supervisor"
     users ||--o{ pm_checklists : "assignee / supervisor"
     users ||--o{ spare_parts_requests : "requested_by / approved_by"
     users ||--o{ running_hours_log : "logged_by"
-    machines ||--o{ work_orders : "phát sinh sự cố SOS"
+    machines ||--o{ tickets : "phát sinh sự cố SOS"
     machines ||--o{ pm_checklists : "bảo trì định kỳ PM"
     machines ||--o{ running_hours_log : "theo dõi giờ chạy"
     workshop_configs ||--|| machines : "cấu hình mốc PM theo model"
@@ -566,12 +564,12 @@ Document ID = `machine_model` (Mỗi model máy có 1 cấu hình ngưỡng mặ
 
 ---
 
-#### 4. Collection `work_orders` — Phiếu báo sự cố khẩn cấp (SOS Breakdown)
-Document ID = `work_order_id` (Tự sinh hoặc dùng `client_generated_id`).
+#### 4. Collection `tickets` — Ticket báo sự cố khẩn cấp (SOS Breakdown Ticket)
+Document ID = `ticket_id` (Tự sinh hoặc dùng `client_generated_id`).
 
 | Thuộc tính | Kiểu dữ liệu | Mô tả & Ràng buộc |
 | :--- | :--- | :--- |
-| `work_order_id` | `string` | ID phiếu công việc (Document ID) |
+| `ticket_id` | `string` | ID Ticket sự cố (Document ID) |
 | `client_generated_id` | `string` | UUID do app mobile tạo offline (Unique, chống trùng khi sync) |
 | `machine_id` | `string` | ID máy phát sinh sự cố |
 | `machine_code` | `string` | Mã máy (Denormalized để hiển thị nhanh danh sách) |
@@ -591,11 +589,11 @@ Document ID = `work_order_id` (Tự sinh hoặc dùng `client_generated_id`).
 | `supervisor_signature_url` | `string` \| `null` | URL ảnh chữ ký tay nghiệm thu (PNG) |
 | `rejection_reason` | `string` \| `null` | Lý do Quản đốc từ chối nghiệm thu |
 | `rejected_by` | `string` \| `null` | `uid` Quản đốc từ chối |
-| `cancelled_at` | `timestamp` \| `null` | Thời điểm hủy phiếu |
-| `cancellation_reason` | `string` \| `null` | Lý do hủy phiếu |
-| `cancelled_by` | `string` \| `null` | `uid` người hủy phiếu |
+| `cancelled_at` | `timestamp` \| `null` | Thời điểm hủy ticket |
+| `cancellation_reason` | `string` \| `null` | Lý do hủy ticket |
+| `cancelled_by` | `string` \| `null` | `uid` người hủy ticket |
 | `spare_part_logs` | `array<map>` | Danh sách vật tư tiêu hao đã tự lấy nhúng trực tiếp:<br>`[{ part_name: "Dầu 46#", quantity: 5, unit: "lít", logged_by: "uid", logged_at: timestamp }]` |
-| `created_at` | `timestamp` | Thời điểm tạo phiếu SOS |
+| `created_at` | `timestamp` | Thời điểm tạo ticket SOS |
 
 ---
 
@@ -629,8 +627,8 @@ Document ID = `request_id`.
 | Thuộc tính | Kiểu dữ liệu | Mô tả & Ràng buộc |
 | :--- | :--- | :--- |
 | `request_id` | `string` | ID đề xuất linh kiện (Document ID) |
-| `parent_type` | `string` | Thuộc phiếu nào: `'work_order'` \| `'pm_checklist'` |
-| `parent_id` | `string` | ID của `work_order` hoặc `pm_checklist` tương ứng |
+| `parent_type` | `string` | Thuộc loại nào: `'ticket'` \| `'pm_checklist'` |
+| `parent_id` | `string` | ID của `ticket` hoặc `pm_checklist` tương ứng |
 | `machine_code` | `string` | Mã máy cần thay linh kiện |
 | `requested_by` | `string` | `uid` ME gửi đề xuất |
 | `requested_by_name` | `string` | Tên ME gửi đề xuất (Denormalized) |
@@ -706,8 +704,8 @@ service cloud.firestore {
       allow write: if isSupervisor(); // Chỉ Supervisor được sửa cấu hình ngưỡng
     }
 
-    // Work Orders Collection
-    match /work_orders/{orderId} {
+    // Tickets Collection
+    match /tickets/{ticketId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();
       allow update: if isAuthenticated();
@@ -743,7 +741,6 @@ service cloud.firestore {
 
 Để các màn hình Mobile truy vấn nhanh với số lượng lớn bản ghi, cần tạo các Composite Indexes sau trên Firebase Console:
 
-1. **`work_orders`**: `status` (Ascending) + `severity` (Descending) + `created_at` (Descending) — Phục vụ màn hình danh sách phiếu cho Kỹ sư ME.
+1. **`tickets`**: `status` (Ascending) + `severity` (Descending) + `created_at` (Descending) — Phục vụ màn hình danh sách Ticket cho Kỹ sư ME.
 2. **`running_hours_log`**: `machine_id` (Ascending) + `logged_at` (Descending) — Phục vụ lấy chỉ số giờ chạy lần nhập gần nhất của máy.
 3. **`spare_parts_requests`**: `status` (Ascending) + `created_at` (Descending) — Phục vụ Quản đốc xem danh sách đề xuất cần duyệt.
-

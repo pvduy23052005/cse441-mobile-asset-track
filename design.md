@@ -21,7 +21,7 @@ Tài liệu này chuẩn hóa toàn bộ thiết kế giao diện ứng dụng d
   - 🟠 **High**: `#EA580C` (Cam - Ảnh hưởng năng suất)
   - 🟡 **Medium**: `#D97706` (Vàng - Lỗi nhẹ)
   - 🔵 **Low**: `#2563EB` (Xanh dương - Cảnh báo nhỏ)
-- **Cảnh báo Offline (NFR-06 Banner)**: `#FEF2F2` nền đỏ nhạt + Chữ `#991B1B` đỏ đậm ("⚠️ Đang offline — Phiếu sẽ tự đồng bộ khi có mạng").
+- **Cảnh báo Offline (NFR-06 Banner)**: `#FEF2F2` nền đỏ nhạt + Chữ `#991B1B` đỏ đậm ("⚠️ Đang offline — Ticket sẽ tự đồng bộ khi có mạng").
 
 ### 1.2. Quy chuẩn Tương tác Cảm ứng & Đeo găng tay (NFR-05 Compliance)
 - **Kích thước Nút (Touch Target)**: Tối thiểu `48 × 48dp` cho tất cả các nút hành động quan trọng (`Gửi SOS`, `Tiếp nhận`, `Ký tên`, `Tích checklist`).
@@ -41,7 +41,7 @@ graph TD
     B --> B2[2. Khai báo Giờ chạy / KM]
     B --> B3[3. Báo lỗi SOS Khẩn cấp + Ảnh]
 
-    C --> C1[4. Tiếp nhận phiếu SOS Push Noti]
+    C --> C1[4. Tiếp nhận Ticket SOS Push Noti]
     C --> C2[5. Thực hiện PM Checklist + Ảnh bằng chứng]
     C --> C3[6. Ghi log / Đề xuất Vật tư Tủ nhanh]
 
@@ -68,7 +68,7 @@ graph TD
   - **Cẩm năng Xử lý Lỗi nhanh**: Accordion hướng dẫn khắc phục nhanh các lỗi thường gặp.
   - **Nút hành động góc dưới**:
     - Nút phụ: `[Cập nhật giờ máy chạy]` (Outlined Button).
-    - Nút chính nổi bật: `[🚨 BÁO LỖI SOS KHẤN CẤP 🚨]` (Big Red Elevated Button, height `56dp`).
+    - Nút chính nổi bật: `[🚨 BÁO LỖI SOS KHẨN CẤP 🚨]` (Big Red Elevated Button, height `56dp`).
 
 #### Màn hình B: Popup Khai báo Giờ chạy / KM (Running Hours Logging — Feature 2)
 - **Đường dẫn**: Dialog Popup góc dưới màn hình.
@@ -78,7 +78,7 @@ graph TD
   - Radio chọn ca: `Đầu ca` | `Cuối ca`.
 - **Nút bấm**: `[Hủy]` | `[Lưu giờ chạy]`.
 
-#### Màn hình C: Tạo Phiếu Báo Lỗi Khẩn Cấp (Breakdown SOS Creation — Feature 3 & 4)
+#### Màn hình C: Tạo Ticket Báo Lỗi Khẩn Cấp (Breakdown SOS Creation — Feature 3 & 4)
 - **Đường dẫn**: `/sos-create`
 - **Thành phần UI**:
   - **Chọn Mức độ Nghiêm trọng (Severity Segmented Control)**: 4 pills `Low`, `Medium`, `High`, `Critical` (Critical highlighted màu đỏ).
@@ -86,21 +86,21 @@ graph TD
   - **Đính kèm Ảnh Hiện trạng**:
     - Nút bấm biểu tượng Camera để chụp ảnh trực tiếp từ thiết bị.
     - Grid danh sách ảnh thumbnail đã chụp kèm biểu tượng thùng rác để xóa bớt.
-  - **Banner Cảnh báo Offline (nếu mất mạng)**: Hiển thị banner đỏ thông báo phiếu sẽ được lưu vào queue và đồng bộ khi có mạng.
-  - **Nút bấm**: `[GỬI PHIẾU SOS KHẨN CẤP]` (Primary Red Button).
+  - **Banner Cảnh báo Offline (nếu mất mạng)**: Hiển thị banner đỏ thông báo Ticket sẽ được lưu vào queue và đồng bộ khi có mạng.
+  - **Nút bấm**: `[GỬI TICKET SOS KHẨN CẤP]` (Primary Red Button).
 
 ---
 
 ### 📌 MÀN HÌNH DÀNH CHO KỸ SƯ BẢO TRÌ (ME ENGINEER)
 
-#### Màn hình D: Danh sách Công việc Work Order (Work Order List View — Feature 5 & 9)
-- **Đường dẫn**: `/me/work-orders`
+#### Màn hình D: Danh sách Ticket & Công việc (Ticket List View — Feature 5 & 9)
+- **Đường dẫn**: `/me/tickets`
 - **Tab Filter**: `Tất cả` | `Chờ tiếp nhận (Pending)` | `Đang xử lý (In Progress)` | `Hoàn thành (Completed)`.
-- **Card Item phiếu công việc**:
+- **Card Item Ticket / Phiếu công việc**:
   - Tag phân loại: Badge `🔴 SOS - CRITICAL` hoặc `🔵 PM - BẢO TRÌ MỐC 500H`.
   - Mã máy & Tên máy (`MC-102 - Máy dập thủy lực`).
   - Thời gian khởi tạo (`14 phút trước`).
-  - Nút bấm tiếp nhận nhanh `[Tiếp nhận]` (Xử lý Race Condition: Nếu đã có ME khác bấm tiếp nhận trước, hiển thị Toast cảnh báo "Phiếu đã được tiếp nhận bởi kỹ sư khác").
+  - Nút bấm tiếp nhận nhanh `[Tiếp nhận]` (Xử lý Race Condition: Nếu đã có ME khác bấm tiếp nhận trước, hiển thị Toast cảnh báo "Ticket đã được tiếp nhận bởi kỹ sư khác").
 
 #### Màn hình E: Thực hiện PM Checklist & Tải ảnh bằng chứng (PM Checklist Execution — Feature 7 & 8)
 - **Đường dẫn**: `/me/pm-checklist/:id`
@@ -113,7 +113,7 @@ graph TD
   - **Nút bấm hoàn thành**: `[Hoàn thành & Gửi nghiệm thu]` (Disabled màu xám khi chưa tích đủ 100% hạng mục).
 
 #### Màn hình F: Ghi log & Đề xuất Vật tư Thay thế (Spare Parts Logging & Approval — Feature 6)
-- **Đường dẫn**: `/me/spare-parts-log/:work_order_id`
+- **Đường dẫn**: `/me/spare-parts-log/:ticket_id`
 - **Thành phần UI**:
   - **Danh mục Vật tư Tủ nhanh tại xưởng**: Dropdown chọn phụ tùng tiêu hao (Dầu 46#, Bu-lông M12, Gioăng cao su...) + Nhập Số lượng.
   - **Phụ tùng Giá trị cao (> Ngưỡng duyệt)**: Nếu chọn linh kiện có đơn giá vượt ngưỡng cấu hình (VD: > 2.000.000đ), hệ thống tự động gắn tag `Chờ Supervisor Phê duyệt`.
@@ -131,7 +131,7 @@ graph TD
     - Vùng cảm ứng ký tên bằng tay (kích thước tối thiểu `300 × 150dp`).
     - Nút `[Xóa chữ ký]` để ký lại.
   - **Nút thao tác đôi**:
-    - Nút `[✗ Từ chối]` (Màu đỏ): Mở dialog bắt buộc nhập lý do từ chối, chuyển phiếu về trạng thái `REJECTED` để Kỹ sư sửa lại.
+    - Nút `[✗ Từ chối]` (Màu đỏ): Mở dialog bắt buộc nhập lý do từ chối, chuyển Ticket về trạng thái `REJECTED` để Kỹ sư sửa lại.
     - Nút `[✓ Xác nhận nghiệm thu]` (Màu xanh lá): Disabled khi canvas chữ ký còn trống. Sau khi lưu, tự động đưa máy về trạng thái `Active`.
 
 #### Màn hình H: Dashboard Giám sát Downtime & Trạng thái (Real-time Dashboard — Feature 12)
@@ -166,32 +166,32 @@ graph TD
 
 ---
 
-## 4. Luồng Chuyển đổi Trạng thái Phiếu (Work Order State Machine Flow)
+## 4. Luồng Chuyển đổi Trạng thái Ticket & Phiếu (Ticket State Machine Flow)
 
 ```
-                       [Tạo Phiếu SOS / PM]
-                                │
-                                ▼
-                             PENDING
-                                │
-          ┌─────────────────────┴─────────────────────┐
-          │ (Hủy phiếu)                               │ (ME Tiếp nhận - Optimistic Lock)
-          ▼                                           ▼
-      CANCELLED                                  IN_PROGRESS
-          │                                           │
-   [Máy về Active]                                    │ (ME Hoàn thành)
-                                                      ▼
-                                                  COMPLETED
-                                                      │
-                                                      ▼
-                                            (Supervisor Kiểm tra)
-                                                      │
-                       ┌──────────────────────────────┴──────────────────────────────┐
-                       │ (Từ chối - Nhập lý do)                                      │ (Ký nghiệm thu)
-                       ▼                                                             ▼
-                   REJECTED ───────────────────→ (ME Sửa lại)                   APPROVED
-                                                                                     │
-                                                                              [Máy về Active]
+                       [Tạo Ticket SOS / PM]
+                                 │
+                                 ▼
+                              PENDING
+                                 │
+           ┌─────────────────────┴─────────────────────┐
+           │ (Hủy Ticket)                              │ (ME Tiếp nhận - Optimistic Lock)
+           ▼                                           ▼
+       CANCELLED                                  IN_PROGRESS
+           │                                           │
+    [Máy về Active]                                    │ (ME Hoàn thành)
+                                                       ▼
+                                                   COMPLETED
+                                                       │
+                                                       ▼
+                                             (Supervisor Kiểm tra)
+                                                       │
+                        ┌──────────────────────────────┴──────────────────────────────┐
+                        │ (Từ chối - Nhập lý do)                                      │ (Ký nghiệm thu)
+                        ▼                                                             ▼
+                    REJECTED ───────────────────→ (ME Sửa lại)                   APPROVED
+                                                                                      │
+                                                                               [Máy về Active]
 ```
 
 ---
@@ -199,8 +199,8 @@ graph TD
 ## 5. Quy trình Xử lý Chế độ Ngoại tuyến (Offline Mode Handling — NFR-06)
 
 1. **Hiển thị Banner**: Ngay khi mất kết nối Internet, ứng dụng hiển thị Banner đỏ cố định trên cùng màn hình: *"⚠️ Đang offline — Dữ liệu sẽ tự động đồng bộ khi có kết nối"*.
-2. **Local Queue Storage**: Toàn bộ thao tác ghi (Nhập giờ chạy, Tạo phiếu SOS khẩn cấp) khi offline được lưu tạm vào **SQLite / Local Storage Persistence**.
+2. **Local Queue Storage**: Toàn bộ thao tác ghi (Nhập giờ chạy, Tạo Ticket SOS khẩn cấp) khi offline được lưu tạm vào **SQLite / Local Storage Persistence**.
 3. **Xử lý Ảnh Offline**: Ảnh chụp lỗi được lưu dưới dạng file local path (`path_provider`). Khi thiết bị có mạng trở lại:
    - App ưu tiên upload ảnh lên **Firebase Storage** trước để lấy Download URL.
-   - Sau khi upload ảnh thành công, app mới gửi payload Work Order lên **Cloud Firestore**.
-4. **Tránh trùng lặp (Idempotency)**: Sử dụng mã `client_generated_id` (UUID v4 do App tự tạo) làm Document ID trên Firestore để tránh tạo trùng lớp phiếu khi retry đồng bộ nhiều lần.
+   - Sau khi upload ảnh thành công, app mới gửi payload Ticket lên **Cloud Firestore**.
+4. **Tránh trùng lặp (Idempotency)**: Sử dụng mã `client_generated_id` (UUID v4 do App tự tạo) làm Document ID trên Firestore để tránh tạo trùng lớp Ticket khi retry đồng bộ nhiều lần.
