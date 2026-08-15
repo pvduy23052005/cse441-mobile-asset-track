@@ -42,6 +42,8 @@ export class TicketsController {
       );
     }
 
+    
+
     const ticket = await this.ticketsService.create(reporterId, dto, req.user?.role);
 
     this.notificationsGateway.emitTicketEvent(TicketWsEvent.CREATED, {

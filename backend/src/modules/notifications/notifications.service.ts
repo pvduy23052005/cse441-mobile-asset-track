@@ -34,8 +34,8 @@ export class NotificationsService {
       ...(dto.target_id && { target_id: dto.target_id }),
     };
 
-    const docRef = await this.collection.add(dataToSave);
-    const result: NotificationItem = { id: docRef.id, ...dataToSave };
+    const documentReference = await this.collection.add(dataToSave);
+    const result: NotificationItem = { id: documentReference.id, ...dataToSave };
 
     this.notificationsGateway.emitNotification(result);
     return result;
@@ -45,60 +45,75 @@ export class NotificationsService {
     const notificationsMap = new Map<string, NotificationItem>();
 
     if (userId) {
-      const snap = await this.collection.where('user_id', '==', userId).get();
-      snap.forEach((doc) => {
-        notificationsMap.set(doc.id, { id: doc.id, ...(doc.data() as FirestoreNotification) });
+      const userQuerySnapshot = await this.collection.where('user_id', '==', userId).get();
+      userQuerySnapshot.forEach((documentSnapshot) => {
+        notificationsMap.set(documentSnapshot.id, {
+          id: documentSnapshot.id,
+          ...(documentSnapshot.data() as FirestoreNotification),
+        });
       });
     }
 
     if (userRole) {
-      const snap = await this.collection.where('target_role', '==', userRole).get();
-      snap.forEach((doc) => {
-        notificationsMap.set(doc.id, { id: doc.id, ...(doc.data() as FirestoreNotification) });
+      const roleQuerySnapshot = await this.collection.where('target_role', '==', userRole).get();
+      roleQuerySnapshot.forEach((documentSnapshot) => {
+        notificationsMap.set(documentSnapshot.id, {
+          id: documentSnapshot.id,
+          ...(documentSnapshot.data() as FirestoreNotification),
+        });
       });
     }
 
     if (notificationsMap.size === 0) {
-      const snap = await this.collection.limit(20).get();
-      snap.forEach((doc) => {
-        notificationsMap.set(doc.id, { id: doc.id, ...(doc.data() as FirestoreNotification) });
+      const globalQuerySnapshot = await this.collection.limit(20).get();
+      globalQuerySnapshot.forEach((documentSnapshot) => {
+        notificationsMap.set(documentSnapshot.id, {
+          id: documentSnapshot.id,
+          ...(documentSnapshot.data() as FirestoreNotification),
+        });
       });
     }
 
     return Array.from(notificationsMap.values()).sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      (firstNotification, secondNotification) =>
+        new Date(secondNotification.created_at).getTime() -
+        new Date(firstNotification.created_at).getTime(),
     );
   }
 
   async getUnreadCount(userId: string, userRole?: string): Promise<number> {
-    const list = await this.getNotificationsForUser(userId, userRole);
-    return list.filter((item) => !item.is_read).length;
+    const notificationsList = await this.getNotificationsForUser(userId, userRole);
+    return notificationsList.filter((notification) => !notification.is_read).length;
   }
 
   async markAsRead(notificationId: string): Promise<NotificationItem> {
-    const docRef = this.collection.doc(notificationId);
-    const doc = await docRef.get();
+    const documentReference = this.collection.doc(notificationId);
+    const documentSnapshot = await documentReference.get();
 
-    if (!doc.exists) {
+    if (!documentSnapshot.exists) {
       throw new NotFoundException(`Không tìm thấy thông báo '${notificationId}'`);
     }
 
-    await docRef.update({ is_read: true });
-    return { id: doc.id, ...(doc.data() as FirestoreNotification), is_read: true };
+    await documentReference.update({ is_read: true });
+    return {
+      id: documentSnapshot.id,
+      ...(documentSnapshot.data() as FirestoreNotification),
+      is_read: true,
+    };
   }
 
   async markAllAsRead(userId: string, userRole?: string): Promise<{ updatedCount: number }> {
-    const list = await this.getNotificationsForUser(userId, userRole);
-    const unreadList = list.filter((item) => !item.is_read);
+    const notificationsList = await this.getNotificationsForUser(userId, userRole);
+    const unreadNotifications = notificationsList.filter((notification) => !notification.is_read);
 
-    if (unreadList.length === 0) return { updatedCount: 0 };
+    if (unreadNotifications.length === 0) return { updatedCount: 0 };
 
     const batch = this.firebaseService.firestore.batch();
-    unreadList.forEach((item) => {
-      batch.update(this.collection.doc(item.id), { is_read: true });
+    unreadNotifications.forEach((notification) => {
+      batch.update(this.collection.doc(notification.id), { is_read: true });
     });
 
     await batch.commit();
-    return { updatedCount: unreadList.length };
+    return { updatedCount: unreadNotifications.length };
   }
 }

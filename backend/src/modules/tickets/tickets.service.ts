@@ -30,10 +30,10 @@ export class TicketsService {
     return this.firebaseService.firestore.collection(this.collectionName);
   }
 
-  private mapTicket(doc: FirebaseFirestore.DocumentSnapshot): Ticket {
-    const data = (doc.data() as FirestoreTicket) || {};
+  private mapTicket(documentSnapshot: FirebaseFirestore.DocumentSnapshot): Ticket {
+    const data = (documentSnapshot.data() as FirestoreTicket) || {};
     return {
-      id: doc.id,
+      id: documentSnapshot.id,
       machine_id: data.machine_id || '',
       reporter_id: data.reporter_id || '',
       engineer_id: data.engineer_id ?? null,
@@ -72,22 +72,22 @@ export class TicketsService {
     }
 
     const firestore = this.firebaseService.firestore;
-    const machinesCol = firestore.collection(FirestoreCollection.MACHINES);
-    let machineDoc = await machinesCol.doc(machineId).get();
+    const machinesCollection = firestore.collection(FirestoreCollection.MACHINES);
+    let machineDoc = await machinesCollection.doc(machineId).get();
 
     if (!machineDoc.exists) {
-      const query = await machinesCol.where('code', '==', machineId).limit(1).get();
-      if (query.empty) {
+      const machineQuery = await machinesCollection.where('code', '==', machineId).limit(1).get();
+      if (machineQuery.empty) {
         throw new NotFoundException(`Không tìm thấy thiết bị với ID hoặc mã '${machineId}'`);
       }
-      machineDoc = query.docs[0];
+      machineDoc = machineQuery.docs[0];
     }
 
     const machineData = (machineDoc.data() as FirestoreMachine) || {};
     const reporterDoc = await firestore.collection('users').doc(reporterId).get();
     const reporterData = (reporterDoc.data() as FirestoreUser) || {};
 
-    const now = new Date().toISOString();
+    const currentTime = new Date().toISOString();
     const severity = dto.severity || TicketSeverity.MEDIUM;
 
     const ticketData: FirestoreTicket = {
@@ -98,7 +98,7 @@ export class TicketsService {
       status: TicketStatus.OPEN,
       description: dto.description || '',
       images_urls: dto.images_urls || [],
-      downtime_start: dto.downtime_start || now,
+      downtime_start: dto.downtime_start || currentTime,
       downtime_end: null,
       claimed_at: null,
       rejection_reason: null,
@@ -109,12 +109,12 @@ export class TicketsService {
       reporter_name: reporterData.fullName || reporterData.full_name || '',
       reporter_email: reporterData.email || '',
       engineer_name: '',
-      created_at: now,
-      updated_at: now,
+      created_at: currentTime,
+      updated_at: currentTime,
     };
 
-    const docRef = await this.collection.add(ticketData);
-    this.logger.log(`Đã tạo Ticket ${docRef.id} cho máy ${machineDoc.id} bởi user ${reporterId} (${userRole || 'N/A'})`);
+    const documentReference = await this.collection.add(ticketData);
+    this.logger.log(`Đã tạo Ticket ${documentReference.id} cho máy ${machineDoc.id} bởi user ${reporterId} (${userRole || 'N/A'})`);
 
     const isCritical = severity === TicketSeverity.CRITICAL || severity === TicketSeverity.HIGH;
     await this.notificationsService.createNotification({
@@ -122,10 +122,10 @@ export class TicketsService {
       message: `Máy ${machineData.code || machineDoc.id} (${machineData.name || 'Thiết bị'}) vừa báo sự cố [${severity}]: ${dto.description || 'Cần xử lý'}`,
       type: isCritical ? NotificationTypeEnum.SOS : NotificationTypeEnum.SYSTEM,
       target_role: 'ME_ENGINEER',
-      target_id: docRef.id,
+      target_id: documentReference.id,
     });
 
-    return { id: docRef.id, ...ticketData };
+    return { id: documentReference.id, ...ticketData };
   }
 
   async getAllTickets(filters?: {
@@ -141,16 +141,16 @@ export class TicketsService {
 
     const snapshot = await query.get();
     return snapshot.docs
-      .map((doc) => this.mapTicket(doc))
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      .map((documentSnapshot) => this.mapTicket(documentSnapshot))
+      .sort((firstTicket, secondTicket) => new Date(secondTicket.created_at).getTime() - new Date(firstTicket.created_at).getTime());
   }
 
   async getTicketById(id: string): Promise<Ticket> {
-    const doc = await this.collection.doc(id).get();
-    if (!doc.exists) {
+    const documentSnapshot = await this.collection.doc(id).get();
+    if (!documentSnapshot.exists) {
       throw new NotFoundException(`Ticket with ID '${id}' not found`);
     }
-    return this.mapTicket(doc);
+    return this.mapTicket(documentSnapshot);
   }
 
   async getMyTickets(reporterId: string): Promise<Ticket[]> {
@@ -158,49 +158,49 @@ export class TicketsService {
   }
 
   async cancelTicket(id: string, reporterId: string, reason?: string): Promise<Ticket> {
-    const docRef = this.collection.doc(id);
-    const doc = await docRef.get();
-    if (!doc.exists) {
+    const documentReference = this.collection.doc(id);
+    const documentSnapshot = await documentReference.get();
+    if (!documentSnapshot.exists) {
       throw new NotFoundException(`Ticket with ID '${id}' not found`);
     }
 
-    const data = doc.data() as FirestoreTicket;
-    if (data.reporter_id !== reporterId) {
+    const ticketData = documentSnapshot.data() as FirestoreTicket;
+    if (ticketData.reporter_id !== reporterId) {
       throw new ForbiddenException('Bạn chỉ có thể hủy phiếu sự cố do chính mình tạo ra');
     }
-    if (data.status !== TicketStatus.OPEN) {
+    if (ticketData.status !== TicketStatus.OPEN) {
       throw new BadRequestException('Chỉ có thể hủy phiếu sự cố khi đang ở trạng thái OPEN');
     }
 
-    const now = new Date().toISOString();
-    await docRef.update({
+    const currentTime = new Date().toISOString();
+    await documentReference.update({
       status: TicketStatus.CANCELLED,
-      cancelled_at: now,
+      cancelled_at: currentTime,
       cancelled_reason: reason || 'Người vận hành hủy báo nhầm',
-      updated_at: now,
+      updated_at: currentTime,
     });
 
     return this.getTicketById(id);
   }
 
   async claimTicket(id: string, engineerId: string): Promise<Ticket> {
-    const docRef = this.collection.doc(id);
-    const doc = await docRef.get();
-    if (!doc.exists) {
+    const documentReference = this.collection.doc(id);
+    const documentSnapshot = await documentReference.get();
+    if (!documentSnapshot.exists) {
       throw new NotFoundException(`Ticket with ID '${id}' not found`);
     }
 
-    const userDoc = await this.firebaseService.firestore.collection('users').doc(engineerId).get();
-    const u = (userDoc.data() as FirestoreUser) || {};
-    const engineerName = u.fullName || u.full_name || u.email || '';
+    const engineerDoc = await this.firebaseService.firestore.collection('users').doc(engineerId).get();
+    const engineerData = (engineerDoc.data() as FirestoreUser) || {};
+    const engineerName = engineerData.fullName || engineerData.full_name || engineerData.email || '';
 
-    const now = new Date().toISOString();
-    await docRef.update({
+    const currentTime = new Date().toISOString();
+    await documentReference.update({
       status: TicketStatus.IN_PROGRESS,
       engineer_id: engineerId,
       engineer_name: engineerName,
-      claimed_at: now,
-      updated_at: now,
+      claimed_at: currentTime,
+      updated_at: currentTime,
     });
 
     this.logger.log(`Ticket '${id}' đã được Kỹ sư '${engineerId}' tiếp nhận xử lý.`);
@@ -213,18 +213,18 @@ export class TicketsService {
     engineerId: string,
     usedSpareParts?: any[],
   ): Promise<Ticket> {
-    const docRef = this.collection.doc(id);
-    const doc = await docRef.get();
-    if (!doc.exists) {
+    const documentReference = this.collection.doc(id);
+    const documentSnapshot = await documentReference.get();
+    if (!documentSnapshot.exists) {
       throw new NotFoundException(`Ticket with ID '${id}' not found`);
     }
 
-    const now = new Date().toISOString();
-    await docRef.update({
+    const currentTime = new Date().toISOString();
+    await documentReference.update({
       status: TicketStatus.PENDING_APPROVAL,
-      downtime_end: now,
+      downtime_end: currentTime,
       used_spare_parts: usedSpareParts || [],
-      updated_at: now,
+      updated_at: currentTime,
     });
 
     this.logger.log(`Ticket '${id}' đã được Kỹ sư '${engineerId}' hoàn thành và gửi nghiệm thu.`);
@@ -233,17 +233,17 @@ export class TicketsService {
   }
 
   async rejectTicket(id: string, rejectionReason?: string): Promise<Ticket> {
-    const docRef = this.collection.doc(id);
-    const doc = await docRef.get();
-    if (!doc.exists) {
+    const documentReference = this.collection.doc(id);
+    const documentSnapshot = await documentReference.get();
+    if (!documentSnapshot.exists) {
       throw new NotFoundException(`Ticket with ID '${id}' not found`);
     }
 
-    const now = new Date().toISOString();
-    await docRef.update({
+    const currentTime = new Date().toISOString();
+    await documentReference.update({
       status: TicketStatus.REJECTED,
       rejection_reason: rejectionReason || 'Chưa đạt yêu cầu nghiệm thu',
-      updated_at: now,
+      updated_at: currentTime,
     });
 
     this.logger.log(`Ticket '${id}' đã bị Quản đốc từ chối nghiệm thu.`);
