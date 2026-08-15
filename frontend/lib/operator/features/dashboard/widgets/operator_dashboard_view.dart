@@ -1,69 +1,26 @@
 import 'package:flutter/material.dart';
-import '../../../../core/models/machine_model.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../providers/operator_dashboard_provider.dart';
+import '../../../providers/operator_machines_provider.dart';
+import '../../../providers/operator_tickets_provider.dart';
 import '../../../widgets/operator_qr_scanner_sheet.dart';
-import '../../machine/services/machine_service.dart';
 import '../../machine/widgets/machine_detail_modal.dart';
-import '../../ticket/services/operator_ticket_service.dart';
 import '../../ticket/widgets/sos_ticket_card.dart';
 import 'operator_machine_card.dart';
 import 'operator_pagination_controls.dart';
 import 'operator_qr_banner.dart';
 
-class OperatorDashboardView extends StatefulWidget {
+class OperatorDashboardView extends ConsumerStatefulWidget {
   const OperatorDashboardView({super.key});
 
   @override
-  State<OperatorDashboardView> createState() => _OperatorDashboardViewState();
+  ConsumerState<OperatorDashboardView> createState() =>
+      _OperatorDashboardViewState();
 }
 
-class _OperatorDashboardViewState extends State<OperatorDashboardView> {
-  final MachineService _machineService = MachineService();
-  final OperatorTicketService _ticketService = OperatorTicketService();
-
-  List<MachineModel> _machines = [];
-  List<Map<String, dynamic>> _tickets = [];
-
-  bool _isLoading = true;
-  int _currentMachinePage = 0;
-  static const int _itemsPerPage = 3;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadDashboardData();
-  }
-
-  Future<void> _loadDashboardData() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final machinesFuture = _machineService.getMachines();
-      final ticketsFuture = _ticketService.getMyTickets();
-
-      final results = await Future.wait([
-        machinesFuture,
-        ticketsFuture,
-      ]);
-
-      if (mounted) {
-        setState(() {
-          _machines = results[0] as List<MachineModel>;
-          _tickets = results[1] as List<Map<String, dynamic>>;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
+class _OperatorDashboardViewState
+    extends ConsumerState<OperatorDashboardView> {
   void _openQRScanner() async {
     final machine = await OperatorQRScannerSheet.show(context);
     if (machine != null && mounted) {
@@ -73,16 +30,43 @@ class _OperatorDashboardViewState extends State<OperatorDashboardView> {
 
   @override
   Widget build(BuildContext context) {
-    final totalPages =
-        (_machines.isEmpty) ? 1 : (_machines.length / _itemsPerPage).ceil();
-    final pagedMachines = _machines
-        .skip(_currentMachinePage * _itemsPerPage)
-        .take(_itemsPerPage)
+    final machinesAsync = ref.watch(operatorMachinesProvider);
+    final ticketsAsync = ref.watch(operatorTicketsProvider);
+    final currentMachinePage = ref.watch(operatorDashboardPageProvider);
+    final currentTicketPage = ref.watch(operatorTicketDashboardPageProvider);
+
+    final machines = machinesAsync.valueOrNull ?? [];
+    final tickets = ticketsAsync.valueOrNull ?? [];
+    final isLoading = machinesAsync.isLoading || ticketsAsync.isLoading;
+
+    // 1. Phân trang Danh sách máy
+    final totalMachinePages = (machines.isEmpty)
+        ? 1
+        : (machines.length / operatorDashboardItemsPerPage).ceil();
+    final safeMachinePage = currentMachinePage.clamp(0, totalMachinePages - 1);
+    final pagedMachines = machines
+        .skip(safeMachinePage * operatorDashboardItemsPerPage)
+        .take(operatorDashboardItemsPerPage)
+        .toList();
+
+    // 2. Phân trang Danh sách phiếu SOS
+    final totalTicketPages = (tickets.isEmpty)
+        ? 1
+        : (tickets.length / operatorTicketDashboardItemsPerPage).ceil();
+    final safeTicketPage = currentTicketPage.clamp(0, totalTicketPages - 1);
+    final pagedTickets = tickets
+        .skip(safeTicketPage * operatorTicketDashboardItemsPerPage)
+        .take(operatorTicketDashboardItemsPerPage)
         .toList();
 
     return RefreshIndicator(
       color: AppTheme.primaryColor,
-      onRefresh: _loadDashboardData,
+      onRefresh: () async {
+        await Future.wait([
+          ref.refresh(operatorMachinesProvider.future),
+          ref.refresh(operatorTicketsProvider.future),
+        ]);
+      },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -99,7 +83,7 @@ class _OperatorDashboardViewState extends State<OperatorDashboardView> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'DANH SÁCH MÁY PHỤ TRÁCH (${_machines.length})',
+                  'DANH SÁCH MÁY PHỤ TRÁCH (${machines.length})',
                   style: const TextStyle(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w800,
@@ -107,27 +91,26 @@ class _OperatorDashboardViewState extends State<OperatorDashboardView> {
                     letterSpacing: 0.3,
                   ),
                 ),
-                InkWell(
-                  onTap: () {
-                    if (_machines.isNotEmpty) {
-                      MachineDetailModal.show(context, _machines.first);
-                    }
-                  },
-                  child: const Text(
-                    'CHẠM XEM CHI TIẾT',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF059669),
+                if (machines.isNotEmpty)
+                  InkWell(
+                    onTap: () {
+                      MachineDetailModal.show(context, machines.first);
+                    },
+                    child: const Text(
+                      'CHẠM XEM CHI TIẾT',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF059669),
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
             const SizedBox(height: 10),
 
             // 3. Machines List
-            if (_isLoading && _machines.isEmpty) ...[
+            if (isLoading && machines.isEmpty) ...[
               const Center(
                 child: Padding(
                   padding: EdgeInsets.all(24.0),
@@ -135,7 +118,7 @@ class _OperatorDashboardViewState extends State<OperatorDashboardView> {
                       CircularProgressIndicator(color: AppTheme.primaryColor),
                 ),
               ),
-            ] else if (_machines.isEmpty) ...[
+            ] else if (machines.isEmpty) ...[
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
@@ -159,7 +142,7 @@ class _OperatorDashboardViewState extends State<OperatorDashboardView> {
                 itemBuilder: (ctx, index) {
                   final machine = pagedMachines[index];
                   final globalIndex =
-                      _currentMachinePage * _itemsPerPage + index;
+                      safeMachinePage * operatorDashboardItemsPerPage + index;
                   return OperatorMachineCard(
                     machine: machine,
                     index: globalIndex,
@@ -170,20 +153,24 @@ class _OperatorDashboardViewState extends State<OperatorDashboardView> {
 
               const SizedBox(height: 12),
 
-              // Pagination Controls
+              // Pagination Controls cho Máy Móc
               OperatorPaginationControls(
-                currentPage: _currentMachinePage,
-                totalPages: totalPages,
-                onPrevPressed: () {
-                  setState(() {
-                    _currentMachinePage--;
-                  });
-                },
-                onNextPressed: () {
-                  setState(() {
-                    _currentMachinePage++;
-                  });
-                },
+                currentPage: safeMachinePage,
+                totalPages: totalMachinePages,
+                onPrevPressed: safeMachinePage > 0
+                    ? () {
+                        ref
+                            .read(operatorDashboardPageProvider.notifier)
+                            .state = safeMachinePage - 1;
+                      }
+                    : null,
+                onNextPressed: safeMachinePage < totalMachinePages - 1
+                    ? () {
+                        ref
+                            .read(operatorDashboardPageProvider.notifier)
+                            .state = safeMachinePage + 1;
+                      }
+                    : null,
               ),
             ],
 
@@ -191,7 +178,7 @@ class _OperatorDashboardViewState extends State<OperatorDashboardView> {
 
             // 4. Section Header: Theo Dõi Phiếu Báo Lỗi SOS
             Text(
-              'THEO DÕI PHIẾU BÁO LỖI SOS (${_tickets.length})',
+              'THEO DÕI PHIẾU BÁO LỖI SOS (${tickets.length})',
               style: const TextStyle(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w800,
@@ -201,8 +188,8 @@ class _OperatorDashboardViewState extends State<OperatorDashboardView> {
             ),
             const SizedBox(height: 10),
 
-            // 5. Tickets List
-            if (_isLoading && _tickets.isEmpty) ...[
+            // 5. Tickets List Phân Trang
+            if (isLoading && tickets.isEmpty) ...[
               const Center(
                 child: Padding(
                   padding: EdgeInsets.all(24.0),
@@ -210,7 +197,7 @@ class _OperatorDashboardViewState extends State<OperatorDashboardView> {
                       CircularProgressIndicator(color: AppTheme.primaryColor),
                 ),
               ),
-            ] else if (_tickets.isEmpty) ...[
+            ] else if (tickets.isEmpty) ...[
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
@@ -242,15 +229,40 @@ class _OperatorDashboardViewState extends State<OperatorDashboardView> {
               ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: _tickets.length,
+                itemCount: pagedTickets.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (ctx, index) {
-                  final ticket = _tickets[index];
+                  final ticket = pagedTickets[index];
+                  final globalIndex =
+                      safeTicketPage * operatorTicketDashboardItemsPerPage +
+                          index;
                   return SosTicketCard(
                     ticket: ticket,
-                    index: index,
+                    index: globalIndex,
                   );
                 },
+              ),
+
+              const SizedBox(height: 12),
+
+              // Pagination Controls cho Phiếu Báo Lỗi SOS
+              OperatorPaginationControls(
+                currentPage: safeTicketPage,
+                totalPages: totalTicketPages,
+                onPrevPressed: safeTicketPage > 0
+                    ? () {
+                        ref
+                            .read(operatorTicketDashboardPageProvider.notifier)
+                            .state = safeTicketPage - 1;
+                      }
+                    : null,
+                onNextPressed: safeTicketPage < totalTicketPages - 1
+                    ? () {
+                        ref
+                            .read(operatorTicketDashboardPageProvider.notifier)
+                            .state = safeTicketPage + 1;
+                      }
+                    : null,
               ),
             ],
 

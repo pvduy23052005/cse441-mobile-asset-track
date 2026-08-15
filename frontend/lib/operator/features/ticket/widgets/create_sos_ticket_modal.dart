@@ -2,14 +2,15 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/models/machine_model.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../services/operator_ticket_service.dart';
+import '../../../providers/operator_tickets_provider.dart';
 import 'sos_image_attachment_section.dart';
 import 'sos_severity_selector.dart';
 import 'sos_symptom_selector.dart';
 
-class CreateSosTicketModal extends StatefulWidget {
+class CreateSosTicketModal extends ConsumerStatefulWidget {
   final MachineModel machine;
   final VoidCallback? onTicketCreated;
 
@@ -36,13 +37,13 @@ class CreateSosTicketModal extends StatefulWidget {
   }
 
   @override
-  State<CreateSosTicketModal> createState() => _CreateSosTicketModalState();
+  ConsumerState<CreateSosTicketModal> createState() =>
+      _CreateSosTicketModalState();
 }
 
-class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
+class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
   final _formKey = GlobalKey<FormState>();
   final _descriptionController = TextEditingController();
-  final _ticketService = OperatorTicketService();
   final _imagePicker = ImagePicker();
 
   String _selectedSeverity = 'CRITICAL';
@@ -234,12 +235,13 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
         '[SOS Ticket] Gửi yêu cầu SOS cho thiết bị: $targetMachineId | Severity: $_selectedSeverity | Ảnh: ${base64Images.length}',
       );
 
-      final result = await _ticketService.createTicket(
-        machineId: targetMachineId,
-        description: _descriptionController.text.trim(),
-        severity: _selectedSeverity,
-        imagesUrls: base64Images.isNotEmpty ? base64Images : null,
-      );
+      final result =
+          await ref.read(operatorTicketsProvider.notifier).createTicket(
+                machineId: targetMachineId,
+                description: _descriptionController.text.trim(),
+                severity: _selectedSeverity,
+                imagesUrls: base64Images.isNotEmpty ? base64Images : null,
+              );
 
       debugPrint('[SOS Ticket] Tạo phiếu SOS thành công: $result');
 

@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/routes/app_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/storage_service.dart';
 import '../../core/widgets/app_drawer.dart';
-import 'package:go_router/go_router.dart';
-import '../features/dashboard/widgets/operator_dashboard_view.dart';
-import '../features/machine/widgets/operator_machine_view.dart';
 import '../features/checklist/widgets/operator_checklist_view.dart';
+import '../features/dashboard/widgets/operator_dashboard_view.dart';
 import '../features/history/widgets/operator_history_view.dart';
+import '../features/machine/widgets/machine_detail_modal.dart';
+import '../features/machine/widgets/operator_machine_view.dart';
 import '../widgets/operator_bottom_nav_bar.dart';
 import '../widgets/operator_qr_scanner_sheet.dart';
-import '../features/machine/widgets/machine_detail_modal.dart';
 
-class OperatorMainScreen extends StatefulWidget {
+class OperatorMainScreen extends ConsumerStatefulWidget {
   final int initialIndex;
   const OperatorMainScreen({super.key, this.initialIndex = 0});
 
   @override
-  State<OperatorMainScreen> createState() => _OperatorMainScreenState();
+  ConsumerState<OperatorMainScreen> createState() => _OperatorMainScreenState();
 }
 
-class _OperatorMainScreenState extends State<OperatorMainScreen> {
+class _OperatorMainScreenState extends ConsumerState<OperatorMainScreen> {
   late int _currentIndex;
 
   final List<Widget> _views = const [
