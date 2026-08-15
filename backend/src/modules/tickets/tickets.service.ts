@@ -10,10 +10,6 @@ import { FirestoreUser } from '../auth/auth.service';
 import { FirebaseService } from '../firebase/firebase.service';
 import { FirestoreMachine } from '../machine/machine.service';
 import { NotificationTypeEnum } from '../notifications/interfaces/notification.interface';
-import {
-  NotificationsGateway,
-  TicketWsEvent,
-} from '../notifications/notifications.gateway';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { TicketSeverity } from './enums/ticket-severity.enum';
@@ -28,7 +24,6 @@ export class TicketsService {
   constructor(
     private readonly firebaseService: FirebaseService,
     private readonly notificationsService: NotificationsService,
-    private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
   private get collection() {
@@ -130,10 +125,7 @@ export class TicketsService {
       target_id: docRef.id,
     });
 
-    const createdTicket: Ticket = { id: docRef.id, ...ticketData };
-    this.notificationsGateway.emitTicketEvent(TicketWsEvent.CREATED, createdTicket);
-
-    return createdTicket;
+    return { id: docRef.id, ...ticketData };
   }
 
   async getAllTickets(filters?: {
@@ -188,9 +180,7 @@ export class TicketsService {
       updated_at: now,
     });
 
-    const cancelledTicket = await this.getTicketById(id);
-    this.notificationsGateway.emitTicketEvent(TicketWsEvent.CANCELLED, cancelledTicket);
-    return cancelledTicket;
+    return this.getTicketById(id);
   }
 
   async claimTicket(id: string, engineerId: string): Promise<Ticket> {
@@ -215,9 +205,7 @@ export class TicketsService {
 
     this.logger.log(`Ticket '${id}' đã được Kỹ sư '${engineerId}' tiếp nhận xử lý.`);
 
-    const claimedTicket = await this.getTicketById(id);
-    this.notificationsGateway.emitTicketEvent(TicketWsEvent.UPDATED, claimedTicket);
-    return claimedTicket;
+    return this.getTicketById(id);
   }
 
   async completeTicket(
@@ -241,9 +229,7 @@ export class TicketsService {
 
     this.logger.log(`Ticket '${id}' đã được Kỹ sư '${engineerId}' hoàn thành và gửi nghiệm thu.`);
 
-    const completedTicket = await this.getTicketById(id);
-    this.notificationsGateway.emitTicketEvent(TicketWsEvent.UPDATED, completedTicket);
-    return completedTicket;
+    return this.getTicketById(id);
   }
 
   async rejectTicket(id: string, rejectionReason?: string): Promise<Ticket> {
@@ -262,8 +248,6 @@ export class TicketsService {
 
     this.logger.log(`Ticket '${id}' đã bị Quản đốc từ chối nghiệm thu.`);
 
-    const rejectedTicket = await this.getTicketById(id);
-    this.notificationsGateway.emitTicketEvent(TicketWsEvent.UPDATED, rejectedTicket);
-    return rejectedTicket;
+    return this.getTicketById(id);
   }
 }

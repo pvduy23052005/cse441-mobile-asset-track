@@ -19,13 +19,4 @@ export interface NotificationItem {
   created_at: string;
 }
 
-export interface FirestoreNotification {
-  user_id?: string;
-  target_role?: string;
-  title: string;
-  message: string;
-  type: NotificationType;
-  target_id?: string;
-  is_read: boolean;
-  created_at: string;
-}
+export type FirestoreNotification = Omit<NotificationItem, 'id'>;

@@ -18,150 +18,84 @@ export class NotificationsService {
     private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
-  async createNotification(
-    dto: CreateNotificationDto,
-  ): Promise<NotificationItem> {
-    const firestore = this.firebaseService.firestore;
-    const createdAt = new Date().toISOString();
+  private get collection() {
+    return this.firebaseService.firestore.collection(this.collectionName);
+  }
 
+  async createNotification(dto: CreateNotificationDto): Promise<NotificationItem> {
     const dataToSave: FirestoreNotification = {
       title: dto.title,
       message: dto.message,
       type: dto.type,
       is_read: false,
-      created_at: createdAt,
+      created_at: new Date().toISOString(),
+      ...(dto.user_id && { user_id: dto.user_id }),
+      ...(dto.target_role && { target_role: dto.target_role }),
+      ...(dto.target_id && { target_id: dto.target_id }),
     };
 
-    if (dto.user_id) dataToSave.user_id = dto.user_id;
-    if (dto.target_role) dataToSave.target_role = dto.target_role;
-    if (dto.target_id) dataToSave.target_id = dto.target_id;
+    const docRef = await this.collection.add(dataToSave);
+    const result: NotificationItem = { id: docRef.id, ...dataToSave };
 
-    const docRef = await firestore
-      .collection(this.collectionName)
-      .add(dataToSave);
-
-    this.logger.log(`Tạo thông báo ID: ${docRef.id} thành công`);
-
-    const result: NotificationItem = {
-      id: docRef.id,
-      ...dataToSave,
-    };
-
-    try {
-      this.notificationsGateway.emitNotification(result);
-    } catch (err) {
-      this.logger.warn(`Lỗi bắn WebSocket notification: ${err}`);
-    }
-
+    this.notificationsGateway.emitNotification(result);
     return result;
   }
 
-  async getNotificationsForUser(
-    userId: string,
-    userRole?: string,
-  ): Promise<NotificationItem[]> {
-    const firestore = this.firebaseService.firestore;
+  async getNotificationsForUser(userId: string, userRole?: string): Promise<NotificationItem[]> {
     const notificationsMap = new Map<string, NotificationItem>();
 
     if (userId) {
-      const userSnapshot = await firestore
-        .collection(this.collectionName)
-        .where('user_id', '==', userId)
-        .get();
-
-      userSnapshot.forEach((doc) => {
-        const data = doc.data() as FirestoreNotification;
-        notificationsMap.set(doc.id, {
-          id: doc.id,
-          ...data,
-        });
+      const snap = await this.collection.where('user_id', '==', userId).get();
+      snap.forEach((doc) => {
+        notificationsMap.set(doc.id, { id: doc.id, ...(doc.data() as FirestoreNotification) });
       });
     }
 
     if (userRole) {
-      const roleSnapshot = await firestore
-        .collection(this.collectionName)
-        .where('target_role', '==', userRole)
-        .get();
-
-      roleSnapshot.forEach((doc) => {
-        const data = doc.data() as FirestoreNotification;
-        notificationsMap.set(doc.id, {
-          id: doc.id,
-          ...data,
-        });
+      const snap = await this.collection.where('target_role', '==', userRole).get();
+      snap.forEach((doc) => {
+        notificationsMap.set(doc.id, { id: doc.id, ...(doc.data() as FirestoreNotification) });
       });
     }
 
     if (notificationsMap.size === 0) {
-      const globalSnapshot = await firestore
-        .collection(this.collectionName)
-        .limit(20)
-        .get();
-
-      globalSnapshot.forEach((doc) => {
-        const data = doc.data() as FirestoreNotification;
-        notificationsMap.set(doc.id, {
-          id: doc.id,
-          ...data,
-        });
+      const snap = await this.collection.limit(20).get();
+      snap.forEach((doc) => {
+        notificationsMap.set(doc.id, { id: doc.id, ...(doc.data() as FirestoreNotification) });
       });
     }
 
-    const list = Array.from(notificationsMap.values());
-    list.sort(
-      (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    return Array.from(notificationsMap.values()).sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     );
-
-    return list;
   }
 
   async getUnreadCount(userId: string, userRole?: string): Promise<number> {
-    const notifications = await this.getNotificationsForUser(userId, userRole);
-    return notifications.filter((item) => !item.is_read).length;
+    const list = await this.getNotificationsForUser(userId, userRole);
+    return list.filter((item) => !item.is_read).length;
   }
 
   async markAsRead(notificationId: string): Promise<NotificationItem> {
-    const firestore = this.firebaseService.firestore;
-    const docRef = firestore
-      .collection(this.collectionName)
-      .doc(notificationId);
+    const docRef = this.collection.doc(notificationId);
     const doc = await docRef.get();
 
     if (!doc.exists) {
-      throw new NotFoundException(
-        `Không tìm thấy thông báo với ID '${notificationId}'`,
-      );
+      throw new NotFoundException(`Không tìm thấy thông báo '${notificationId}'`);
     }
 
     await docRef.update({ is_read: true });
-    const updatedData = (await docRef.get()).data() as FirestoreNotification;
-
-    return {
-      id: doc.id,
-      ...updatedData,
-      is_read: true,
-    };
+    return { id: doc.id, ...(doc.data() as FirestoreNotification), is_read: true };
   }
 
-  async markAllAsRead(
-    userId: string,
-    userRole?: string,
-  ): Promise<{ updatedCount: number }> {
-    const notifications = await this.getNotificationsForUser(userId, userRole);
-    const unreadList = notifications.filter((item) => !item.is_read);
+  async markAllAsRead(userId: string, userRole?: string): Promise<{ updatedCount: number }> {
+    const list = await this.getNotificationsForUser(userId, userRole);
+    const unreadList = list.filter((item) => !item.is_read);
 
-    if (unreadList.length === 0) {
-      return { updatedCount: 0 };
-    }
+    if (unreadList.length === 0) return { updatedCount: 0 };
 
-    const firestore = this.firebaseService.firestore;
-    const batch = firestore.batch();
-
+    const batch = this.firebaseService.firestore.batch();
     unreadList.forEach((item) => {
-      const docRef = firestore.collection(this.collectionName).doc(item.id);
-      batch.update(docRef, { is_read: true });
+      batch.update(this.collection.doc(item.id), { is_read: true });
     });
 
     await batch.commit();

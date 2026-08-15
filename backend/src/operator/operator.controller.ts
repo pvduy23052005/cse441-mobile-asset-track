@@ -12,6 +12,10 @@ import {
 } from '@nestjs/common';
 import type { JwtAuthenticatedRequest } from '../modules/auth/jwt-auth.guard';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
+import {
+  NotificationsGateway,
+  TicketWsEvent,
+} from '../modules/notifications/notifications.gateway';
 import { CreateTicketDto } from '../modules/tickets/dto/create-ticket.dto';
 import { Ticket } from '../modules/tickets/interfaces/ticket.interface';
 import { TicketsService } from '../modules/tickets/tickets.service';
@@ -19,7 +23,10 @@ import { TicketsService } from '../modules/tickets/tickets.service';
 @UseGuards(JwtAuthGuard)
 @Controller('operator/tickets')
 export class OperatorTicketController {
-  constructor(private readonly ticketsService: TicketsService) {}
+  constructor(
+    private readonly ticketsService: TicketsService,
+    private readonly notificationsGateway: NotificationsGateway,
+  ) {}
 
   @Post()
   async createTicket(
@@ -45,7 +52,17 @@ export class OperatorTicketController {
       );
     }
 
-    return this.ticketsService.create(reporterId, dto, req.user?.role);
+    const ticket = await this.ticketsService.create(reporterId, dto, req.user?.role);
+
+    this.notificationsGateway.emitTicketEvent(TicketWsEvent.CREATED, {
+      id: ticket.id,
+      reporter_id: ticket.reporter_id,
+      reporter_name: ticket.reporter_name || req.user?.fullName || '',
+      severity: ticket.severity,
+      created_at: ticket.created_at,
+    });
+
+    return ticket;
   }
 
   @Get()
@@ -78,6 +95,8 @@ export class OperatorTicketController {
       );
     }
 
-    return this.ticketsService.cancelTicket(id, reporterId, reason);
+    const ticket = await this.ticketsService.cancelTicket(id, reporterId, reason);
+    this.notificationsGateway.emitTicketEvent(TicketWsEvent.CANCELLED, ticket);
+    return ticket;
   }
 }

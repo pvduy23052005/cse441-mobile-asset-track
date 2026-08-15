@@ -12,6 +12,10 @@ import {
 } from '@nestjs/common';
 import type { JwtAuthenticatedRequest } from '../auth/jwt-auth.guard';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import {
+  NotificationsGateway,
+  TicketWsEvent,
+} from '../notifications/notifications.gateway';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { TicketStatus } from './enums/ticket-status.enum';
 import { Ticket } from './interfaces/ticket.interface';
@@ -20,7 +24,10 @@ import { TicketsService } from './tickets.service';
 @UseGuards(JwtAuthGuard)
 @Controller('tickets')
 export class TicketsController {
-  constructor(private readonly ticketsService: TicketsService) {}
+  constructor(
+    private readonly ticketsService: TicketsService,
+    private readonly notificationsGateway: NotificationsGateway,
+  ) {}
 
   @Post()
   async createTicket(
@@ -35,7 +42,17 @@ export class TicketsController {
       );
     }
 
-    return this.ticketsService.create(reporterId, dto, req.user?.role);
+    const ticket = await this.ticketsService.create(reporterId, dto, req.user?.role);
+
+    this.notificationsGateway.emitTicketEvent(TicketWsEvent.CREATED, {
+      id: ticket.id,
+      reporter_id: ticket.reporter_id,
+      reporter_name: ticket.reporter_name || req.user?.fullName || '',
+      severity: ticket.severity,
+      created_at: ticket.created_at,
+    });
+
+    return ticket;
   }
 
   @Get('my')
@@ -82,7 +99,9 @@ export class TicketsController {
       );
     }
 
-    return this.ticketsService.claimTicket(id, engineerId);
+    const ticket = await this.ticketsService.claimTicket(id, engineerId);
+    this.notificationsGateway.emitTicketEvent(TicketWsEvent.UPDATED, ticket);
+    return ticket;
   }
 
   @Patch(':id/complete')
@@ -99,11 +118,13 @@ export class TicketsController {
       );
     }
 
-    return this.ticketsService.completeTicket(
+    const ticket = await this.ticketsService.completeTicket(
       id,
       engineerId,
       body?.used_spare_parts,
     );
+    this.notificationsGateway.emitTicketEvent(TicketWsEvent.UPDATED, ticket);
+    return ticket;
   }
 
   @Patch(':id/reject')
@@ -111,6 +132,8 @@ export class TicketsController {
     @Param('id') id: string,
     @Body() body: { rejection_reason?: string },
   ): Promise<Ticket> {
-    return this.ticketsService.rejectTicket(id, body?.rejection_reason);
+    const ticket = await this.ticketsService.rejectTicket(id, body?.rejection_reason);
+    this.notificationsGateway.emitTicketEvent(TicketWsEvent.UPDATED, ticket);
+    return ticket;
   }
 }
