@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import '../../core/routes/app_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/storage_service.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../features/checklist/widgets/operator_checklist_view.dart';
 import '../features/dashboard/widgets/operator_dashboard_view.dart';
-import '../features/notifications/services/operator_notification_service.dart';
-import '../features/notifications/widgets/operator_notifications_view.dart';
 import '../features/machine/widgets/machine_detail_modal.dart';
 import '../features/machine/widgets/operator_machine_view.dart';
+import '../features/notifications/services/operator_notification_service.dart';
+import '../features/notifications/widgets/operator_notifications_view.dart';
 import '../widgets/operator_bottom_nav_bar.dart';
 import '../widgets/operator_qr_scanner_sheet.dart';
 
@@ -41,12 +39,15 @@ class _OperatorMainScreenState extends ConsumerState<OperatorMainScreen> {
     'Thông Báo',
   ];
 
-  final int _pendingTasksCount = 2;
+  final int _pendingTasksCount = 0;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    if (_currentIndex >= _views.length) {
+      _currentIndex = 0;
+    }
   }
 
   void _openQRScannerModal() async {
@@ -59,7 +60,7 @@ class _OperatorMainScreenState extends ConsumerState<OperatorMainScreen> {
   @override
   Widget build(BuildContext context) {
     final userProfile = StorageService.getUserProfile();
-    final displayName = userProfile['fullName'];
+    final displayName = userProfile['fullName'] ?? userProfile['full_name'];
     final displayEmail = userProfile['email'];
 
     return StreamBuilder<int>(
@@ -122,14 +123,6 @@ class _OperatorMainScreenState extends ConsumerState<OperatorMainScreen> {
                 onTap: () {
                   Navigator.pop(context);
                   _openQRScannerModal();
-                },
-              ),
-              DrawerMenuItem(
-                icon: Icons.manage_search_rounded,
-                title: 'Tra Cứu Thiết Bị',
-                onTap: () {
-                  Navigator.pop(context);
-                  context.push(AppRoutes.assetLookup);
                 },
               ),
             ],
