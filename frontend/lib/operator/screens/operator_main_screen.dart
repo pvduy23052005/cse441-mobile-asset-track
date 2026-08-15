@@ -7,7 +7,8 @@ import '../../core/utils/storage_service.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../features/checklist/widgets/operator_checklist_view.dart';
 import '../features/dashboard/widgets/operator_dashboard_view.dart';
-import '../features/history/widgets/operator_history_view.dart';
+import '../features/notifications/services/operator_notification_service.dart';
+import '../features/notifications/widgets/operator_notifications_view.dart';
 import '../features/machine/widgets/machine_detail_modal.dart';
 import '../features/machine/widgets/operator_machine_view.dart';
 import '../widgets/operator_bottom_nav_bar.dart';
@@ -23,12 +24,14 @@ class OperatorMainScreen extends ConsumerStatefulWidget {
 
 class _OperatorMainScreenState extends ConsumerState<OperatorMainScreen> {
   late int _currentIndex;
+  final OperatorNotificationService _notificationService =
+      OperatorNotificationService();
 
   final List<Widget> _views = const [
     OperatorDashboardView(),
     OperatorMachineView(),
     OperatorChecklistView(),
-    OperatorHistoryView(),
+    OperatorNotificationsView(),
   ];
 
   final List<String> _titles = const [
@@ -39,7 +42,6 @@ class _OperatorMainScreenState extends ConsumerState<OperatorMainScreen> {
   ];
 
   final int _pendingTasksCount = 2;
-  final int _unreadNotificationsCount = 2;
 
   @override
   void initState() {
@@ -60,56 +62,88 @@ class _OperatorMainScreenState extends ConsumerState<OperatorMainScreen> {
     final displayName = userProfile['fullName'];
     final displayEmail = userProfile['email'];
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu_rounded),
-            tooltip: 'Menu',
-            onPressed: () => Scaffold.of(context).openDrawer(),
+    return StreamBuilder<int>(
+      stream: _notificationService.streamUnreadCount(),
+      builder: (context, unreadSnapshot) {
+        final unreadCount = unreadSnapshot.data ?? 0;
+
+        return Scaffold(
+          appBar: AppBar(
+            leading: Builder(
+              builder: (context) => IconButton(
+                icon: const Icon(Icons.menu_rounded),
+                tooltip: 'Menu',
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              ),
+            ),
+            title: Text(_titles[_currentIndex]),
+            actions: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_none_rounded),
+                    onPressed: () => setState(() => _currentIndex = 3),
+                  ),
+                  if (unreadCount > 0)
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFDC2626),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          unreadCount > 99 ? '99+' : '$unreadCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ],
           ),
-        ),
-        title: Text(_titles[_currentIndex]),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none_rounded),
-            onPressed: () => setState(() => _currentIndex = 3),
+          drawer: AppDrawer(
+            userName: displayName,
+            userEmail: displayEmail,
+            roleLabel: 'Tổ Vận Hành Máy',
+            roleBadge: 'OPERATOR',
+            roleColor: AppTheme.primaryColor,
+            toolNavItems: [
+              DrawerMenuItem(
+                icon: Icons.qr_code_scanner_rounded,
+                title: 'Quét Mã QR Thiết Bị',
+                onTap: () {
+                  Navigator.pop(context);
+                  _openQRScannerModal();
+                },
+              ),
+              DrawerMenuItem(
+                icon: Icons.manage_search_rounded,
+                title: 'Tra Cứu Thiết Bị',
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push(AppRoutes.assetLookup);
+                },
+              ),
+            ],
           ),
-        ],
-      ),
-      drawer: AppDrawer(
-        userName: displayName,
-        userEmail: displayEmail,
-        roleLabel: 'Tổ Vận Hành Máy',
-        roleBadge: 'OPERATOR',
-        roleColor: AppTheme.primaryColor,
-        toolNavItems: [
-          DrawerMenuItem(
-            icon: Icons.qr_code_scanner_rounded,
-            title: 'Quét Mã QR Thiết Bị',
-            onTap: () {
-              Navigator.pop(context);
-              _openQRScannerModal();
-            },
+          body: IndexedStack(index: _currentIndex, children: _views),
+          bottomNavigationBar: OperatorBottomNavBar(
+            currentIndex: _currentIndex,
+            pendingTasksCount: _pendingTasksCount,
+            unreadNotificationsCount: unreadCount,
+            onItemSelected: (index) => setState(() => _currentIndex = index),
+            onQRTapped: _openQRScannerModal,
           ),
-          DrawerMenuItem(
-            icon: Icons.manage_search_rounded,
-            title: 'Tra Cứu Thiết Bị',
-            onTap: () {
-              Navigator.pop(context);
-              context.push(AppRoutes.assetLookup);
-            },
-          ),
-        ],
-      ),
-      body: IndexedStack(index: _currentIndex, children: _views),
-      bottomNavigationBar: OperatorBottomNavBar(
-        currentIndex: _currentIndex,
-        pendingTasksCount: _pendingTasksCount,
-        unreadNotificationsCount: _unreadNotificationsCount,
-        onItemSelected: (index) => setState(() => _currentIndex = index),
-        onQRTapped: _openQRScannerModal,
-      ),
+        );
+      },
     );
   }
 }

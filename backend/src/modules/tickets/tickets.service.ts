@@ -285,15 +285,14 @@ export class TicketsService {
       }
     }
 
-    if (ticketData.reporter_id) {
-      await this.notificationsService.createNotification({
-        title: 'KỸ SƯ TIẾP NHẬN SỰ CỐ',
-        message: `Kỹ sư ${engineerName || 'Kỹ thuật'} đã tiếp nhận xử lý sự cố máy ${ticketData.machine_code || ''} (${ticketData.machine_name || 'Thiết bị'}). Trạng thái: ĐANG XỬ LÝ.`,
-        type: NotificationTypeEnum.SYSTEM,
-        user_id: ticketData.reporter_id,
-        target_id: id,
-      });
-    }
+    await this.notificationsService.createNotification({
+      title: 'KỸ SƯ ĐÃ TIẾP NHẬN SỰ CỐ',
+      message: `Kỹ sư ${engineerName || 'Kỹ thuật'} đã tiếp nhận xử lý sự cố máy ${ticketData.machine_code || ''} (${ticketData.machine_name || 'Thiết bị'}). Trạng thái: ĐANG XỬ LÝ.`,
+      type: NotificationTypeEnum.SYSTEM,
+      target_role: UserRole.OPERATOR,
+      ...(ticketData.reporter_id && { user_id: ticketData.reporter_id }),
+      target_id: id,
+    });
 
     this.logger.log(
       `Ticket '${id}' đã được Kỹ sư '${engineerId}' tiếp nhận xử lý.`,
@@ -313,12 +312,33 @@ export class TicketsService {
       throw new NotFoundException(`Ticket with ID '${id}' not found`);
     }
 
+    const ticketData = documentSnapshot.data() as FirestoreTicket;
+    const engineerDoc = await this.firebaseService.firestore
+      .collection('users')
+      .doc(engineerId)
+      .get();
+    const engineerData = (engineerDoc.data() as FirestoreUser) || {};
+    const engineerName =
+      engineerData.fullName ||
+      engineerData.full_name ||
+      engineerData.email ||
+      '';
+
     const currentTime = new Date().toISOString();
     await documentReference.update({
       status: TicketStatus.PENDING_APPROVAL,
       downtime_end: currentTime,
       used_spare_parts: usedSpareParts || [],
       updated_at: currentTime,
+    });
+
+    await this.notificationsService.createNotification({
+      title: 'SỰ CỐ ĐÃ ĐƯỢC XỬ LÝ XONG',
+      message: `Kỹ sư ${engineerName || 'Kỹ thuật'} đã sửa chữa xong máy ${ticketData.machine_code || ''} (${ticketData.machine_name || 'Thiết bị'}) và gửi nghiệm thu.`,
+      type: NotificationTypeEnum.SYSTEM,
+      target_role: UserRole.OPERATOR,
+      ...(ticketData.reporter_id && { user_id: ticketData.reporter_id }),
+      target_id: id,
     });
 
     this.logger.log(
@@ -379,6 +399,15 @@ export class TicketsService {
         this.logger.warn(`Không thể cập nhật trạng thái máy: ${e}`);
       }
     }
+
+    await this.notificationsService.createNotification({
+      title: 'PHIẾU SỰ CỐ ĐÃ NGHIỆM THU',
+      message: `Máy ${ticketData.machine_code || ''} (${ticketData.machine_name || 'Thiết bị'}) đã được Quản đốc nghiệm thu và đóng phiếu thành công.`,
+      type: NotificationTypeEnum.SYSTEM,
+      target_role: UserRole.OPERATOR,
+      ...(ticketData.reporter_id && { user_id: ticketData.reporter_id }),
+      target_id: id,
+    });
 
     this.logger.log(`Ticket '${id}' đã được Quản đốc nghiệm thu & đóng phiếu.`);
     return this.getTicketById(id);
