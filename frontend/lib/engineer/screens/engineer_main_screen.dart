@@ -4,10 +4,12 @@ import '../../core/routes/app_router.dart';
 import '../../core/utils/storage_service.dart';
 import '../../core/widgets/app_bottom_nav_bar.dart';
 import '../../core/widgets/app_drawer.dart';
-import '../../core/widgets/app_notifications_view.dart';
 import '../../core/widgets/role_header.dart';
 import '../features/dashboard/widgets/engineer_dashboard_view.dart';
 import '../features/machines/widgets/engineer_machines_view.dart';
+import '../features/notifications/models/engineer_notification.dart';
+import '../features/notifications/services/engineer_notification_service.dart';
+import '../features/notifications/widgets/engineer_notifications_view.dart';
 import '../features/ticket_management/widgets/engineer_ticket_list_view.dart';
 
 class EngineerMainScreen extends StatefulWidget {
@@ -20,12 +22,14 @@ class EngineerMainScreen extends StatefulWidget {
 
 class _EngineerMainScreenState extends State<EngineerMainScreen> {
   late int _currentIndex;
+  final EngineerNotificationService _notificationService =
+      EngineerNotificationService();
 
   final List<Widget> _views = const [
     EngineerDashboardView(),
     EngineerMachinesView(),
     EngineerTicketListView(),
-    AppNotificationsView(userRole: 'ME_ENGINEER'),
+    EngineerNotificationsView(),
   ];
 
   @override
@@ -66,7 +70,6 @@ class _EngineerMainScreenState extends State<EngineerMainScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // 1. Role Header dùng chung chuẩn Wireframe UI
             RoleHeader(
               roleName: 'Kỹ Sư ME',
               userEmail: displayEmail,
@@ -77,28 +80,33 @@ class _EngineerMainScreenState extends State<EngineerMainScreen> {
                 if (context.mounted) context.go(AppRoutes.loginPortal);
               },
             ),
-
-            // 2. Nội dung các tab (IndexedStack)
             Expanded(
               child: IndexedStack(index: _currentIndex, children: _views),
             ),
           ],
         ),
       ),
+      bottomNavigationBar: StreamBuilder<List<EngineerNotification>>(
+        stream: _notificationService.streamNotifications(),
+        builder: (context, snapshot) {
+          final unreadCount = snapshot.hasData
+              ? snapshot.data!.where((n) => !n.isRead).length
+              : 0;
 
-      // 3. Navigation Bar dùng chung chuẩn Wireframe UI (có nút Quét QR nổi ở giữa)
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: _currentIndex,
-        onItemSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          return AppBottomNavBar(
+            currentIndex: _currentIndex,
+            onItemSelected: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            onQRTapped: () {
+              context.push(AppRoutes.assetLookup);
+            },
+            pendingTasksCount: 0,
+            unreadNotificationsCount: unreadCount,
+          );
         },
-        onQRTapped: () {
-          context.push(AppRoutes.assetLookup);
-        },
-        pendingTasksCount: 2,
-        unreadNotificationsCount: 2,
       ),
     );
   }

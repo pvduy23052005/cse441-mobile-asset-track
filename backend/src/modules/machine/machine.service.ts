@@ -168,7 +168,6 @@ export class MachineService implements OnModuleInit {
   constructor(private readonly firebaseService: FirebaseService) {}
 
   async onModuleInit() {
-
     await this.seedAllFirebaseCollections();
   }
 

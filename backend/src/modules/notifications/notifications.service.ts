@@ -6,23 +6,21 @@ import {
   FirestoreNotification,
   NotificationItem,
 } from './interfaces/notification.interface';
-import { NotificationsGateway } from './notifications.gateway';
 
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
   private readonly collectionName = FirestoreCollection.NOTIFICATIONS;
 
-  constructor(
-    private readonly firebaseService: FirebaseService,
-    private readonly notificationsGateway: NotificationsGateway,
-  ) {}
+  constructor(private readonly firebaseService: FirebaseService) {}
 
   private get collection() {
     return this.firebaseService.firestore.collection(this.collectionName);
   }
 
-  async createNotification(dto: CreateNotificationDto): Promise<NotificationItem> {
+  async createNotification(
+    dto: CreateNotificationDto,
+  ): Promise<NotificationItem> {
     const dataToSave: FirestoreNotification = {
       title: dto.title,
       message: dto.message,
@@ -35,17 +33,19 @@ export class NotificationsService {
     };
 
     const documentReference = await this.collection.add(dataToSave);
-    const result: NotificationItem = { id: documentReference.id, ...dataToSave };
-
-    this.notificationsGateway.emitNotification(result);
-    return result;
+    return { id: documentReference.id, ...dataToSave };
   }
 
-  async getNotificationsForUser(userId: string, userRole?: string): Promise<NotificationItem[]> {
+  async getNotificationsForUser(
+    userId: string,
+    userRole?: string,
+  ): Promise<NotificationItem[]> {
     const notificationsMap = new Map<string, NotificationItem>();
 
     if (userId) {
-      const userQuerySnapshot = await this.collection.where('user_id', '==', userId).get();
+      const userQuerySnapshot = await this.collection
+        .where('user_id', '==', userId)
+        .get();
       userQuerySnapshot.forEach((documentSnapshot) => {
         notificationsMap.set(documentSnapshot.id, {
           id: documentSnapshot.id,
@@ -55,7 +55,9 @@ export class NotificationsService {
     }
 
     if (userRole) {
-      const roleQuerySnapshot = await this.collection.where('target_role', '==', userRole).get();
+      const roleQuerySnapshot = await this.collection
+        .where('target_role', '==', userRole)
+        .get();
       roleQuerySnapshot.forEach((documentSnapshot) => {
         notificationsMap.set(documentSnapshot.id, {
           id: documentSnapshot.id,
@@ -82,8 +84,12 @@ export class NotificationsService {
   }
 
   async getUnreadCount(userId: string, userRole?: string): Promise<number> {
-    const notificationsList = await this.getNotificationsForUser(userId, userRole);
-    return notificationsList.filter((notification) => !notification.is_read).length;
+    const notificationsList = await this.getNotificationsForUser(
+      userId,
+      userRole,
+    );
+    return notificationsList.filter((notification) => !notification.is_read)
+      .length;
   }
 
   async markAsRead(notificationId: string): Promise<NotificationItem> {
@@ -91,7 +97,9 @@ export class NotificationsService {
     const documentSnapshot = await documentReference.get();
 
     if (!documentSnapshot.exists) {
-      throw new NotFoundException(`Không tìm thấy thông báo '${notificationId}'`);
+      throw new NotFoundException(
+        `Không tìm thấy thông báo '${notificationId}'`,
+      );
     }
 
     await documentReference.update({ is_read: true });
@@ -102,9 +110,17 @@ export class NotificationsService {
     };
   }
 
-  async markAllAsRead(userId: string, userRole?: string): Promise<{ updatedCount: number }> {
-    const notificationsList = await this.getNotificationsForUser(userId, userRole);
-    const unreadNotifications = notificationsList.filter((notification) => !notification.is_read);
+  async markAllAsRead(
+    userId: string,
+    userRole?: string,
+  ): Promise<{ updatedCount: number }> {
+    const notificationsList = await this.getNotificationsForUser(
+      userId,
+      userRole,
+    );
+    const unreadNotifications = notificationsList.filter(
+      (notification) => !notification.is_read,
+    );
 
     if (unreadNotifications.length === 0) return { updatedCount: 0 };
 

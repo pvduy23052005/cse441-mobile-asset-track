@@ -10,11 +10,8 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { UserRole } from '../common/constants/user-role.enum';
 import type { JwtAuthenticatedRequest } from '../modules/auth/jwt-auth.guard';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
-import { TicketWsEvent } from '../modules/notifications/notification.event';
-import { NotificationsGateway } from '../modules/notifications/notifications.gateway';
 import { CreateTicketDto } from '../modules/tickets/dto/create-ticket.dto';
 import { Ticket } from '../modules/tickets/interfaces/ticket.interface';
 import { TicketsService } from '../modules/tickets/tickets.service';
@@ -22,10 +19,7 @@ import { TicketsService } from '../modules/tickets/tickets.service';
 @UseGuards(JwtAuthGuard)
 @Controller('operator/tickets')
 export class OperatorTicketController {
-  constructor(
-    private readonly ticketsService: TicketsService,
-    private readonly notificationsGateway: NotificationsGateway,
-  ) {}
+  constructor(private readonly ticketsService: TicketsService) {}
 
   @Post()
   async createTicket(
@@ -51,21 +45,7 @@ export class OperatorTicketController {
       );
     }
 
-    const ticket = await this.ticketsService.create(reporterId, dto, req.user?.role);
-
-    this.notificationsGateway.emitTicketEvent(
-      TicketWsEvent.CREATED,
-      {
-        id: ticket.id,
-        reporter_id: ticket.reporter_id,
-        reporter_name: ticket.reporter_name || req.user?.fullName || '',
-        severity: ticket.severity,
-        created_at: ticket.created_at,
-      },
-      UserRole.ENGINEER,
-    );
-
-    return ticket;
+    return this.ticketsService.create(reporterId, dto, req.user?.role);
   }
 
   @Get()
@@ -98,8 +78,6 @@ export class OperatorTicketController {
       );
     }
 
-    const ticket = await this.ticketsService.cancelTicket(id, reporterId, reason);
-    this.notificationsGateway.emitTicketEvent(TicketWsEvent.CANCELLED, ticket);
-    return ticket;
+    return this.ticketsService.cancelTicket(id, reporterId, reason);
   }
 }

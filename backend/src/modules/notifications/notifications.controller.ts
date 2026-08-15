@@ -23,9 +23,14 @@ export class NotificationsController {
   ): Promise<NotificationItem[]> {
     const userId = req.user?.uid || req.user?.id;
     if (!userId) {
-      throw new UnauthorizedException('Không tìm thấy thông tin người dùng từ token');
+      throw new UnauthorizedException(
+        'Không tìm thấy thông tin người dùng từ token',
+      );
     }
-    return this.notificationsService.getNotificationsForUser(userId, req.user?.role);
+    return this.notificationsService.getNotificationsForUser(
+      userId,
+      req.user?.role,
+    );
   }
 
   @Get('unread-count')
@@ -34,9 +39,14 @@ export class NotificationsController {
   ): Promise<{ unreadCount: number }> {
     const userId = req.user?.uid || req.user?.id;
     if (!userId) {
-      throw new UnauthorizedException('Không tìm thấy thông tin người dùng từ token');
+      throw new UnauthorizedException(
+        'Không tìm thấy thông tin người dùng từ token',
+      );
     }
-    const count = await this.notificationsService.getUnreadCount(userId, req.user?.role);
+    const count = await this.notificationsService.getUnreadCount(
+      userId,
+      req.user?.role,
+    );
     return { unreadCount: count };
   }
 
@@ -46,7 +56,9 @@ export class NotificationsController {
   ): Promise<{ updatedCount: number }> {
     const userId = req.user?.uid || req.user?.id;
     if (!userId) {
-      throw new UnauthorizedException('Không tìm thấy thông tin người dùng từ token');
+      throw new UnauthorizedException(
+        'Không tìm thấy thông tin người dùng từ token',
+      );
     }
     return this.notificationsService.markAllAsRead(userId, req.user?.role);
   }
