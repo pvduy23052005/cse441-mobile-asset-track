@@ -292,7 +292,7 @@ Trong các dây chuyền sản xuất công nghiệp, máy móc hỏng hóc đ�
 │  [✗ Từ chối]  [✓ Phê duyệt]   │
 └─────────────────────────────────┘
 ```
-- Cảnh báo màu đỏ tự động khi đơn giá vượt `costApprovalThreshold` trong `WorkshopConfig`.
+- Cảnh báo màu đỏ tự động khi đơn giá vượt `cost_approval_threshold` trong cấu hình phân xưởng.
 - Lưu `approvedBy` hoặc `rejectionReason` + tên Supervisor sau khi xử lý.
 
 ### I. Màn hình Cấu hình ngưỡng hệ thống (Supervisor)
@@ -435,40 +435,36 @@ Trong các dây chuyền sản xuất công nghiệp, máy móc hỏng hóc đ�
 ## 7. Phân công Công việc Full-stack & Lộ trình Phát triển (Roadmap 5 Tuần)
 
 ### 7.1. Phân công công việc (Task Assignment)
-Cả **2 thành viên** đều là Full-stack Developers, hợp tác phát triển theo từng Module tính năng:
+Phân công nhiệm vụ rõ ràng theo phân hệ và vai trò người dùng trong hệ thống:
 
-| Module / Tính năng | Thành viên Chủ trì | Thành viên Phối hợp | Công việc chi tiết |
-| :--- | :--- | :--- | :--- |
-| **Module 1: Auth, Máy móc & QR Passport** | **Thành viên 1** | **Thành viên 2** | • *TV1:* Cấu trúc Flutter project, UI Machine Passport, tích hợp `mobile_scanner`, offline cache.<br>• *TV2:* Khởi tạo Firebase Project, cấu hình Firebase Auth, Cloud Firestore Collections `machines`, `users`, Firebase Security Rules. |
-| **Module 2: SOS Breakdown & Push Notification** | **Thành viên 2** | **Thành viên 1** | • *TV2:* Firestore Collection `tickets`, Cloud Function tự động chuyển trạng thái máy & gửi Firebase FCM.<br>• *TV1:* UI Form SOS, đính kèm ảnh lỗi, màn hình danh sách Ticket, lắng nghe FCM. |
-| **Module 3: PM Checklist & Spare Parts** | **Thành viên 1** | **Thành viên 2** | • *TV1:* UI checklist tương tác, tích hợp `image_picker`, UI đề xuất & duyệt vật tư.<br>• *TV2:* Firestore Collections `pm_checklists`, `spare_parts_requests`, Firebase Storage Bucket `failure-photos`. |
-| **Module 4: Ký nghiệm thu & Dashboard Downtime** | **Thành viên 2** | **Thành viên 1** | • *TV2:* Canvas ký tên nghiệm thu (`signature`), Firebase Storage Bucket `signatures`, Cloud Function tự động đưa máy về `active`.<br>• *TV1:* UI Dashboard biểu đồ Downtime (`fl_chart`), truy vấn thống kê Firestore. |
+| Phân hệ / Module | Thành viên Phụ trách Chính | Công việc & Phạm vi chi tiết |
+| :--- | :--- | :--- |
+| **Phân hệ 1: Công nhân Vận hành (Operator Persona)** | **Phùng Văn Duy** | • **QR Machine Passport:** Tích hợp camera `mobile_scanner`, decode QR < 1.5s, hiển thị Hộ chiếu thiết bị, thông số kỹ thuật, lịch sử bảo trì, cẩm nang xử lý lỗi nhanh.<br>• **Running Hours Logging:** UI popup nhập chỉ số vận hành (giờ/km), validation logic real-time, ghi nhận vào `running_hours_log`.<br>• **SOS Breakdown Ticket Creation:** Form báo sự cố khẩn cấp, chọn mức độ nghiêm trọng, chụp ảnh hiện trường qua camera (`image_picker`), tạo Ticket SOS gửi lên Firestore `tickets`.<br>• **Hủy Ticket SOS:** Chức năng hủy ticket khi còn ở trạng thái `Pending`.<br>• **Offline Mode & Sync (NFR-06):** Thiết lập Local cache SQLite / Persistent Queue lưu tạm giờ chạy & Ticket SOS khi mất mạng, hiển thị Banner cảnh báo đỏ và tự động đồng bộ khi có mạng. |
+| **Phân hệ 2: Kỹ sư Bảo trì & Quản đốc (ME Engineer & Supervisor Personas)** | **Thành viên 2** | • **ME Engineer Workflow:** Nhận Push Notification từ Firebase FCM, màn hình danh sách Ticket/PM, Transaction `UPDATE tickets` tiếp nhận sửa chữa, UI thực hiện PM Checklist kèm upload ảnh minh chứng, UI ghi log & đề xuất vật tư thay thế.<br>• **Supervisor Workflow:** Canvas ký tên điện tử (`signature`), phê duyệt đề xuất vật tư vượt ngưỡng, Dashboard thống kê Downtime & biểu đồ (`fl_chart`), quản lý và import nhân sự từ file Excel.<br>• **Backend & Cloud Functions:** Cấu hình Firebase Auth, Firestore Security Rules, Cloud Functions tự sinh PM Checklist, trigger FCM và tự động đổi trạng thái máy. |
 
 ---
 
 ### 7.2. Lịch trình phát triển (Roadmap 5 Tuần)
 
 - **Tuần 1: Khởi động hệ thống & Nền tảng**
-  - *Cả 2 thành viên:* Thống nhất API Contract/Data model, cấu hình Firebase Console và thiết lập Flutter project.
-  - *Thành viên 1:* Khởi tạo Flutter Project, cài Riverpod, thiết lập Theme nhà máy, màn hình Login kết nối Firebase Auth.
-  - *Thành viên 2:* Tạo Firebase Project, cấu hình Firestore Collections, thiết lập Security Rules & Cloud Functions.
+  - *Phùng Văn Duy:* Khởi tạo Flutter Project, cấu hình Riverpod, xây dựng Industrial Design System (Theme nhà máy, nút bấm 48dp, typography), màn hình Login phân quyền Role Operator.
+  - *Thành viên 2:* Tạo Firebase Project, cấu hình Firestore Collections, thiết lập Security Rules & Cloud Functions cơ bản.
 
-- **Tuần 2: Hoàn thiện Module 1 (QR Code & Machine Passport)**
-  - *Thành viên 1:* UI camera quét QR, màn hình Hộ chiếu thiết bị, popup nhập giờ chạy, **offline queue** (lưu Machine Passport vào local cache; đồng bộ tự động lên Firebase khi có mạng, hiển thị banner trạng thái).
-  - *Thành viên 2:* Nhập dữ liệu máy mẫu lên Firestore, tạo mã QR code mẫu để test.
+- **Tuần 2: Hoàn thiện Phân hệ Operator (QR Code, Machine Passport & Logging)**
+  - *Phùng Văn Duy:* Hoàn thiện UI camera quét QR, màn hình Hộ chiếu thiết bị, popup nhập giờ chạy máy/km, xây dựng cơ chế **Offline Queue** bằng SQLite (cache thông tin máy, lưu lượt nhập giờ khi offline).
+  - *Thành viên 2:* Nhập dữ liệu máy mẫu lên Firestore, tạo bộ mã QR mẫu tương ứng để kiểm thử quét mã.
 
-- **Tuần 3: Hoàn thiện Module 2 (Breakdown SOS & Push Notification)**
-  - *Thành viên 1:* Form báo lỗi SOS, chụp ảnh đính kèm upload Firebase Storage, màn hình danh sách Ticket.
-  - *Thành viên 2:* Cloud Function đổi trạng thái máy sang `repairing`, trigger gửi push notification FCM tới ME.
+- **Tuần 3: Hoàn thiện Ticket SOS & Push Notification**
+  - *Phùng Văn Duy:* Form tạo Ticket SOS khẩn cấp, chọn mức độ nghiêm trọng, chụp ảnh đính kèm lưu local/Firebase Storage, xử lý đồng bộ Ticket offline.
+  - *Thành viên 2:* Cloud Function lắng nghe `tickets` onCreate để chuyển trạng thái máy sang `repairing`, trigger gửi push notification FCM tới ME Engineer, xây dựng màn hình danh sách Ticket cho ME.
 
-- **Tuần 4: Hoàn thiện Module 3 & 4 (PM Checklist, Spare Parts, Chữ ký)**
-  - *Thành viên 1:* UI Checklist bảo dưỡng, upload ảnh linh kiện, UI đề xuất vật tư từ ME.
-  - *Thành viên 2:* Canvas ký tên nghiệm thu, lưu ảnh chữ ký vào Firebase Storage, UI phê duyệt vật tư cho Supervisor.
+- **Tuần 4: Hoàn thiện PM Checklist, Spare Parts & Ký nghiệm thu**
+  - *Phùng Văn Duy:* Tối ưu luồng trải nghiệm Operator, test độ trễ quét QR, kiểm thử chức năng hủy Ticket khi còn Pending, hoàn thiện UI thông báo phản hồi.
+  - *Thành viên 2:* UI Checklist bảo dưỡng định kỳ, upload ảnh linh kiện, UI đề xuất/duyệt vật tư, Canvas ký tên nghiệm thu của Supervisor.
 
-- **Tuần 5: Dashboard, Cấu hình PM & Testing**
-  - *Thành viên 1:* Dashboard biểu đồ Downtime (Pie Chart + Bar Chart), màn hình cấu hình mốc giờ PM và ngưỡng chi phí linh kiện.
-  - *Thành viên 2:* Viết Firestore Queries tổng hợp Downtime, test toàn bộ Cloud Functions & Security Rules.
-  - *Cả 2 thành viên:* Test end-to-end toàn bộ luồng với mã QR in giấy, kiểm tra hành vi offline (banner, block ghi), sửa lỗi và đóng gói APK/IPA.
+- **Tuần 5: Dashboard, Tích hợp Toàn diện & Đóng gói**
+  - *Thành viên 2:* Dashboard biểu đồ Downtime (Pie Chart + Bar Chart), màn hình cấu hình ngưỡng chi phí và quản lý nhân sự Excel.
+  - *Cả 2 thành viên (Phùng Văn Duy & TV2):* Kiểm thử End-to-End toàn bộ luồng thực tế (Operator quét QR báo hỏng SOS $\rightarrow$ ME nhận thông báo sửa $\rightarrow$ Supervisor ký nghiệm thu), kiểm thử mất mạng/có mạng, tối ưu hiệu năng và đóng gói bản build APK/IPA.
 
 ---
 

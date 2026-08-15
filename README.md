@@ -1,6 +1,6 @@
 # AssetTrack - Hệ Thống Quản Lý Lý Lịch Thiết Bị & Bảo Trì Nhà Máy
 
-> Ứng dụng di động quản lý lý lịch thiết bị, bảo trì phòng ngừa (PM) & báo sự cố khẩn cấp (SOS) cho nhà máy sản xuất.
+> Ứng dụng di động quản lý lý lịch thiết bị, bảo trì phòng ngừa (PM) & báo sự cố khẩn cấp (SOS Ticket) cho nhà máy sản xuất.
 
 ---
 
@@ -22,22 +22,13 @@ Trong các nhà máy sản xuất công nghiệp, sự cố hỏng hóc máy mó
 
 ---
 
-## 2. Các Tác Nhân Chính Trong Hệ Thống (Core Actors)
+## 2. Các Tác Nhân Chính & Phân Công Nhiệm Vụ (Core Actors & Team Assignment)
 
-1. **Công nhân Vận hành (Operator):**
-   - Quét mã QR dán trên máy để tra cứu nhanh thông số kỹ thuật và "Hộ chiếu thiết bị".
-   - Nhập chỉ số giờ máy chạy theo ca (Đầu ca / Cuối ca) làm căn cứ tính mốc bảo dưỡng.
-   - Báo sự cố hỏng hóc khẩn cấp (Breakdown SOS) kèm ảnh chụp hiện trường dừng chuyền.
-
-2. **Kỹ sư Cơ điện (ME Engineer):**
-   - Nhận thông báo đẩy (Push Notification) khẩn cấp thời gian thực khi có sự cố SOS.
-   - Bấm tiếp nhận phiếu sửa chữa, thực hiện PM Checklist bảo trì định kỳ kèm ảnh minh chứng bắt buộc.
-   - Khai báo vật tư/phụ tùng thay thế và gửi đề xuất phụ tùng giá trị cao lên Quản đốc.
-
-3. **Quản đốc Phân xưởng (Supervisor):**
-   - Giám sát thời gian dừng máy (Downtime), đo lường chỉ số hiệu suất OEE 94.2% toàn phân xưởng.
-   - Phê duyệt đề xuất linh kiện đắt tiền vượt ngưỡng chi phí cấu hình.
-   - Ký tên điện tử nghiệm thu trực tiếp trên màn hình cảm ứng để đưa máy về trạng thái hoạt động (`Active`) hoặc từ chối kèm lý do (`Rejected`).
+| Tác nhân (Actor) | Thành viên Phụ trách | Phạm vi Chức năng Cốt lõi |
+| :--- | :--- | :--- |
+| **1. Công nhân Vận hành (Operator)** | **Phùng Văn Duy** | • **QR Machine Passport:** Quét mã QR (`mobile_scanner`), tra cứu Hộ chiếu thiết bị, thông số kỹ thuật, cẩm nang lỗi.<br>• **Running Hours Logging:** Khai báo số giờ chạy máy / km đầu/cuối ca, validation real-time.<br>• **Breakdown SOS Ticket:** Tạo Ticket báo hỏng khẩn cấp, chọn mức độ nghiêm trọng, chụp ảnh hiện trường qua camera.<br>• **Offline Mode (NFR-06):** Local cache SQLite, lưu tạm giờ chạy & Ticket khi mất mạng, tự động đồng bộ khi có kết nối. |
+| **2. Kỹ sư Cơ điện (ME Engineer)** | **Thành viên 2** | • Nhận Push Notification khẩn cấp thời gian thực khi có Ticket SOS.<br>• Tiếp nhận Ticket sửa chữa, thực hiện PM Checklist bảo trì định kỳ kèm ảnh minh chứng bắt buộc.<br>• Ghi nhận log vật tư tủ nhanh và gửi đề xuất linh kiện đắt tiền lên Quản đốc. |
+| **3. Quản đốc Phân xưởng (Supervisor)** | **Thành viên 2** | • Giám sát thời gian dừng máy (Downtime), đo lường chỉ số hiệu suất phân xưởng qua Real-time Dashboard.<br>• Phê duyệt đề xuất linh kiện đắt tiền vượt ngưỡng chi phí cấu hình.<br>• Ký tên điện tử nghiệm thu trực tiếp trên màn hình cảm ứng để đưa máy về `Active` hoặc từ chối kèm lý do (`Rejected`).<br>• Quản lý và import danh sách nhân sự phân xưởng từ file Excel. |
 
 ---
 
@@ -53,9 +44,9 @@ Trong các nhà máy sản xuất công nghiệp, sự cố hỏng hóc máy mó
 
 ### Backend & Infrastructure:
 
-- **BaaS Platform:** [Supabase](https://supabase.com/) (PostgreSQL Database).
-- **Security:** Row-Level Security (RLS) phân quyền theo phân xưởng (`workshop_id`).
-- **Realtime & Cloud Functions:** Database Triggers, Edge Functions.
+- **BaaS Platform:** [Supabase](https://supabase.com/) / Firebase (PostgreSQL / Firestore NoSQL).
+- **Security:** Row-Level Security (RLS) / Security Rules phân quyền theo phân xưởng (`workshop_id`).
+- **Realtime & Cloud Functions:** Database Triggers, Cloud Functions.
 - **Push Notification:** Firebase Cloud Messaging (FCM).
 
 ### Web Mobile Demo:
@@ -121,4 +112,4 @@ Trình duyệt tự động mở tại đường dẫn: **`http://localhost:3000
 - **Tóm tắt Quản lý Dự án:** [overview.md](file:///Users/macbook/Documents/hk6/mobile/project/overview.md)
 - **Đặc tả Thiết kế SAD (System Architecture Document):** [system_design.md](file:///Users/macbook/Documents/hk6/mobile/project/system_design.md)
 - **Thiết kế CSDL & Tập lệnh SQL:** [database_schema.md](file:///Users/macbook/Documents/hk6/mobile/project/database_schema.md)
-- **Hướng dẫn shadcn/ui:** [shadcn_ui_guide.md](file:///Users/macbook/Documents/hk6/mobile/project/shadcn_ui_guide.md)
+- **Thiết kế Giao diện UI/UX:** [design.md](file:///Users/macbook/Documents/hk6/mobile/project/design.md)
