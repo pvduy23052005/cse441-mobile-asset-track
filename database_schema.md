@@ -15,7 +15,6 @@ erDiagram
     profiles ||--o{ running_hours_log : "nhập giờ chạy"
     profiles }o--|| workshops : "thuộc phân xưởng"
     workshops ||--o{ machines : "có máy móc"
-    workshops ||--o{ workshop_configs : "cấu hình mốc giờ & chi phí"
     workshops ||--o{ tickets : "phụ trách"
     workshops ||--o{ pm_checklists : "phụ trách"
     machines ||--o{ tickets : "phát sinh sự cố SOS"
@@ -28,7 +27,7 @@ erDiagram
     pm_checklists ||--o{ spare_parts_requests : "đề xuất linh kiện"
 ```
 
-> **Lưu ý Phạm vi Đề tài (Scope Note):** Hệ thống AssetTrack được thiết kế tập trung tối ưu cho **phạm vi 1 Phân Xưởng Sản Xuất duy nhất (Single Workshop Scope)**. Toàn bộ người dùng (`operator`, `me_engineer`, `supervisor`), máy móc, Ticket sự cố và phiếu bảo trì đều thuộc về phân xưởng này. Bảng `workshops` lưu trữ thông tin của phân xưởng đề tài.
+> **Lưu ý Phạm vi Đề tài (Scope Note):** Hệ thống AssetTrack được thiết kế tập trung tối ưu cho **phạm vi 1 Phân Xưởng Sản Xuất duy nhất (Single Workshop Scope)**. Toàn bộ người dùng (`operator`, `me_engineer`, `supervisor`), máy móc, Ticket sự cố và phiếu bảo trì đều thuộc về phân xưởng này. Cấu hình mốc bảo trì được lưu trực tiếp tại bảng `machines` và ngưỡng duyệt chi phí lưu tại bảng `workshops`.
 
 ---
 
@@ -53,19 +52,20 @@ Lưu trữ thông tin tài khoản, phân quyền vai trò (`operator`, `me_engi
 ---
 
 ### 2.2. Bảng `workshops` — Phân xưởng sản xuất
-Lưu trữ thông tin của Phân xưởng đề tài (mặc định 1 phân xưởng duy nhất).
+Lưu trữ thông tin của Phân xưởng đề tài và ngưỡng duyệt chi phí linh kiện chung của xưởng.
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
 | :--- | :--- | :--- | :--- |
 | `id` | `uuid` | PK, DEFAULT gen_random_uuid() | ID phân xưởng |
 | `name` | `text` | NOT NULL | Tên phân xưởng (VD: Phân xưởng Cơ khí & Dập CNC) |
 | `location` | `text` | | Vị trí nhà máy |
+| `cost_approval_threshold` | `float8` | DEFAULT 2000000 | Ngưỡng duyệt chi phí linh kiện (VNĐ, mặc định: 2.000.000đ) |
 | `created_at` | `timestamptz` | DEFAULT now() | Thời điểm tạo |
 
 ---
 
 ### 2.3. Bảng `machines` — Hộ chiếu & Lý lịch máy móc
-Lưu trữ danh mục máy móc, thông số kỹ thuật, mã QR duy nhất và chỉ số giờ chạy máy tích lũy.
+Lưu trữ danh mục máy móc, thông số kỹ thuật, mã QR duy nhất, chỉ số giờ chạy máy tích lũy và cấu hình mốc bảo trì định kỳ của máy.
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
 | :--- | :--- | :--- | :--- |
@@ -76,28 +76,14 @@ Lưu trữ danh mục máy móc, thông số kỹ thuật, mã QR duy nhất và
 | `specifications` | `jsonb` | | Thông số kỹ thuật (công suất, áp suất...) |
 | `status` | `text` | NOT NULL, CHECK ('active','repairing','maintenance','inactive') | Trạng thái máy |
 | `running_hours` | `float8` | DEFAULT 0 | Tổng số giờ máy chạy tích lũy |
+| `pm_threshold_hours` | `int4[]` | DEFAULT '{500, 1000, 2000}' | Các mốc số giờ chạy kích hoạt bảo trì định kỳ |
 | `workshop_id` | `uuid` | FK -> workshops.id | Thuộc phân xưởng nào |
 | `last_maintenance_at` | `timestamptz` | | Thời điểm bảo trì gần nhất |
 | `created_at` | `timestamptz` | DEFAULT now() | Thời điểm khởi tạo |
 
 ---
 
-### 2.4. Bảng `workshop_configs` — Cấu hình ngưỡng phân xưởng
-Lưu trữ các mốc số giờ bảo trì định kỳ và Ngưỡng chi phí duyệt linh kiện đắt tiền do Quản đốc cài đặt.
-
-| Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `id` | `uuid` | PK, DEFAULT gen_random_uuid() | ID cấu hình |
-| `workshop_id` | `uuid` | FK -> workshops.id | Phân xưởng áp dụng |
-| `machine_model` | `text` | NOT NULL | Model máy áp dụng |
-| `pm_threshold_hours` | `int4[]` | NOT NULL | Mốc giờ bảo trì (VD: {500, 1000, 2000}) |
-| `cost_approval_threshold` | `float8` | DEFAULT 2000000 | Ngưỡng chi phí linh kiện cần duyệt (VNĐ) |
-| `updated_by` | `uuid` | FK -> profiles.id | Quản đốc chỉnh sửa gần nhất |
-| `updated_at` | `timestamptz` | DEFAULT now() | Thời điểm cập nhật |
-
----
-
-### 2.5. Bảng `tickets` — Ticket báo sự cố khẩn cấp (SOS Breakdown Ticket)
+### 2.4. Bảng `tickets` — Ticket báo sự cố khẩn cấp (SOS Breakdown Ticket)
 Lưu trữ thông tin Ticket báo lỗi sự cố dừng chuyền do Operator tạo, tiến độ sửa chữa của ME Engineer và chữ ký nghiệm thu của Quản đốc.
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
@@ -126,7 +112,7 @@ Lưu trữ thông tin Ticket báo lỗi sự cố dừng chuyền do Operator t�
 
 ---
 
-### 2.6. Bảng `pm_checklists` — Phiếu bảo trì định kỳ (Preventive Maintenance)
+### 2.5. Bảng `pm_checklists` — Phiếu bảo trì định kỳ (Preventive Maintenance)
 Phiếu bảo trì tự động sinh khi số giờ máy chạy đạt mốc cấu hình.
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
@@ -146,7 +132,7 @@ Phiếu bảo trì tự động sinh khi số giờ máy chạy đạt mốc c�
 
 ---
 
-### 2.7. Bảng `pm_checklist_items` — Hạng mục kiểm tra PM
+### 2.6. Bảng `pm_checklist_items` — Hạng mục kiểm tra PM
 Danh mục các thao tác bảo dưỡng (tra dầu, siết ốc, nén khí...) của từng đợt PM.
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
@@ -161,7 +147,7 @@ Danh mục các thao tác bảo dưỡng (tra dầu, siết ốc, nén khí...) 
 
 ---
 
-### 2.8. Bảng `spare_part_logs` — Nhật ký phụ tùng/vật tư tiêu hao đã thay
+### 2.7. Bảng `spare_part_logs` — Nhật ký phụ tùng/vật tư tiêu hao đã thay
 Ghi nhận danh sách phụ tùng đã dùng trong các ca sửa chữa/bảo trì.
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
@@ -177,7 +163,7 @@ Ghi nhận danh sách phụ tùng đã dùng trong các ca sửa chữa/bảo tr
 
 ---
 
-### 2.9. Bảng `spare_parts_requests` — Đề xuất thay linh kiện đắt tiền
+### 2.8. Bảng `spare_parts_requests` — Đề xuất thay linh kiện đắt tiền
 Tạo khi linh kiện có tổng chi phí vượt Ngưỡng duyệt cấu hình (`cost_approval_threshold`).
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
@@ -196,7 +182,7 @@ Tạo khi linh kiện có tổng chi phí vượt Ngưỡng duyệt cấu hình 
 
 ---
 
-### 2.10. Bảng `running_hours_log` — Nhật ký nhập chỉ số giờ máy chạy
+### 2.9. Bảng `running_hours_log` — Nhật ký nhập chỉ số giờ máy chạy
 Lưu vết từng lần nhập số giờ máy chạy ca của Operator.
 
 | Thuộc tính | Kiểu dữ liệu | Ràng buộc | Mô tả |
@@ -226,6 +212,7 @@ CREATE TABLE public.workshops (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     location TEXT,
+    cost_approval_threshold FLOAT8 NOT NULL DEFAULT 2000000,
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -247,24 +234,13 @@ CREATE TABLE public.machines (
     specifications JSONB DEFAULT '{}'::jsonb,
     status TEXT NOT NULL CHECK (status IN ('active', 'repairing', 'maintenance', 'inactive')) DEFAULT 'active',
     running_hours FLOAT8 NOT NULL DEFAULT 0,
+    pm_threshold_hours INT4[] NOT NULL DEFAULT '{500, 1000, 2000}',
     workshop_id UUID REFERENCES public.workshops(id) ON DELETE CASCADE,
     last_maintenance_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 4. Workshop Configs Table
-CREATE TABLE public.workshop_configs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    workshop_id UUID NOT NULL REFERENCES public.workshops(id) ON DELETE CASCADE,
-    machine_model TEXT NOT NULL,
-    pm_threshold_hours INT4[] NOT NULL DEFAULT '{500, 1000, 2000}',
-    cost_approval_threshold FLOAT8 NOT NULL DEFAULT 2000000,
-    updated_by UUID REFERENCES public.profiles(id),
-    updated_at TIMESTAMPTZ DEFAULT now(),
-    CONSTRAINT unique_workshop_model UNIQUE (workshop_id, machine_model)
-);
-
--- 5. Tickets Table (SOS Breakdown)
+-- 4. Tickets Table (SOS Breakdown)
 CREATE TABLE public.tickets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     client_generated_id UUID UNIQUE NOT NULL,
@@ -289,7 +265,7 @@ CREATE TABLE public.tickets (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 6. PM Checklists Table
+-- 5. PM Checklists Table
 CREATE TABLE public.pm_checklists (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     workshop_id UUID NOT NULL REFERENCES public.workshops(id) ON DELETE CASCADE,
@@ -305,7 +281,7 @@ CREATE TABLE public.pm_checklists (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 7. PM Checklist Items Table
+-- 6. PM Checklist Items Table
 CREATE TABLE public.pm_checklist_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     pm_checklist_id UUID NOT NULL REFERENCES public.pm_checklists(id) ON DELETE CASCADE,
@@ -316,7 +292,7 @@ CREATE TABLE public.pm_checklist_items (
     checked_at TIMESTAMPTZ
 );
 
--- 8. Spare Part Logs Table
+-- 7. Spare Part Logs Table
 CREATE TABLE public.spare_part_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     ticket_id UUID REFERENCES public.tickets(id) ON DELETE CASCADE,
@@ -329,7 +305,7 @@ CREATE TABLE public.spare_part_logs (
     CONSTRAINT check_parent_task CHECK (ticket_id IS NOT NULL OR pm_checklist_id IS NOT NULL)
 );
 
--- 9. Spare Parts Requests Table
+-- 8. Spare Parts Requests Table
 CREATE TABLE public.spare_parts_requests (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     ticket_id UUID REFERENCES public.tickets(id) ON DELETE CASCADE,
@@ -345,7 +321,7 @@ CREATE TABLE public.spare_parts_requests (
     CONSTRAINT check_parent_request CHECK (ticket_id IS NOT NULL OR pm_checklist_id IS NOT NULL)
 );
 
--- 10. Running Hours Log Table
+-- 9. Running Hours Log Table
 CREATE TABLE public.running_hours_log (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     client_generated_id UUID UNIQUE NOT NULL,
@@ -378,7 +354,7 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.machines ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tickets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.pm_checklists ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.workshop_configs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.workshops ENABLE ROW LEVEL SECURITY;
 
 -- Helper function to get current user's workshop_id
 CREATE OR REPLACE FUNCTION get_auth_workshop_id()
@@ -393,14 +369,14 @@ CREATE POLICY workshop_isolation_select_machines ON public.machines
 CREATE POLICY workshop_isolation_select_ticket ON public.tickets
     FOR SELECT USING (workshop_id = get_auth_workshop_id());
 
--- RLS Policy: Only Supervisors can update workshop configs
-CREATE POLICY supervisor_config_update ON public.workshop_configs
+-- RLS Policy: Only Supervisors can update workshop settings
+CREATE POLICY supervisor_workshop_update ON public.workshops
     FOR ALL USING (
         EXISTS (
             SELECT 1 FROM public.profiles 
             WHERE id = auth.uid() 
             AND role = 'supervisor' 
-            AND workshop_id = public.workshop_configs.workshop_id
+            AND workshop_id = public.workshops.id
         )
     );
 ```

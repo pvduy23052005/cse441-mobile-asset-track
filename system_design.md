@@ -14,7 +14,7 @@ Tài liệu này tập trung chuyên sâu vào các sơ đồ mô hình hóa ph�
 * **FR-5 (Nghiệm thu Chữ ký số):** Quản đốc phân xưởng phải ký tên điện tử trực tiếp trên app để nghiệm thu Ticket sửa chữa / Phiếu bảo trì trước khi đưa máy hoạt động lại.
 * **FR-6 (Giám sát & Thống kê):** Quản đốc phải xem được thời gian dừng máy (Downtime) và trạng thái phân xưởng thời gian thực thông qua dashboard.
 * **FR-7 (Ghi Log Vật tư & Tủ vật tư nhanh SME):** Đối với nhà xưởng vừa & nhỏ (SME), Kỹ sư ME tự lấy linh kiện từ *Tủ vật tư nhanh* tại phân xưởng để thay thế và dùng app ghi log phụ tùng (`Spare Parts Logging`), giúp lưu lý lịch sửa chữa của máy và trừ lùi tồn tủ để Quản đốc chủ động nhập bổ sung.
-* **FR-8 (Cấu hình Ngưỡng Hệ thống Phân xưởng):** Supervisor cài đặt các mốc số giờ/km bảo trì định kỳ cho các model máy và ngưỡng duyệt giá trị chi phí linh kiện của phân xưởng.
+* **FR-8 (Cấu hình Ngưỡng Hệ thống Phân xưởng):** Supervisor cài đặt các mốc số giờ/km bảo trì định kỳ trực tiếp trên từng máy và ngưỡng duyệt giá trị chi phí linh kiện của phân xưởng.
 
 ### 1.2. Yêu cầu Phi Chức năng (Non-functional Requirements - NFR)
 * **NFR-1 (Bảo mật & Phân quyền):** Ràng buộc truy cập dữ liệu bằng **Firebase Security Rules** và phân quyền người dùng qua **Firebase Auth (Custom Claims / Role)** theo 3 vai trò (`Operator`, `ME Engineer`, `Supervisor`) trong phân xưởng.
@@ -337,6 +337,7 @@ classDiagram
         +Map specifications
         +MachineStatus status
         +double runningHours
+        +List pmThresholdHours
         +UUID workshopId
         +DateTime lastMaintenance
         +DateTime createdAt
@@ -425,16 +426,6 @@ classDiagram
         +DateTime createdAt
     }
 
-    class WorkshopConfig {
-        +UUID id
-        +UUID workshopId
-        +String machineModel
-        +List pmThresholdHours
-        +double costApprovalThreshold
-        +DateTime updatedAt
-        +UUID updatedBy
-    }
-
     UserProfile "1" -- "0..*" Ticket : "báo lỗi / tiếp nhận / nghiệm thu"
     UserProfile "1" -- "0..*" PmChecklist : "thực hiện / nghiệm thu"
     Machine "1" -- "0..*" Ticket : "phát sinh sự cố"
@@ -443,7 +434,6 @@ classDiagram
     Ticket "1" -- "0..*" SparePartLog : "ghi nhận vật tư"
     PmChecklist "1" -- "0..*" SparePartLog : "ghi nhận vật tư"
     Ticket "1" -- "0..*" SparePartsRequest : "đề xuất linh kiện"
-    Machine "1" -- "1" WorkshopConfig : "cấu hình theo model"
 ```
 
 ---
@@ -507,7 +497,6 @@ erDiagram
     machines ||--o{ tickets : "phát sinh sự cố SOS"
     machines ||--o{ pm_checklists : "bảo trì định kỳ PM"
     machines ||--o{ running_hours_log : "theo dõi giờ chạy"
-    workshop_configs ||--|| machines : "cấu hình mốc PM theo model"
 ```
 
 ---
@@ -536,7 +525,7 @@ Document ID = `machine_id` (Tự sinh hoặc dùng `code` dạng `MC-101`).
 | `machine_id` | `string` | ID thiết bị (Document ID) |
 | `code` | `string` | Mã máy in trên tem QR duy nhất (VD: `MC-102`) |
 | `name` | `string` | Tên máy (VD: Máy dập thủy lực 150T / Xe nâng Toyota) |
-| `model` | `string` | Model máy (liên kết cấu hình PM theo model) |
+| `model` | `string` | Model máy |
 | `specifications` | `map` | Thông số kỹ thuật `{ power: "150 kW", max_pressure: "250 bar" }` |
 | `status` | `string` | Trạng thái máy: `'active'` \| `'repairing'` \| `'maintenance'` \| `'inactive'` |
 | `tracking_type` | `string` | Đơn vị theo dõi bảo trì: `'hours'` (Giờ chạy) \| `'km'` (Số km) |
@@ -549,22 +538,7 @@ Document ID = `machine_id` (Tự sinh hoặc dùng `code` dạng `MC-101`).
 
 ---
 
-#### 3. Collection `workshop_configs` — Cấu hình ngưỡng phân xưởng
-Document ID = `machine_model` (Mỗi model máy có 1 cấu hình ngưỡng mặc định).
-
-| Thuộc tính | Kiểu dữ liệu | Mô tả & Ràng buộc |
-| :--- | :--- | :--- |
-| `machine_model` | `string` | Model máy áp dụng (Document ID, VD: "Máy dập thủy lực") |
-| `tracking_type` | `string` | Đơn vị mặc định: `'hours'` \| `'km'` |
-| `pm_initial_thresholds` | `array<number>` | Các mốc bảo trì chạy rà ban đầu (VD: `[500, 1000]`) |
-| `pm_recurring_interval` | `number` | Chu kỳ bảo trì định kỳ lặp lại về sau (VD: `500`) |
-| `cost_approval_threshold` | `number` | Ngưỡng chi phí linh kiện cần duyệt (VNĐ, mặc định: `2000000`) |
-| `updated_by` | `string` | `uid` Quản đốc cập nhật gần nhất |
-| `updated_at` | `timestamp` | Thời điểm cập nhật cấu hình |
-
----
-
-#### 4. Collection `tickets` — Ticket báo sự cố khẩn cấp (SOS Breakdown Ticket)
+#### 3. Collection `tickets` — Ticket báo sự cố khẩn cấp (SOS Breakdown Ticket)
 Document ID = `ticket_id` (Tự sinh hoặc dùng `client_generated_id`).
 
 | Thuộc tính | Kiểu dữ liệu | Mô tả & Ràng buộc |
@@ -597,7 +571,7 @@ Document ID = `ticket_id` (Tự sinh hoặc dùng `client_generated_id`).
 
 ---
 
-#### 5. Collection `pm_checklists` — Phiếu bảo trì định kỳ (PM)
+#### 4. Collection `pm_checklists` — Phiếu bảo trì định kỳ (PM)
 Document ID = `pm_checklist_id`.
 
 | Thuộc tính | Kiểu dữ liệu | Mô tả & Ràng buộc |
@@ -621,7 +595,7 @@ Document ID = `pm_checklist_id`.
 
 ---
 
-#### 6. Collection `spare_parts_requests` — Đề xuất linh kiện đắt tiền
+#### 5. Collection `spare_parts_requests` — Đề xuất linh kiện đắt tiền
 Document ID = `request_id`.
 
 | Thuộc tính | Kiểu dữ liệu | Mô tả & Ràng buộc |
@@ -644,7 +618,7 @@ Document ID = `request_id`.
 
 ---
 
-#### 7. Collection `running_hours_log` (hoặc `usage_logs`) — Lịch sử nhập chỉ số vận hành
+#### 6. Collection `running_hours_log` (hoặc `usage_logs`) — Lịch sử nhập chỉ số vận hành
 Document ID = `log_id`.
 
 | Thuộc tính | Kiểu dữ liệu | Mô tả & Ràng buộc |
@@ -696,12 +670,6 @@ service cloud.firestore {
     match /machines/{machineId} {
       allow read: if isAuthenticated();
       allow write: if isSupervisor() || isEngineer();
-    }
-
-    // Workshop Configs Collection
-    match /workshop_configs/{configId} {
-      allow read: if isAuthenticated();
-      allow write: if isSupervisor(); // Chỉ Supervisor được sửa cấu hình ngưỡng
     }
 
     // Tickets Collection
