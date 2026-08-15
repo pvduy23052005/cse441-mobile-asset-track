@@ -186,7 +186,10 @@ class AppDrawer extends StatelessWidget {
                   item: DrawerMenuItem(
                     icon: Icons.lock_outline_rounded,
                     title: 'Bảo Mật & Mật Khẩu',
-                    onTap: () => _showFeatureNotice(context, 'Tính năng Bảo Mật & Mật Khẩu'),
+                    onTap: () => _showFeatureNotice(
+                      context,
+                      'Tính năng Bảo Mật & Mật Khẩu',
+                    ),
                   ),
                   isSelected: false,
                   activeColor: activeThemeColor,
@@ -196,7 +199,8 @@ class AppDrawer extends StatelessWidget {
                   item: DrawerMenuItem(
                     icon: Icons.notifications_none_rounded,
                     title: 'Cài Đặt Thông Báo',
-                    onTap: () => _showFeatureNotice(context, 'Cài Đặt Thông Báo'),
+                    onTap: () =>
+                        _showFeatureNotice(context, 'Cài Đặt Thông Báo'),
                   ),
                   isSelected: false,
                   activeColor: activeThemeColor,
@@ -206,7 +210,8 @@ class AppDrawer extends StatelessWidget {
                   item: DrawerMenuItem(
                     icon: Icons.help_outline_rounded,
                     title: 'Hướng Dẫn & Trợ Giúp',
-                    onTap: () => _showFeatureNotice(context, 'Tài liệu Hướng Dẫn'),
+                    onTap: () =>
+                        _showFeatureNotice(context, 'Tài liệu Hướng Dẫn'),
                   ),
                   isSelected: false,
                   activeColor: activeThemeColor,
@@ -226,13 +231,13 @@ class AppDrawer extends StatelessWidget {
     final effectiveName = (userName != null && userName!.isNotEmpty)
         ? userName!
         : (profile['fullName']?.isNotEmpty == true
-            ? profile['fullName']!
-            : 'Người Dùng');
+              ? profile['fullName']!
+              : 'Người Dùng');
     final effectiveEmail = (userEmail != null && userEmail!.isNotEmpty)
         ? userEmail!
         : (profile['email']?.isNotEmpty == true
-            ? profile['email']!
-            : 'user@factory.com');
+              ? profile['email']!
+              : 'user@factory.com');
 
     return Container(
       width: double.infinity,
@@ -478,15 +483,6 @@ class AppDrawer extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'AssetTrack Mobile • v1.0.0',
-            style: TextStyle(
-              fontSize: 11,
-              color: AppTheme.mutedForegroundColor,
-              fontWeight: FontWeight.w500,
             ),
           ),
         ],
