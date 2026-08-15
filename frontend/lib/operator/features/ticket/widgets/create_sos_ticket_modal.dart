@@ -7,6 +7,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../services/operator_ticket_service.dart';
 import 'sos_image_attachment_section.dart';
 import 'sos_severity_selector.dart';
+import 'sos_symptom_selector.dart';
 
 class CreateSosTicketModal extends StatefulWidget {
   final MachineModel machine;
@@ -47,16 +48,6 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
   String _selectedSeverity = 'CRITICAL';
   final List<XFile> _selectedImages = [];
   bool _isSubmitting = false;
-
-  final List<String> _presetIssueTags = [
-    'Kẹt băng chuyền / phôi',
-    'Rò rỉ dầu / nhớt thủy lực',
-    'Động cơ quá nhiệt (>80°C)',
-    'Phát tiếng ồn / Rung lắc mạnh',
-    'Mất nguồn / Lỗi mạch điện',
-    'Lỗi cảm biến / Sensor',
-    'Dừng khẩn cấp (E-Stop)',
-  ];
 
   final Set<String> _selectedTags = {};
 
@@ -506,73 +497,16 @@ class _CreateSosTicketModalState extends State<CreateSosTicketModal> {
                         ),
                         const SizedBox(height: 18),
 
-                        // Section 3: Preset Quick Tags (Gợi ý nhanh sự cố)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Triệu Chứng Phổ Biến (Chọn nhanh)',
-                              style: TextStyle(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF0F172A),
-                              ),
-                            ),
-                            if (_selectedTags.isNotEmpty)
-                              GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _selectedTags.clear();
-                                    _descriptionController.clear();
-                                  });
-                                },
-                                child: const Text(
-                                  'Xóa chọn',
-                                  style: TextStyle(
-                                    fontSize: 11.5,
-                                    color: Color(0xFFEF4444),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: _presetIssueTags.map((tag) {
-                            final isSelected = _selectedTags.contains(tag);
-                            return FilterChip(
-                              label: Text(tag),
-                              selected: isSelected,
-                              onSelected: (_) => _togglePresetTag(tag),
-                              labelStyle: TextStyle(
-                                fontSize: 12,
-                                fontWeight: isSelected
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
-                                color: isSelected
-                                    ? const Color(0xFFB91C1C)
-                                    : const Color(0xFF334155),
-                              ),
-                              backgroundColor: const Color(0xFFF1F5F9),
-                              selectedColor: const Color(0xFFFEE2E2),
-                              checkmarkColor: const Color(0xFFB91C1C),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                side: BorderSide(
-                                  color: isSelected
-                                      ? const Color(0xFFFCA5A5)
-                                      : const Color(0xFFE2E8F0),
-                                ),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                            );
-                          }).toList(),
+                        // Section 3: Preset Quick Tags (Gợi ý nhanh sự cố theo danh mục)
+                        SosSymptomSelector(
+                          selectedSymptoms: _selectedTags,
+                          onSymptomToggled: _togglePresetTag,
+                          onClearAll: () {
+                            setState(() {
+                              _selectedTags.clear();
+                              _descriptionController.clear();
+                            });
+                          },
                         ),
                         const SizedBox(height: 18),
 
