@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { FirestoreCollection } from '../../common/constants/firestore-collections.enum';
+import { UserRole } from '../../common/constants/user-role.enum';
 import { FirestoreUser } from '../auth/auth.service';
 import { FirebaseService } from '../firebase/firebase.service';
 import { FirestoreMachine } from '../machine/machine.service';
@@ -121,7 +122,7 @@ export class TicketsService {
       title: isCritical ? 'SỰ CỐ KHẨN CẤP (SOS)' : 'BÁO SỰ CỐ MỚI',
       message: `Máy ${machineData.code || machineDoc.id} (${machineData.name || 'Thiết bị'}) vừa báo sự cố [${severity}]: ${dto.description || 'Cần xử lý'}`,
       type: isCritical ? NotificationTypeEnum.SOS : NotificationTypeEnum.SYSTEM,
-      target_role: 'ME_ENGINEER',
+      target_role: UserRole.ENGINEER,
       target_id: documentReference.id,
     });
 

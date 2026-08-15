@@ -10,12 +10,11 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
+import { UserRole } from '../../common/constants/user-role.enum';
 import type { JwtAuthenticatedRequest } from '../auth/jwt-auth.guard';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import {
-  NotificationsGateway,
-  TicketWsEvent,
-} from '../notifications/notifications.gateway';
+import { TicketWsEvent } from '../notifications/notification.event';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { TicketStatus } from './enums/ticket-status.enum';
 import { Ticket } from './interfaces/ticket.interface';
@@ -42,17 +41,19 @@ export class TicketsController {
       );
     }
 
-    
-
     const ticket = await this.ticketsService.create(reporterId, dto, req.user?.role);
 
-    this.notificationsGateway.emitTicketEvent(TicketWsEvent.CREATED, {
-      id: ticket.id,
-      reporter_id: ticket.reporter_id,
-      reporter_name: ticket.reporter_name || req.user?.fullName || '',
-      severity: ticket.severity,
-      created_at: ticket.created_at,
-    });
+    this.notificationsGateway.emitTicketEvent(
+      TicketWsEvent.CREATED,
+      {
+        id: ticket.id,
+        reporter_id: ticket.reporter_id,
+        reporter_name: ticket.reporter_name || req.user?.fullName || '',
+        severity: ticket.severity,
+        created_at: ticket.created_at,
+      },
+      UserRole.ENGINEER,
+    );
 
     return ticket;
   }

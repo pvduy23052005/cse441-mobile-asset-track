@@ -9,16 +9,9 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { UserRole } from '../../common/constants/user-role.enum';
 import { NotificationItem } from './interfaces/notification.interface';
-
-export const TicketWsEvent = {
-  CREATED: 'ticket_created',
-  UPDATED: 'ticket_updated',
-  CANCELLED: 'ticket_cancelled',
-} as const;
-
-export type TicketWsEventType =
-  (typeof TicketWsEvent)[keyof typeof TicketWsEvent];
+import type { TicketWsEventType } from './notification.event';
 
 @WebSocketGateway({
   cors: {
@@ -33,6 +26,15 @@ export class NotificationsGateway
 
   private readonly logger = new Logger(NotificationsGateway.name);
 
+  private normalizeRole(role: string): string | null {
+    const cleanRole = role.toLowerCase().trim();
+    const validRoles = Object.values(UserRole) as string[];
+    if (validRoles.includes(cleanRole)) {
+      return cleanRole.toUpperCase();
+    }
+    return null;
+  }
+
   handleConnection(client: Socket) {
     const userId = client.handshake.query.userId as string | undefined;
     const role = client.handshake.query.role as string | undefined;
@@ -43,8 +45,11 @@ export class NotificationsGateway
     }
 
     if (role) {
-      void client.join(role.toUpperCase());
-      this.logger.log(`Client ${client.id} joined room ${role.toUpperCase()}`);
+      const normalizedRole = this.normalizeRole(role);
+      if (normalizedRole) {
+        void client.join(normalizedRole);
+        this.logger.log(`Client ${client.id} joined room ${normalizedRole}`);
+      }
     }
 
     this.logger.log(`WebSocket Client connected: ${client.id}`);
@@ -64,10 +69,13 @@ export class NotificationsGateway
       this.logger.log(`Client ${client.id} explicitly joined ${data.userId}`);
     }
     if (data?.role) {
-      void client.join(data.role.toUpperCase());
-      this.logger.log(
-        `Client ${client.id} explicitly joined ${data.role.toUpperCase()}`,
-      );
+      const normalizedRole = this.normalizeRole(data.role);
+      if (normalizedRole) {
+        void client.join(normalizedRole);
+        this.logger.log(
+          `Client ${client.id} explicitly joined ${normalizedRole}`,
+        );
+      }
     }
     return { status: 'joined', ...data };
   }
@@ -81,7 +89,10 @@ export class NotificationsGateway
       void client.leave(data.userId);
     }
     if (data?.role) {
-      void client.leave(data.role.toUpperCase());
+      const normalizedRole = this.normalizeRole(data.role);
+      if (normalizedRole) {
+        void client.leave(normalizedRole);
+      }
     }
     return { status: 'left', ...data };
   }
@@ -99,9 +110,10 @@ export class NotificationsGateway
     }
 
     if (notification.target_role) {
-      this.server
-        .to(notification.target_role.toUpperCase())
-        .emit('notification', notification);
+      const normalizedRole = this.normalizeRole(notification.target_role);
+      if (normalizedRole) {
+        this.server.to(normalizedRole).emit('notification', notification);
+      }
     }
 
     if (!notification.user_id && !notification.target_role) {
@@ -111,8 +123,21 @@ export class NotificationsGateway
     this.server.emit('new_notification', notification);
   }
 
-  emitTicketEvent(event: TicketWsEventType, data: unknown) {
+  emitTicketEvent(
+    event: TicketWsEventType,
+    data: unknown,
+    targetRole?: string,
+  ) {
     if (!this.server) return;
+
+    if (targetRole) {
+      const normalizedRole = this.normalizeRole(targetRole);
+      if (normalizedRole) {
+        this.server.to(normalizedRole).emit(event, data);
+        return;
+      }
+    }
+
     this.server.emit(event, data);
   }
 }
