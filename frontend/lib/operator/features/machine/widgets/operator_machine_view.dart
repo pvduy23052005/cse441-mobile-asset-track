@@ -1,57 +1,24 @@
 import 'package:flutter/material.dart';
-import '../../../../core/models/machine_model.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../services/machine_service.dart';
+import '../../../providers/operator_machines_provider.dart';
 import 'machine_card.dart';
 
-class OperatorMachineView extends StatefulWidget {
+class OperatorMachineView extends ConsumerStatefulWidget {
   const OperatorMachineView({super.key});
 
   @override
-  State<OperatorMachineView> createState() => _OperatorMachineViewState();
+  ConsumerState<OperatorMachineView> createState() =>
+      _OperatorMachineViewState();
 }
 
-class _OperatorMachineViewState extends State<OperatorMachineView> {
-  final MachineService _machineService = MachineService();
-
-  List<MachineModel> _machines = [];
-  bool _isLoading = true;
-  String? _errorMessage;
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchMachines();
-  }
-
-  Future<void> _fetchMachines() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      final machines = await _machineService.getMachines();
-      if (mounted) {
-        setState(() {
-          _machines = machines;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = e.toString().replaceAll('Exception: ', '');
-        });
-      }
-    }
-  }
-
+class _OperatorMachineViewState extends ConsumerState<OperatorMachineView> {
   @override
   Widget build(BuildContext context) {
+    final machinesAsync = ref.watch(filteredOperatorMachinesProvider);
+
     return RefreshIndicator(
-      onRefresh: _fetchMachines,
+      onRefresh: () => ref.refresh(operatorMachinesProvider.future),
       color: AppTheme.primaryColor,
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -72,9 +39,8 @@ class _OperatorMachineViewState extends State<OperatorMachineView> {
             ),
           ),
 
-          // Loading State
-          if (_isLoading)
-            const SliverFillRemaining(
+          machinesAsync.when(
+            loading: () => const SliverFillRemaining(
               hasScrollBody: false,
               child: Center(
                 child: Column(
@@ -92,10 +58,8 @@ class _OperatorMachineViewState extends State<OperatorMachineView> {
                   ],
                 ),
               ),
-            )
-          // Error State
-          else if (_errorMessage != null)
-            SliverFillRemaining(
+            ),
+            error: (error, _) => SliverFillRemaining(
               hasScrollBody: false,
               child: Center(
                 child: Padding(
@@ -117,7 +81,7 @@ class _OperatorMachineViewState extends State<OperatorMachineView> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        _errorMessage!,
+                        error.toString().replaceAll('Exception: ', ''),
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 15,
@@ -127,7 +91,8 @@ class _OperatorMachineViewState extends State<OperatorMachineView> {
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
-                        onPressed: _fetchMachines,
+                        onPressed: () =>
+                            ref.read(operatorMachinesProvider.notifier).refresh(),
                         icon: const Icon(Icons.refresh_rounded, size: 18),
                         label: const Text('Thử lại'),
                       ),
@@ -135,49 +100,50 @@ class _OperatorMachineViewState extends State<OperatorMachineView> {
                   ),
                 ),
               ),
-            )
-          // Empty State
-          else if (_machines.isEmpty)
-            const SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(
-                child: Padding(
-                  padding: EdgeInsets.all(32.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.precision_manufacturing_outlined,
-                        size: 56,
-                        color: AppTheme.mutedForegroundColor,
-                      ),
-                      SizedBox(height: 16),
-                      Text(
-                        'Chưa có thiết bị nào trong phân xưởng',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.foregroundColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            )
-          // Machines List
-          else
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final machine = _machines[index];
-                  return MachineCard(machine: machine);
-                },
-                childCount: _machines.length,
-              ),
             ),
+            data: (machines) {
+              if (machines.isEmpty) {
+                return const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.precision_manufacturing_outlined,
+                            size: 56,
+                            color: AppTheme.mutedForegroundColor,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Chưa có thiết bị nào trong phân xưởng',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.foregroundColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
 
-          // Bottom Spacing
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final machine = machines[index];
+                    return MachineCard(machine: machine);
+                  },
+                  childCount: machines.length,
+                ),
+              );
+            },
+          ),
+
           const SliverToBoxAdapter(
             child: SizedBox(height: 24),
           ),

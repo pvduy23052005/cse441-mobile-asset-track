@@ -1,17 +1,14 @@
 import {
-  Body,
   Controller,
   Get,
   Param,
   Patch,
-  Post,
   Req,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import type { JwtAuthenticatedRequest } from '../auth/jwt-auth.guard';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { CreateNotificationDto } from './dto/create-notification.dto';
 import { NotificationItem } from './interfaces/notification.interface';
 import { NotificationsService } from './notifications.service';
 
@@ -19,13 +16,6 @@ import { NotificationsService } from './notifications.service';
 @Controller('notifications')
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
-
-  @Post()
-  async createNotification(
-    @Body() dto: CreateNotificationDto,
-  ): Promise<NotificationItem> {
-    return this.notificationsService.createNotification(dto);
-  }
 
   @Get()
   async getMyNotifications(

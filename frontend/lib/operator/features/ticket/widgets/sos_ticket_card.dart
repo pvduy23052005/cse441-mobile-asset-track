@@ -36,14 +36,18 @@ class SosTicketCard extends StatelessWidget {
     Color badgeBorder;
     String displayStatus;
 
+    final engineerName = ticket['engineer_name']?.toString() ?? '';
+
     switch (rawStatus) {
       case 'IN_PROGRESS':
-        badgeBg = const Color(0xFFF1F5F9);
-        badgeBorder = const Color(0xFFCBD5E1);
-        badgeText = const Color(0xFF334155);
+        badgeBg = const Color(0xFFE0F2FE);
+        badgeBorder = const Color(0xFFBAE6FD);
+        badgeText = const Color(0xFF0284C7);
         displayStatus = 'IN_PROGRESS';
         break;
       case 'CLOSED':
+      case 'COMPLETED':
+      case 'APPROVED':
         badgeBg = const Color(0xFFECFDF5);
         badgeBorder = const Color(0xFFA7F3D0);
         badgeText = const Color(0xFF059669);
@@ -142,6 +146,43 @@ class SosTicketCard extends StatelessWidget {
                       height: 1.35,
                     ),
                   ),
+
+                // Row 4: Kỹ sư tiếp nhận (nếu có)
+                if (engineerName.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF0F9FF),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFFBAE6FD)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.engineering_rounded,
+                          size: 13,
+                          color: Color(0xFF0284C7),
+                        ),
+                        const SizedBox(width: 5),
+                        Flexible(
+                          child: Text(
+                            'Kỹ sư tiếp nhận: $engineerName',
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF0284C7),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

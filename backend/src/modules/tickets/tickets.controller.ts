@@ -113,4 +113,9 @@ export class TicketsController {
   ): Promise<Ticket> {
     return this.ticketsService.rejectTicket(id, body?.rejection_reason);
   }
+
+  @Patch(':id/approve')
+  async approveTicket(@Param('id') id: string): Promise<Ticket> {
+    return this.ticketsService.approveTicket(id);
+  }
 }

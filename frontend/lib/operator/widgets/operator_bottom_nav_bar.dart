@@ -121,7 +121,7 @@ class OperatorBottomNavBar extends StatelessWidget {
                         minHeight: 16,
                       ),
                       child: Text(
-                        '$badgeCount',
+                        badgeCount > 99 ? '99+' : '$badgeCount',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           color: Colors.white,
