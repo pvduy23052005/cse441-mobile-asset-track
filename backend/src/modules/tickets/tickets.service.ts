@@ -133,6 +133,17 @@ export class TicketsService {
       `Đã tạo Ticket ${documentReference.id} cho máy ${machineDoc.id} bởi user ${reporterId} (${userRole || 'N/A'})`,
     );
 
+    try {
+      await machineDoc.ref.update({
+        status: 'PENDING',
+        updatedAt: currentTime,
+      });
+    } catch (e) {
+      this.logger.warn(
+        `Không thể cập nhật trạng thái máy ${machineDoc.id}: ${e}`,
+      );
+    }
+
     const isCritical =
       severity === TicketSeverity.CRITICAL || severity === TicketSeverity.HIGH;
     await this.notificationsService.createNotification({
@@ -242,6 +253,48 @@ export class TicketsService {
       updated_at: currentTime,
     });
 
+    const ticketData = documentSnapshot.data() as FirestoreTicket;
+    if (ticketData.machine_id) {
+      try {
+        const machinesCollection = this.firebaseService.firestore.collection(
+          FirestoreCollection.MACHINES,
+        );
+        const mRef = machinesCollection.doc(ticketData.machine_id);
+        const mSnap = await mRef.get();
+        if (mSnap.exists) {
+          await mRef.update({
+            status: 'IN_PROGRESS',
+            updatedAt: currentTime,
+          });
+        } else {
+          const query = await machinesCollection
+            .where('code', '==', ticketData.machine_id)
+            .limit(1)
+            .get();
+          if (!query.empty) {
+            await query.docs[0].ref.update({
+              status: 'IN_PROGRESS',
+              updatedAt: currentTime,
+            });
+          }
+        }
+      } catch (e) {
+        this.logger.warn(
+          `Không thể cập nhật trạng thái máy ${ticketData.machine_id}: ${e}`,
+        );
+      }
+    }
+
+    if (ticketData.reporter_id) {
+      await this.notificationsService.createNotification({
+        title: 'KỸ SƯ TIẾP NHẬN SỰ CỐ',
+        message: `Kỹ sư ${engineerName || 'Kỹ thuật'} đã tiếp nhận xử lý sự cố máy ${ticketData.machine_code || ''} (${ticketData.machine_name || 'Thiết bị'}). Trạng thái: ĐANG XỬ LÝ.`,
+        type: NotificationTypeEnum.SYSTEM,
+        user_id: ticketData.reporter_id,
+        target_id: id,
+      });
+    }
+
     this.logger.log(
       `Ticket '${id}' đã được Kỹ sư '${engineerId}' tiếp nhận xử lý.`,
     );
@@ -291,6 +344,43 @@ export class TicketsService {
 
     this.logger.log(`Ticket '${id}' đã bị Quản đốc từ chối nghiệm thu.`);
 
+    return this.getTicketById(id);
+  }
+
+  async approveTicket(id: string): Promise<Ticket> {
+    const documentReference = this.collection.doc(id);
+    const documentSnapshot = await documentReference.get();
+    if (!documentSnapshot.exists) {
+      throw new NotFoundException(`Ticket with ID '${id}' not found`);
+    }
+
+    const ticketData = documentSnapshot.data() as FirestoreTicket;
+    const currentTime = new Date().toISOString();
+    await documentReference.update({
+      status: TicketStatus.CLOSED,
+      closed_at: currentTime,
+      updated_at: currentTime,
+    });
+
+    if (ticketData.machine_id) {
+      try {
+        const machinesCollection = this.firebaseService.firestore.collection(
+          FirestoreCollection.MACHINES,
+        );
+        const mRef = machinesCollection.doc(ticketData.machine_id);
+        const mSnap = await mRef.get();
+        if (mSnap.exists) {
+          await mRef.update({
+            status: 'ACTIVE',
+            updatedAt: currentTime,
+          });
+        }
+      } catch (e) {
+        this.logger.warn(`Không thể cập nhật trạng thái máy: ${e}`);
+      }
+    }
+
+    this.logger.log(`Ticket '${id}' đã được Quản đốc nghiệm thu & đóng phiếu.`);
     return this.getTicketById(id);
   }
 }

@@ -60,32 +60,63 @@ class MachineCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Row 1: Code + Name
-                      RichText(
-                        text: TextSpan(
-                          children: [
-                            if (machine.code.isNotEmpty)
-                              TextSpan(
-                                text: '${machine.code}  ',
-                                style: const TextStyle(
-                                  color: Color(0xFF059669),
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 15,
-                                  letterSpacing: 0.2,
-                                ),
-                              ),
-                            TextSpan(
-                              text: machine.name.isNotEmpty
-                                  ? machine.name
-                                  : 'Thiết bị chưa đặt tên',
-                              style: const TextStyle(
-                                color: Color(0xFF0F172A),
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15,
+                      // Row 1: Code + Name + Status Badge
+                      Row(
+                        children: [
+                          Expanded(
+                            child: RichText(
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              text: TextSpan(
+                                children: [
+                                  if (machine.code.isNotEmpty)
+                                    TextSpan(
+                                      text: '${machine.code}  ',
+                                      style: const TextStyle(
+                                        color: Color(0xFF059669),
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 15,
+                                        letterSpacing: 0.2,
+                                      ),
+                                    ),
+                                  TextSpan(
+                                    text: machine.name.isNotEmpty
+                                        ? machine.name
+                                        : 'Thiết bị chưa đặt tên',
+                                    style: const TextStyle(
+                                      color: Color(0xFF0F172A),
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: machine.statusBgColor,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color:
+                                    machine.statusColor.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Text(
+                              machine.statusLabel,
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w700,
+                                color: machine.statusColor,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 5),
 

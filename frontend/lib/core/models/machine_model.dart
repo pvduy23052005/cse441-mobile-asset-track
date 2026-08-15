@@ -81,7 +81,13 @@ class MachineModel {
     switch (status.toUpperCase()) {
       case 'ACTIVE':
         return 'Hoạt động';
+      case 'IN_PROGRESS':
+      case 'REPAIRING':
+        return 'Đang xử lý';
+      case 'PENDING':
+        return 'Chờ tiếp nhận';
       case 'MAINTENANCE':
+      case 'UNDER_MAINTENANCE':
         return 'Bảo trì';
       case 'INACTIVE':
         return 'Tạm dừng';
@@ -96,8 +102,14 @@ class MachineModel {
     switch (status.toUpperCase()) {
       case 'ACTIVE':
         return AppTheme.primaryColor;
-      case 'MAINTENANCE':
+      case 'IN_PROGRESS':
+      case 'REPAIRING':
+        return const Color(0xFF0284C7); // Cyan / Blue
+      case 'PENDING':
         return const Color(0xFFD97706); // Amber
+      case 'MAINTENANCE':
+      case 'UNDER_MAINTENANCE':
+        return const Color(0xFFEA580C); // Orange
       case 'INACTIVE':
         return AppTheme.mutedForegroundColor;
       case 'ERROR':
