@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   Put,
   Req,
   UseGuards,
@@ -81,5 +82,25 @@ export class MachineController {
     @Body() data: Partial<FirestoreMachine>,
   ): Promise<Machine> {
     return this.machineService.updateMachine(id, data);
+  }
+
+  @Post(':id/running-hours')
+  async logRunningHours(
+    @Param('id') id: string,
+    @Body() body: { running_hours: number; shift?: string },
+    @Req() req: JwtAuthenticatedRequest,
+  ): Promise<Machine> {
+    const userProfile = req.user;
+    const loggedByName =
+      userProfile?.fullName ||
+      userProfile?.full_name ||
+      userProfile?.email ||
+      'Operator';
+    return this.machineService.logRunningHours(
+      id,
+      Number(body.running_hours),
+      loggedByName,
+      body.shift,
+    );
   }
 }

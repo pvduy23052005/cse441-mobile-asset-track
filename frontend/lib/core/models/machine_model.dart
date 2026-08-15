@@ -122,4 +122,24 @@ class MachineModel {
   Color get statusBgColor {
     return statusColor.withValues(alpha: 0.12);
   }
+
+  IconData get statusIcon {
+    switch (status.toUpperCase()) {
+      case 'ACTIVE':
+        return Icons.grid_view_rounded;
+      case 'IN_PROGRESS':
+      case 'REPAIRING':
+        return Icons.precision_manufacturing_rounded;
+      case 'PENDING':
+        return Icons.memory_rounded;
+      case 'MAINTENANCE':
+      case 'UNDER_MAINTENANCE':
+        return Icons.build_rounded;
+      case 'ERROR':
+        return Icons.memory_rounded;
+      case 'INACTIVE':
+      default:
+        return Icons.power_settings_new_rounded;
+    }
+  }
 }
