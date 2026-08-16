@@ -439,8 +439,8 @@ Phân công nhiệm vụ rõ ràng theo phân hệ và vai trò người dùng t
 
 | Phân hệ / Module | Thành viên Phụ trách Chính | Công việc & Phạm vi chi tiết |
 | :--- | :--- | :--- |
-| **Phân hệ 1: Công nhân Vận hành (Operator Persona)** | **Phùng Văn Duy** | • **QR Machine Passport:** Tích hợp camera `mobile_scanner`, decode QR < 1.5s, hiển thị Hộ chiếu thiết bị, thông số kỹ thuật, lịch sử bảo trì, cẩm nang xử lý lỗi nhanh.<br>• **Running Hours Logging:** UI popup nhập chỉ số vận hành (giờ/km), validation logic real-time, ghi nhận vào `running_hours_log`.<br>• **SOS Breakdown Ticket Creation:** Form báo sự cố khẩn cấp, chọn mức độ nghiêm trọng, chụp ảnh hiện trường qua camera (`image_picker`), tạo Ticket SOS gửi lên Firestore `tickets`.<br>• **Hủy Ticket SOS:** Chức năng hủy ticket khi còn ở trạng thái `Pending`.<br>• **Offline Mode & Sync (NFR-06):** Thiết lập Local cache SQLite / Persistent Queue lưu tạm giờ chạy & Ticket SOS khi mất mạng, hiển thị Banner cảnh báo đỏ và tự động đồng bộ khi có mạng. |
-| **Phân hệ 2: Kỹ sư Bảo trì & Quản đốc (ME Engineer & Supervisor Personas)** | **Thành viên 2** | • **ME Engineer Workflow:** Nhận Push Notification từ Firebase FCM, màn hình danh sách Ticket/PM, Transaction `UPDATE tickets` tiếp nhận sửa chữa, UI thực hiện PM Checklist kèm upload ảnh minh chứng, UI ghi log & đề xuất vật tư thay thế.<br>• **Supervisor Workflow:** Canvas ký tên điện tử (`signature`), phê duyệt đề xuất vật tư vượt ngưỡng, Dashboard thống kê Downtime & biểu đồ (`fl_chart`), quản lý và import nhân sự từ file Excel.<br>• **Backend & Cloud Functions:** Cấu hình Firebase Auth, Firestore Security Rules, Cloud Functions tự sinh PM Checklist, trigger FCM và tự động đổi trạng thái máy. |
+| **Phân hệ 1: Công nhân Vận hành (Operator Persona)** | **Phùng Văn Duy (2351170589)** | • **QR Machine Passport:** Tích hợp camera `mobile_scanner`, decode QR < 1.5s, hiển thị Hộ chiếu thiết bị, thông số kỹ thuật, lịch sử bảo trì, cẩm nang xử lý lỗi nhanh.<br>• **Running Hours Logging:** UI popup nhập chỉ số vận hành (giờ/km), validation logic real-time, ghi nhận vào `running_hours_log`.<br>• **SOS Breakdown Ticket Creation:** Form báo sự cố khẩn cấp, chọn mức độ nghiêm trọng, chụp ảnh hiện trường qua camera (`image_picker`), tạo Ticket SOS gửi lên Firestore `tickets`.<br>• **Hủy Ticket SOS:** Chức năng hủy ticket khi còn ở trạng thái `Pending`.<br>• **Offline Mode & Sync (NFR-06):** Thiết lập Local cache SQLite / Persistent Queue lưu tạm giờ chạy & Ticket SOS khi mất mạng, hiển thị Banner cảnh báo đỏ và tự động đồng bộ khi có mạng. |
+| **Phân hệ 2: Kỹ sư Bảo trì & Quản đốc (ME Engineer & Supervisor Personas)** | **Lê Quý Dương (2351170589)** | • **ME Engineer Workflow:** Nhận Push Notification từ Firebase FCM, màn hình danh sách Ticket/PM, Transaction `UPDATE tickets` tiếp nhận sửa chữa, UI thực hiện PM Checklist kèm upload ảnh minh chứng, UI ghi log & đề xuất vật tư thay thế.<br>• **Supervisor Workflow:** Canvas ký tên điện tử (`signature`), phê duyệt đề xuất vật tư vượt ngưỡng, Dashboard thống kê Downtime & biểu đồ (`fl_chart`), quản lý và import nhân sự từ file Excel.<br>• **Backend & Cloud Functions:** Cấu hình Firebase Auth, Firestore Security Rules, Cloud Functions tự sinh PM Checklist, trigger FCM và tự động đổi trạng thái máy. |
 
 ---
 
@@ -448,23 +448,23 @@ Phân công nhiệm vụ rõ ràng theo phân hệ và vai trò người dùng t
 
 - **Tuần 1: Khởi động hệ thống & Nền tảng**
   - *Phùng Văn Duy:* Khởi tạo Flutter Project, cấu hình Riverpod, xây dựng Industrial Design System (Theme nhà máy, nút bấm 48dp, typography), màn hình Login phân quyền Role Operator.
-  - *Thành viên 2:* Tạo Firebase Project, cấu hình Firestore Collections, thiết lập Security Rules & Cloud Functions cơ bản.
+  - *Lê Quý Dương:* Tạo Firebase Project, cấu hình Firestore Collections, thiết lập Security Rules & Cloud Functions cơ bản.
 
 - **Tuần 2: Hoàn thiện Phân hệ Operator (QR Code, Machine Passport & Logging)**
   - *Phùng Văn Duy:* Hoàn thiện UI camera quét QR, màn hình Hộ chiếu thiết bị, popup nhập giờ chạy máy/km, xây dựng cơ chế **Offline Queue** bằng SQLite (cache thông tin máy, lưu lượt nhập giờ khi offline).
-  - *Thành viên 2:* Nhập dữ liệu máy mẫu lên Firestore, tạo bộ mã QR mẫu tương ứng để kiểm thử quét mã.
+  - *Lê Quý Dương:* Nhập dữ liệu máy mẫu lên Firestore, tạo bộ mã QR mẫu tương ứng để kiểm thử quét mã.
 
 - **Tuần 3: Hoàn thiện Ticket SOS & Push Notification**
   - *Phùng Văn Duy:* Form tạo Ticket SOS khẩn cấp, chọn mức độ nghiêm trọng, chụp ảnh đính kèm lưu local/Firebase Storage, xử lý đồng bộ Ticket offline.
-  - *Thành viên 2:* Cloud Function lắng nghe `tickets` onCreate để chuyển trạng thái máy sang `repairing`, trigger gửi push notification FCM tới ME Engineer, xây dựng màn hình danh sách Ticket cho ME.
+  - *Lê Quý Dương:* Cloud Function lắng nghe `tickets` onCreate để chuyển trạng thái máy sang `repairing`, trigger gửi push notification FCM tới ME Engineer, xây dựng màn hình danh sách Ticket cho ME.
 
 - **Tuần 4: Hoàn thiện PM Checklist, Spare Parts & Ký nghiệm thu**
   - *Phùng Văn Duy:* Tối ưu luồng trải nghiệm Operator, test độ trễ quét QR, kiểm thử chức năng hủy Ticket khi còn Pending, hoàn thiện UI thông báo phản hồi.
-  - *Thành viên 2:* UI Checklist bảo dưỡng định kỳ, upload ảnh linh kiện, UI đề xuất/duyệt vật tư, Canvas ký tên nghiệm thu của Supervisor.
+  - *Lê Quý Dương:* UI Checklist bảo dưỡng định kỳ, upload ảnh linh kiện, UI đề xuất/duyệt vật tư, Canvas ký tên nghiệm thu của Supervisor.
 
 - **Tuần 5: Dashboard, Tích hợp Toàn diện & Đóng gói**
-  - *Thành viên 2:* Dashboard biểu đồ Downtime (Pie Chart + Bar Chart), màn hình cấu hình ngưỡng chi phí và quản lý nhân sự Excel.
-  - *Cả 2 thành viên (Phùng Văn Duy & TV2):* Kiểm thử End-to-End toàn bộ luồng thực tế (Operator quét QR báo hỏng SOS $\rightarrow$ ME nhận thông báo sửa $\rightarrow$ Supervisor ký nghiệm thu), kiểm thử mất mạng/có mạng, tối ưu hiệu năng và đóng gói bản build APK/IPA.
+  - *Lê Quý Dương:* Dashboard biểu đồ Downtime (Pie Chart + Bar Chart), màn hình cấu hình ngưỡng chi phí và quản lý nhân sự Excel.
+  - *Cả 2 thành viên (Phùng Văn Duy & Lê Quý Dương):* Kiểm thử End-to-End toàn bộ luồng thực tế (Operator quét QR báo hỏng SOS $\rightarrow$ ME nhận thông báo sửa $\rightarrow$ Supervisor ký nghiệm thu), kiểm thử mất mạng/có mạng, tối ưu hiệu năng và đóng gói bản build APK/IPA.
 
 ---
 
