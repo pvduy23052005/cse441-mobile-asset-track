@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../dashboard/models/work_order_model.dart' as dash_models;
+import '../../dashboard/widgets/modals/pm_checklist_modal.dart' as dash_modals;
 import '../models/pm_checklist_model.dart';
 import '../models/ticket_model.dart';
 import '../services/engineer_ticket_service.dart';
-import 'modals/pm_checklist_modal.dart';
 import 'modals/work_order_detail_modal.dart';
 import 'pm_card.dart';
 import 'ticket_card.dart';
@@ -302,17 +303,31 @@ class _EngineerTicketListViewState extends State<EngineerTicketListView> {
                                     child: PMCard(
                                       pm: pm,
                                       onTap: () {
-                                        PMChecklistModal.show(
-                                          context,
-                                          pm: pm,
-                                          onCompletePM: (updatedPM) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(
-                                                content: Text('Đã hoàn thành bảo trì PM ${updatedPM.code}!'),
-                                                backgroundColor: const Color(0xFFD97706),
-                                              ),
-                                            );
-                                          },
+                                        showDialog(
+                                          context: context,
+                                          builder: (ctx) => dash_modals.PMChecklistModal(
+                                            checklist: dash_models.PMChecklistModel(
+                                              id: pm.id,
+                                              code: pm.code,
+                                              machineId: pm.machineId,
+                                              machineName: pm.machineName,
+                                              scheduledHours: pm.scheduledHours.toInt(),
+                                              status: dash_models.PMChecklistStatus.pending,
+                                              itemCount: pm.items.length,
+                                            ),
+                                            onClose: () => Navigator.pop(ctx),
+                                            onComplete: () {
+                                              Navigator.pop(ctx);
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    'Đã hoàn thành bảo trì PM ${pm.code} (${pm.machineName})!',
+                                                  ),
+                                                  backgroundColor: const Color(0xFFD97706),
+                                                ),
+                                              );
+                                            },
+                                          ),
                                         );
                                       },
                                     ),
