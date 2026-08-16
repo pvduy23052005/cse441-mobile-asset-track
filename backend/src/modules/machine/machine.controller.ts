@@ -59,6 +59,13 @@ export class MachineController {
     return this.machineService.updateMachine(id, data);
   }
 
+  @Post()
+  async createMachine(
+    @Body() data: Partial<FirestoreMachine>,
+  ): Promise<Machine> {
+    return this.machineService.createMachine(data);
+  }
+
   @Post(':id/running-hours')
   async logRunningHours(
     @Param('id') id: string,

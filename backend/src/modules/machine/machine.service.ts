@@ -449,6 +449,33 @@ export class MachineService implements OnModuleInit {
     return this.getMachineById(machineId);
   }
 
+  async createMachine(data: Partial<FirestoreMachine>): Promise<Machine> {
+    const now = new Date().toISOString();
+    const code = data.code ? data.code.trim().toUpperCase() : `MC-${Date.now()}`;
+    const docRef = this.firebaseService.firestore
+      .collection(this.machinesCollection)
+      .doc();
+
+    const machineDoc: FirestoreMachine = {
+      code,
+      name: data.name ? data.name.trim() : 'Thiết bị mới',
+      model: data.model ? data.model.trim() : (data.specifications?.category || 'Chưa xác định'),
+      location: data.location ? data.location.trim() : 'Phân Xưởng Sản Xuất',
+      status: (data.status || 'ACTIVE').toUpperCase(),
+      running_hours: Number(data.running_hours ?? 0),
+      next_maintenance_hours: Number(data.next_maintenance_hours ?? 500),
+      quick_troubleshooting: data.quick_troubleshooting || [],
+      specifications: data.specifications || {},
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    await docRef.set(machineDoc);
+    this.logger.log(`Đã tạo hồ sơ máy mới: [${code}] ${machineDoc.name}`);
+
+    return this.getMachineById(docRef.id);
+  }
+
   async logRunningHours(
     id: string,
     runningHours: number,
