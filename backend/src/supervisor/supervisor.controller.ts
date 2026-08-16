@@ -57,6 +57,6 @@ export class SupervisorController {
         'Chỉ Quản đốc (Supervisor) mới có quyền truy cập thông tin thiết bị',
       );
     }
-    return this.machineService.getMachineById(id);
+    return await this.machineService.getMachineById(id);
   }
 }

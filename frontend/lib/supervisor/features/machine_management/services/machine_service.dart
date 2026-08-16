@@ -24,7 +24,8 @@ class MachineService {
 
   Future<MachineModel> getMachineById(String id) async {
     try {
-      final response = await _dio.get<Map<String, dynamic>>('/machines/$id');
+      final response =
+          await _dio.get<Map<String, dynamic>>('/supervisor/machines/$id');
       if (response.data != null) {
         return MachineModel.fromJson(response.data!);
       }

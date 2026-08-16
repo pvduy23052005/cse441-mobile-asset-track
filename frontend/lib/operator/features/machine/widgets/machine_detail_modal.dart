@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../../core/models/machine_model.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/machine_formatters.dart';
+import '../services/machine_service.dart';
 import '../../ticket/widgets/create_sos_ticket_modal.dart';
 
-class MachineDetailModal extends StatelessWidget {
+class MachineDetailModal extends StatefulWidget {
   final MachineModel machine;
   final ValueChanged<MachineModel>? onStatusUpdated;
 
@@ -35,18 +36,47 @@ class MachineDetailModal extends StatelessWidget {
   }
 
   @override
+  State<MachineDetailModal> createState() => _MachineDetailModalState();
+}
+
+class _MachineDetailModalState extends State<MachineDetailModal> {
+  late MachineModel _currentMachine;
+  final MachineService _machineService = MachineService();
+
+  @override
+  void initState() {
+    super.initState();
+    _currentMachine = widget.machine;
+    _fetchDetail();
+  }
+
+  Future<void> _fetchDetail() async {
+    if (widget.machine.id.isEmpty) return;
+    try {
+      final fresh = await _machineService.getMachineById(widget.machine.id);
+      if (mounted) {
+        setState(() {
+          _currentMachine = fresh;
+        });
+        widget.onStatusUpdated?.call(fresh);
+      }
+    } catch (_) {
+      // Keep initial machine state if offline or network error
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Determine location and maintenance info
-    final String locationText = machine.location.isNotEmpty
-        ? machine.location
-        : (machine.specifications['location']?.toString() ??
-            machine.specifications['area']?.toString() ??
+    final String locationText = _currentMachine.location.isNotEmpty
+        ? _currentMachine.location
+        : (_currentMachine.specifications['location']?.toString() ??
+            _currentMachine.specifications['area']?.toString() ??
             'Chưa cập nhật vị trí');
 
-    final String nextMaintText = machine.nextMaintenanceHours != null
-        ? '${machine.nextMaintenanceHours} giờ'
-        : (machine.runningHours > 0
-            ? '${machine.runningHours + 500} giờ'
+    final String nextMaintText = _currentMachine.nextMaintenanceHours != null
+        ? '${_currentMachine.nextMaintenanceHours} giờ'
+        : (_currentMachine.runningHours > 0
+            ? '${_currentMachine.runningHours + 500} giờ'
             : 'Chưa thiết lập');
 
     return Container(
@@ -126,8 +156,8 @@ class MachineDetailModal extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      machine.name.isNotEmpty
-                                          ? machine.name
+                                      _currentMachine.name.isNotEmpty
+                                          ? _currentMachine.name
                                           : 'Chưa đặt tên thiết bị',
                                       style: const TextStyle(
                                         fontSize: 17,
@@ -137,7 +167,7 @@ class MachineDetailModal extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      'Mã: ${machine.code.isNotEmpty ? machine.code : "N/A"}',
+                                      'Mã: ${_currentMachine.code.isNotEmpty ? _currentMachine.code : "N/A"}',
                                       style: const TextStyle(
                                         fontSize: 13,
                                         color: Color(0xFF059669),
@@ -154,13 +184,13 @@ class MachineDetailModal extends StatelessWidget {
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: machine.statusBgColor,
+                                  color: _currentMachine.statusBgColor,
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
-                                  machine.statusLabel,
+                                  _currentMachine.statusLabel,
                                   style: TextStyle(
-                                    color: machine.statusColor,
+                                    color: _currentMachine.statusColor,
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -180,8 +210,8 @@ class MachineDetailModal extends StatelessWidget {
                                 child: _buildStatItem(
                                   icon: Icons.memory_rounded,
                                   label: 'Model máy',
-                                  value: machine.model.isNotEmpty
-                                      ? machine.model
+                                  value: _currentMachine.model.isNotEmpty
+                                      ? _currentMachine.model
                                       : 'Tiêu chuẩn',
                                 ),
                               ),
@@ -190,7 +220,7 @@ class MachineDetailModal extends StatelessWidget {
                                 child: _buildStatItem(
                                   icon: Icons.timer_outlined,
                                   label: 'Giờ vận hành',
-                                  value: '${machine.runningHours} giờ',
+                                  value: '${_currentMachine.runningHours} giờ',
                                 ),
                               ),
                             ],
@@ -218,6 +248,116 @@ class MachineDetailModal extends StatelessWidget {
                               ),
                             ],
                           ),
+
+                          // Row 3: Người vận hành phụ trách
+                          const SizedBox(height: 14),
+                          const Divider(height: 1, color: AppTheme.borderColor),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: _currentMachine.operator != null
+                                      ? const Color(0xFFE0F2FE)
+                                      : const Color(0xFFF1F5F9),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: _currentMachine.operator != null
+                                        ? const Color(0xFFBAE6FD)
+                                        : const Color(0xFFE2E8F0),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.person_rounded,
+                                  size: 20,
+                                  color: _currentMachine.operator != null
+                                      ? const Color(0xFF0284C7)
+                                      : AppTheme.mutedForegroundColor,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Người vận hành phụ trách',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: AppTheme.mutedForegroundColor,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _currentMachine.operator?.fullName ??
+                                          (_currentMachine.operatorId != null &&
+                                                  _currentMachine.operatorId!.isNotEmpty
+                                              ? 'Mã: ${_currentMachine.operatorId}'
+                                              : 'Chưa phân công'),
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: _currentMachine.operator != null ||
+                                                (_currentMachine.operatorId != null &&
+                                                    _currentMachine.operatorId!.isNotEmpty)
+                                            ? AppTheme.foregroundColor
+                                            : AppTheme.mutedForegroundColor,
+                                      ),
+                                    ),
+                                    if (_currentMachine.operator?.email != null &&
+                                        _currentMachine.operator!.email.isNotEmpty) ...[
+                                      const SizedBox(height: 1),
+                                      Text(
+                                        _currentMachine.operator!.email,
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          color: AppTheme.mutedForegroundColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              if (_currentMachine.operator?.phone != null &&
+                                  _currentMachine.operator!.phone!.isNotEmpty)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFECFDF5),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: const Color(0xFFA7F3D0),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.phone_outlined,
+                                        size: 12,
+                                        color: Color(0xFF059669),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        _currentMachine.operator!.phone!,
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF059669),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -235,7 +375,7 @@ class MachineDetailModal extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
 
-                    if (machine.specifications.isEmpty)
+                    if (_currentMachine.specifications.isEmpty)
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16.0),
@@ -272,7 +412,7 @@ class MachineDetailModal extends StatelessWidget {
                           border: Border.all(color: AppTheme.borderColor),
                         ),
                         child: Column(
-                          children: machine.specifications.entries.map((entry) {
+                          children: _currentMachine.specifications.entries.map((entry) {
                             final readableKey =
                                 MachineFormatters.formatSpecKey(entry.key);
                             final readableValue =
