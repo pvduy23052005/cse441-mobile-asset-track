@@ -39,7 +39,7 @@ class MachineService {
   Future<Map<String, dynamic>> getMachineQrCode(String id) async {
     try {
       final response =
-          await _dio.get<Map<String, dynamic>>('/machines/$id/qrcode');
+          await _dio.get<Map<String, dynamic>>('/supervisor/machines/$id/qrcode');
       if (response.data != null) {
         return Map<String, dynamic>.from(response.data!);
       }

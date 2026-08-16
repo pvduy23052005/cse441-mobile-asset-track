@@ -35,35 +35,6 @@ export interface FirestoreMachine {
   updatedAt?: string;
 }
 
-export interface WorkOrder {
-  id: string;
-  code: string;
-  machineId: string;
-  machineName: string;
-  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED' | 'REJECTED';
-  description: string;
-  imageUrl?: string;
-  assigneeName?: string;
-  rejectionReason?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface FirestoreWorkOrder {
-  code?: string;
-  machineId?: string;
-  machineName?: string;
-  severity?: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
-  status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED' | 'REJECTED';
-  description?: string;
-  imageUrl?: string;
-  assigneeName?: string;
-  rejectionReason?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
 export interface PMChecklist {
   id: string;
   code: string;
@@ -111,7 +82,7 @@ export interface RunningHoursLog {
 
 export interface SparePartLog {
   id?: string;
-  workOrderId?: string;
+  ticketId?: string;
   pmChecklistId?: string;
   partName: string;
   quantity: number;
@@ -122,7 +93,7 @@ export interface SparePartLog {
 
 export interface SparePartsRequest {
   id: string;
-  workOrderId?: string;
+  ticketId?: string;
   pmChecklistId?: string;
   requestedBy: string;
   partName: string;
@@ -157,7 +128,6 @@ export class MachineService implements OnModuleInit {
 
   // Collections as per system_design.md
   private readonly machinesCollection = 'machines';
-  private readonly workOrdersCollection = 'work_orders';
   private readonly pmChecklistsCollection = 'pm_checklists';
   private readonly pmChecklistItemsCollection = 'pm_checklist_items';
   private readonly runningHoursLogsCollection = 'running_hours_logs';
@@ -200,16 +170,40 @@ export class MachineService implements OnModuleInit {
   }
 
   async getMachineById(id: string): Promise<Machine> {
-    const doc = await this.firebaseService.firestore
+    const docRef = this.firebaseService.firestore
       .collection(this.machinesCollection)
-      .doc(id)
-      .get();
+      .doc(id);
+    const doc = await docRef.get();
 
     if (!doc.exists) {
-      throw new NotFoundException(`Machine with ID '${id}' not found`);
+      const querySnapshot = await this.firebaseService.firestore
+        .collection(this.machinesCollection)
+        .where('code', '==', id)
+        .limit(1)
+        .get();
+
+      if (querySnapshot.empty) {
+        throw new NotFoundException(`Machine with ID or Code '${id}' not found`);
+      }
+
+      const foundDoc = querySnapshot.docs[0];
+      const data = foundDoc.data() as FirestoreMachine;
+      return {
+        id: foundDoc.id,
+        code: data.code || '',
+        name: data.name || '',
+        model: data.model || '',
+        location: data.location || '',
+        next_maintenance_hours: data.next_maintenance_hours,
+        specifications: data.specifications || {},
+        status: data.status || 'ACTIVE',
+        running_hours: data.running_hours ?? 0,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+      };
     }
 
-    const data = (doc.data() as FirestoreMachine) || {};
+    const data = doc.data() as FirestoreMachine;
     return {
       id: doc.id,
       code: data.code || '',
@@ -232,7 +226,24 @@ export class MachineService implements OnModuleInit {
 
     const doc = await docRef.get();
     if (!doc.exists) {
-      throw new NotFoundException(`Machine with ID '${id}' not found`);
+      const querySnapshot = await this.firebaseService.firestore
+        .collection(this.machinesCollection)
+        .where('code', '==', id)
+        .limit(1)
+        .get();
+
+      if (querySnapshot.empty) {
+        throw new NotFoundException(`Machine with ID or Code '${id}' not found`);
+      }
+
+      const foundDoc = querySnapshot.docs[0];
+      const updatedAt = new Date().toISOString();
+      await foundDoc.ref.update({
+        status: status.toUpperCase(),
+        updatedAt,
+      });
+
+      return this.getMachineById(foundDoc.id);
     }
 
     const updatedAt = new Date().toISOString();
@@ -254,7 +265,24 @@ export class MachineService implements OnModuleInit {
 
     const doc = await docRef.get();
     if (!doc.exists) {
-      throw new NotFoundException(`Machine with ID '${id}' not found`);
+      const querySnapshot = await this.firebaseService.firestore
+        .collection(this.machinesCollection)
+        .where('code', '==', id)
+        .limit(1)
+        .get();
+
+      if (querySnapshot.empty) {
+        throw new NotFoundException(`Machine with ID or Code '${id}' not found`);
+      }
+
+      const foundDoc = querySnapshot.docs[0];
+      const updatedAt = new Date().toISOString();
+      await foundDoc.ref.update({
+        ...data,
+        updatedAt,
+      });
+
+      return this.getMachineById(foundDoc.id);
     }
 
     const updatedAt = new Date().toISOString();
@@ -268,7 +296,7 @@ export class MachineService implements OnModuleInit {
 
   async logRunningHours(
     id: string,
-    newHours: number,
+    runningHours: number,
     loggedBy?: string,
     shift?: string,
   ): Promise<Machine> {
@@ -278,23 +306,26 @@ export class MachineService implements OnModuleInit {
 
     let doc = await docRef.get();
     let machineId = id;
+
     if (!doc.exists) {
-      const query = await this.firebaseService.firestore
+      const querySnapshot = await this.firebaseService.firestore
         .collection(this.machinesCollection)
         .where('code', '==', id)
         .limit(1)
         .get();
-      if (query.empty) {
-        throw new NotFoundException(
-          `Machine with ID or Code '${id}' not found`,
-        );
+
+      if (querySnapshot.empty) {
+        throw new NotFoundException(`Machine with ID or Code '${id}' not found`);
       }
-      doc = query.docs[0];
+
+      doc = querySnapshot.docs[0];
       machineId = doc.id;
     }
 
     const machineData = doc.data() as FirestoreMachine;
     const previousHours = machineData.running_hours ?? 0;
+    const newHours = Number(runningHours);
+
     const updatedAt = new Date().toISOString();
 
     await doc.ref.update({
@@ -320,70 +351,6 @@ export class MachineService implements OnModuleInit {
     );
 
     return this.getMachineById(machineId);
-  }
-
-  // Work Orders Firestore API
-  async getWorkOrders(): Promise<WorkOrder[]> {
-    try {
-      const snapshot = await this.firebaseService.firestore
-        .collection(this.workOrdersCollection)
-        .get();
-
-      return snapshot.docs.map((doc) => {
-        const data = doc.data() as FirestoreWorkOrder;
-        return {
-          id: doc.id,
-          code: data.code || '',
-          machineId: data.machineId || '',
-          machineName: data.machineName || '',
-          severity: data.severity || 'LOW',
-          status: data.status || 'PENDING',
-          description: data.description || '',
-          imageUrl: data.imageUrl,
-          assigneeName: data.assigneeName,
-          rejectionReason: data.rejectionReason,
-          createdAt: data.createdAt,
-          updatedAt: data.updatedAt,
-        };
-      });
-    } catch (error) {
-      this.logger.error(`Error fetching work orders from Firestore: ${error}`);
-      return [];
-    }
-  }
-
-  async updateWorkOrderStatus(id: string, status: string): Promise<WorkOrder> {
-    const docRef = this.firebaseService.firestore
-      .collection(this.workOrdersCollection)
-      .doc(id);
-
-    const doc = await docRef.get();
-    if (!doc.exists) {
-      throw new NotFoundException(`WorkOrder with ID '${id}' not found`);
-    }
-
-    const updatedAt = new Date().toISOString();
-    await docRef.update({
-      status: status.toUpperCase(),
-      updatedAt,
-    });
-
-    const updatedDoc = await docRef.get();
-    const data = (updatedDoc.data() as FirestoreWorkOrder) || {};
-    return {
-      id: updatedDoc.id,
-      code: data.code || '',
-      machineId: data.machineId || '',
-      machineName: data.machineName || '',
-      severity: data.severity || 'LOW',
-      status: data.status || 'PENDING',
-      description: data.description || '',
-      imageUrl: data.imageUrl,
-      assigneeName: data.assigneeName,
-      rejectionReason: data.rejectionReason,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-    };
   }
 
   // PM Checklists Firestore API
@@ -440,61 +407,7 @@ export class MachineService implements OnModuleInit {
   // Auto seed missing Firebase collections matching system_design.md
   async seedAllFirebaseCollections() {
     try {
-      // 1. Check & Seed Work Orders
-      const woSnap = await this.firebaseService.firestore
-        .collection(this.workOrdersCollection)
-        .get();
-
-      if (woSnap.empty) {
-        this.logger.log(
-          'Seeding collection: work_orders into Firebase Firestore...',
-        );
-        const defaultWorkOrders = [
-          {
-            code: 'SOS-2026-001',
-            machineId: 'MC-101',
-            machineName: 'Máy Trung Tâm Gia Công CNC 5 Trục',
-            severity: 'HIGH',
-            status: 'IN_PROGRESS',
-            description:
-              'Trục chính Spindle phát ra tiếng kêu rít lớn khi quay tốc độ > 8000 RPM, kẹt gắp dao tự động làm dừng toàn bộ chuyển B.',
-            imageUrl:
-              'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500',
-            assigneeName: 'Kỹ Sư ME Trần Minh Đức',
-            createdAt: new Date().toISOString(),
-          },
-          {
-            code: 'SOS-2026-002',
-            machineId: 'MC-102',
-            machineName: 'Máy Dập Thủy Lực 500 Tấn',
-            severity: 'CRITICAL',
-            status: 'PENDING',
-            description:
-              'Rò rỉ dầu thủy lực xi lanh ép chính, áp suất hạ dốc nguy cơ rơi khuôn dập.',
-            createdAt: new Date().toISOString(),
-          },
-          {
-            code: 'SOS-2026-003',
-            machineId: 'MC-103',
-            machineName: 'Máy Nén Khí Trục Vít Công Nghiệp',
-            severity: 'MEDIUM',
-            status: 'PENDING',
-            description:
-              'Áp suất khí nén đầu ra tụt giảm dưới 4.5 Bar, bình tách dầu phát tiếng ồn lạ tại van xả an toàn.',
-            imageUrl:
-              'https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=500',
-            createdAt: new Date().toISOString(),
-          },
-        ];
-
-        for (const wo of defaultWorkOrders) {
-          await this.firebaseService.firestore
-            .collection(this.workOrdersCollection)
-            .add(wo);
-        }
-      }
-
-      // 2. Check & Seed PM Checklists & Items
+      // 1. Check & Seed PM Checklists & Items
       const pmSnap = await this.firebaseService.firestore
         .collection(this.pmChecklistsCollection)
         .get();
@@ -545,7 +458,7 @@ export class MachineService implements OnModuleInit {
         }
       }
 
-      // 3. Check & Seed Running Hours Logs (Usage Logs)
+      // 2. Check & Seed Running Hours Logs (Usage Logs)
       const rhlSnap = await this.firebaseService.firestore
         .collection(this.runningHoursLogsCollection)
         .get();
@@ -567,7 +480,7 @@ export class MachineService implements OnModuleInit {
           });
       }
 
-      // 4. Check & Seed Spare Part Logs
+      // 3. Check & Seed Spare Part Logs
       const splSnap = await this.firebaseService.firestore
         .collection(this.sparePartLogsCollection)
         .get();
@@ -579,7 +492,7 @@ export class MachineService implements OnModuleInit {
         await this.firebaseService.firestore
           .collection(this.sparePartLogsCollection)
           .add({
-            workOrderId: 'wo-101',
+            ticketId: 'ticket-101',
             partName: 'Dầu bôi trơn tổng hợp ISO VG 68',
             quantity: 5,
             unit: 'Lít',
@@ -588,7 +501,7 @@ export class MachineService implements OnModuleInit {
           });
       }
 
-      // 5. Check & Seed Spare Parts Requests
+      // 4. Check & Seed Spare Parts Requests
       const sprSnap = await this.firebaseService.firestore
         .collection(this.sparePartsRequestsCollection)
         .get();
@@ -600,7 +513,7 @@ export class MachineService implements OnModuleInit {
         await this.firebaseService.firestore
           .collection(this.sparePartsRequestsCollection)
           .add({
-            workOrderId: 'wo-101',
+            ticketId: 'ticket-101',
             requestedBy: 'Trần Minh Đức (ME)',
             partName: 'Vòng bi cao tốc 7014C',
             quantity: 2,
@@ -612,7 +525,7 @@ export class MachineService implements OnModuleInit {
           });
       }
 
-      // 6. Check & Seed Workshop Configs
+      // 5. Check & Seed Workshop Configs
       const cfgSnap = await this.firebaseService.firestore
         .collection(this.workshopConfigsCollection)
         .get();
