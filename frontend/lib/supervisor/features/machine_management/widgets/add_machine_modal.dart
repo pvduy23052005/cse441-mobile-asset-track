@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/machine_service.dart';
 
 class AddMachineModal extends StatefulWidget {
   final Function(Map<String, dynamic> newMachine)? onAddMachine;
@@ -22,7 +23,7 @@ class AddMachineModal extends StatefulWidget {
 }
 
 class _AddMachineModalState extends State<AddMachineModal> {
-  final _codeController = TextEditingController(text: 'MC-103');
+  final _codeController = TextEditingController();
   final _categoryController = TextEditingController(text: 'Gia Công CNC');
   final _nameController = TextEditingController(text: 'Máy Phay CNC Haas 3 Trục');
   final _locationController = TextEditingController(text: 'Phân Xưởng 1 - Dây chuyền C');
@@ -34,6 +35,17 @@ class _AddMachineModalState extends State<AddMachineModal> {
   List<int> _initialThresholds = [500, 1000];
 
   final List<Map<String, String>> _quickTroubleshooting = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _regenerateCode();
+  }
+
+  void _regenerateCode() {
+    final num = 100 + (DateTime.now().millisecondsSinceEpoch % 900);
+    _codeController.text = 'MC-$num';
+  }
 
   @override
   void dispose() {
@@ -84,7 +96,7 @@ class _AddMachineModalState extends State<AddMachineModal> {
     });
   }
 
-  void _handleSubmit() {
+  Future<void> _handleSubmit() async {
     if (_codeController.text.trim().isEmpty || _nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng nhập đầy đủ Mã máy và Tên máy!')),
@@ -92,30 +104,67 @@ class _AddMachineModalState extends State<AddMachineModal> {
       return;
     }
 
-    final newMachine = {
-      'code': _codeController.text.trim().toUpperCase(),
-      'name': _nameController.text.trim(),
-      'category': _categoryController.text.trim(),
-      'location': _locationController.text.trim(),
-      'trackingUnit': _trackingUnit,
-      'runningHours': double.tryParse(_initialHoursController.text) ?? 0,
-      'initialThresholds': _initialThresholds,
-      'recurringInterval': int.tryParse(_recurringIntervalController.text) ?? 500,
-      'quickTroubleshooting': _quickTroubleshooting,
+    final code = _codeController.text.trim().toUpperCase();
+    final name = _nameController.text.trim();
+    final category = _categoryController.text.trim();
+    final location = _locationController.text.trim();
+    final runningHours = double.tryParse(_initialHoursController.text) ?? 0;
+    final recurringInterval = int.tryParse(_recurringIntervalController.text) ?? 500;
+    final firstMilestone = _initialThresholds.isNotEmpty ? _initialThresholds.first : recurringInterval;
+
+    final payload = {
+      'code': code,
+      'name': name,
+      'model': category.isNotEmpty ? category : 'Chưa xác định',
+      'location': location.isNotEmpty ? location : 'Phân Xưởng Sản Xuất',
+      'status': 'ACTIVE',
+      'running_hours': runningHours,
+      'next_maintenance_hours': firstMilestone,
+      'quick_troubleshooting': _quickTroubleshooting,
+      'specifications': {
+        'category': category,
+        'tracking_unit': _trackingUnit,
+        'initial_thresholds': _initialThresholds,
+        'recurring_interval': recurringInterval,
+      },
     };
 
-    if (widget.onAddMachine != null) {
-      widget.onAddMachine!(newMachine);
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final createdMachineModel = await MachineService().createMachine(payload);
+
+      if (mounted) {
+        Navigator.pop(context); // Close loading dialog
+
+        if (widget.onAddMachine != null) {
+          widget.onAddMachine!(payload);
+        }
+
+        Navigator.pop(context); // Close modal
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ Đã thêm thiết bị mới [${createdMachineModel.code}] ${createdMachineModel.name} thành công!'),
+            backgroundColor: const Color(0xFF059669),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Close loading dialog if open
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi thêm máy mới: ${e.toString().replaceAll('Exception: ', '')}'),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+      }
     }
-
-    Navigator.pop(context);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('✅ Đã thêm thiết bị mới [${newMachine['code']}] ${newMachine['name']} thành công!'),
-        backgroundColor: const Color(0xFF059669),
-      ),
-    );
   }
 
   @override
@@ -214,14 +263,24 @@ class _AddMachineModalState extends State<AddMachineModal> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                'Mã Thiết Bị (Mã QR)',
+                                'Mã Thiết Bị (Mã QR Tự Động)',
                                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF1E293B)),
                               ),
                               const SizedBox(height: 6),
                               TextField(
                                 controller: _codeController,
-                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                                decoration: _inputDecoration('VD: MC-103'),
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF047857)),
+                                decoration: _inputDecoration('Mã tự động').copyWith(
+                                  suffixIcon: IconButton(
+                                    icon: const Icon(Icons.autorenew_rounded, size: 18, color: Color(0xFF059669)),
+                                    tooltip: 'Sinh mã ngẫu nhiên mới',
+                                    onPressed: () {
+                                      setState(() {
+                                        _regenerateCode();
+                                      });
+                                    },
+                                  ),
+                                ),
                               ),
                             ],
                           ),

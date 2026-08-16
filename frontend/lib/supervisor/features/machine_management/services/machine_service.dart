@@ -87,6 +87,23 @@ class MachineService {
     }
   }
 
+  Future<MachineModel> createMachine(Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/machines',
+        data: data,
+      );
+      if (response.data != null) {
+        return MachineModel.fromJson(response.data!);
+      }
+      throw Exception('Không nhận được dữ liệu sau khi tạo máy mới');
+    } on DioException catch (e) {
+      throw Exception(e.error ?? 'Không thể tạo hồ sơ máy mới');
+    } catch (e) {
+      throw Exception('Lỗi khi tạo máy mới: $e');
+    }
+  }
+
   Future<List<MachineOperatorModel>> getOperators() async {
     try {
       final response =
