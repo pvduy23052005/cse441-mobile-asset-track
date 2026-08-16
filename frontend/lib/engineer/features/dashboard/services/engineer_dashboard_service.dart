@@ -5,10 +5,10 @@ import '../models/work_order_model.dart';
 class EngineerDashboardService {
   final Dio _dio = ApiClient.instance;
 
-  // Real Backend NestJS + Firestore DB API Call for Work Orders
+  // Real Backend NestJS + Firestore DB API Call for Tickets
   Future<List<WorkOrderModel>> fetchWorkOrdersFromApi() async {
     try {
-      final response = await _dio.get<List<dynamic>>('/machines/work-orders');
+      final response = await _dio.get<List<dynamic>>('/tickets');
       if (response.data != null) {
         return response.data!.map((item) {
           final Map<String, dynamic> data = Map<String, dynamic>.from(item as Map);
@@ -27,26 +27,38 @@ class EngineerDashboardService {
           final statusStr = data['status']?.toString().toUpperCase();
           if (statusStr == 'IN_PROGRESS') {
             status = WorkOrderStatus.inProgress;
-          } else if (statusStr == 'COMPLETED') {
+          } else if (statusStr == 'COMPLETED' || statusStr == 'PENDING_APPROVAL') {
             status = WorkOrderStatus.completed;
-          } else if (statusStr == 'APPROVED') {
+          } else if (statusStr == 'APPROVED' || statusStr == 'CLOSED') {
             status = WorkOrderStatus.approved;
           } else if (statusStr == 'REJECTED') {
             status = WorkOrderStatus.rejected;
+          } else if (statusStr == 'CANCELLED') {
+            status = WorkOrderStatus.cancelled;
           }
 
+          // Handle image_url or images_urls array
+          String? imgUrl = data['imageUrl']?.toString();
+          if (imgUrl == null && data['images_urls'] != null && (data['images_urls'] as List).isNotEmpty) {
+            imgUrl = (data['images_urls'] as List).first.toString();
+          }
+
+          final String ticketId = data['id']?.toString() ?? '';
+          final String code = data['code']?.toString() ??
+              (ticketId.length > 6 ? 'SOS-${ticketId.substring(0, 6).toUpperCase()}' : 'SOS-$ticketId');
+
           return WorkOrderModel(
-            id: data['id']?.toString() ?? '',
-            code: data['code']?.toString() ?? 'SOS-001',
-            machineId: data['machineId']?.toString() ?? '',
-            machineName: data['machineName']?.toString() ?? 'Thiết bị nhà máy',
+            id: ticketId,
+            code: code.isEmpty ? 'SOS-001' : code,
+            machineId: data['machine_id']?.toString() ?? data['machineId']?.toString() ?? '',
+            machineName: data['machine_name']?.toString() ?? data['machineName']?.toString() ?? 'Thiết bị nhà máy',
             severity: severity,
             status: status,
             description: data['description']?.toString() ?? '',
-            imageUrl: data['imageUrl']?.toString(),
-            assigneeName: data['assigneeName']?.toString(),
-            rejectionReason: data['rejectionReason']?.toString(),
-            createdAt: data['createdAt']?.toString() ?? 'Vừa xong',
+            imageUrl: imgUrl,
+            assigneeName: data['engineer_name']?.toString() ?? data['assigneeName']?.toString(),
+            rejectionReason: data['rejection_reason']?.toString() ?? data['rejectionReason']?.toString(),
+            createdAt: data['created_at']?.toString() ?? data['createdAt']?.toString() ?? 'Vừa xong',
           );
         }).toList();
       }
@@ -77,8 +89,8 @@ class EngineerDashboardService {
           return PMChecklistModel(
             id: data['id']?.toString() ?? '',
             code: data['code']?.toString() ?? 'PM-001',
-            machineId: data['machineId']?.toString() ?? '',
-            machineName: data['machineName']?.toString() ?? 'Thiết bị nhà máy',
+            machineId: data['machineId']?.toString() ?? data['machine_id']?.toString() ?? '',
+            machineName: data['machineName']?.toString() ?? data['machine_name']?.toString() ?? 'Thiết bị nhà máy',
             scheduledHours: (data['scheduledHours'] as num?)?.toInt() ?? 500,
             status: status,
             itemCount: (data['itemCount'] as num?)?.toInt() ?? 6,
@@ -89,13 +101,16 @@ class EngineerDashboardService {
     return [];
   }
 
-  // Update WorkOrder Status in NestJS Backend + Firestore DB
-  Future<bool> updateWorkOrderStatus(String workOrderId, String status) async {
+  // Claim Ticket in NestJS Backend (/tickets/:id/claim)
+  Future<bool> updateWorkOrderStatus(String ticketId, String status) async {
     try {
-      await _dio.patch(
-        '/machines/work-orders/$workOrderId/status',
-        data: {'status': status},
-      );
+      if (status.toUpperCase() == 'IN_PROGRESS') {
+        await _dio.patch('/tickets/$ticketId/claim');
+      } else if (status.toUpperCase() == 'COMPLETED') {
+        await _dio.patch('/tickets/$ticketId/complete');
+      } else {
+        await _dio.patch('/tickets/$ticketId/claim');
+      }
       return true;
     } catch (_) {
       return false;
