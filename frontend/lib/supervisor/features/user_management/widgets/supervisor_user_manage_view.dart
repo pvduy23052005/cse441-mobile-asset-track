@@ -8,7 +8,8 @@ class SupervisorUserManageView extends StatefulWidget {
   const SupervisorUserManageView({super.key});
 
   @override
-  State<SupervisorUserManageView> createState() => _SupervisorUserManageViewState();
+  State<SupervisorUserManageView> createState() =>
+      _SupervisorUserManageViewState();
 }
 
 class _SupervisorUserManageViewState extends State<SupervisorUserManageView> {
@@ -55,7 +56,8 @@ class _SupervisorUserManageViewState extends State<SupervisorUserManageView> {
   List<Map<String, dynamic>> get _filteredUsers {
     return _users.where((user) {
       final role = (user['role'] ?? '').toString().toLowerCase();
-      return _selectedRoleFilter == 'ALL' || role == _selectedRoleFilter.toLowerCase();
+      return _selectedRoleFilter == 'ALL' ||
+          role == _selectedRoleFilter.toLowerCase();
     }).toList();
   }
 
@@ -64,9 +66,7 @@ class _SupervisorUserManageViewState extends State<SupervisorUserManageView> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => AddUserModal(
-        onUserCreated: _fetchUsers,
-      ),
+      builder: (ctx) => AddUserModal(onUserCreated: _fetchUsers),
     );
   }
 
@@ -130,7 +130,9 @@ class _SupervisorUserManageViewState extends State<SupervisorUserManageView> {
                       if (!mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Lỗi: ${e.toString().replaceAll("Exception: ", "")}'),
+                          content: Text(
+                            'Lỗi: ${e.toString().replaceAll("Exception: ", "")}',
+                          ),
                           backgroundColor: AppTheme.errorColor,
                         ),
                       );
@@ -165,9 +167,17 @@ class _SupervisorUserManageViewState extends State<SupervisorUserManageView> {
                 children: [
                   _buildFilterChip('ALL', 'Tất Cả (${_users.length})'),
                   const SizedBox(width: 8),
-                  _buildFilterChip('OPERATOR', 'Công Nhân', icon: Icons.engineering_outlined),
+                  _buildFilterChip(
+                    'OPERATOR',
+                    'Công Nhân',
+                    icon: Icons.engineering_outlined,
+                  ),
                   const SizedBox(width: 8),
-                  _buildFilterChip('ENGINEER', 'Kỹ Sư ME', icon: Icons.build_outlined),
+                  _buildFilterChip(
+                    'ENGINEER',
+                    'Kỹ Sư ME',
+                    icon: Icons.build_outlined,
+                  ),
                 ],
               ),
             ),
@@ -177,45 +187,53 @@ class _SupervisorUserManageViewState extends State<SupervisorUserManageView> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _filteredUsers.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.people_outline, size: 64, color: AppTheme.mutedForegroundColor.withValues(alpha: 0.5)),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'Không có nhân sự nào',
-                              style: TextStyle(color: AppTheme.mutedForegroundColor, fontWeight: FontWeight.w600),
-                            ),
-                          ],
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.people_outline,
+                          size: 64,
+                          color: AppTheme.mutedForegroundColor.withValues(
+                            alpha: 0.5,
+                          ),
                         ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _fetchUsers,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(12),
-                          itemCount: _filteredUsers.length,
-                          itemBuilder: (context, index) {
-                            final user = _filteredUsers[index];
-                            return UserCard(
-                              user: user,
-                              onDelete: () => _confirmDeleteUser(
-                                user['id'] ?? user['uid'] ?? '',
-                                user['fullName'] ?? user['email'] ?? '',
-                              ),
-                            );
-                          },
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Không có nhân sự nào',
+                          style: TextStyle(
+                            color: AppTheme.mutedForegroundColor,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
+                      ],
+                    ),
+                  )
+                : RefreshIndicator(
+                    onRefresh: _fetchUsers,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(12),
+                      itemCount: _filteredUsers.length,
+                      itemBuilder: (context, index) {
+                        final user = _filteredUsers[index];
+                        return UserCard(
+                          user: user,
+                          onDelete: () => _confirmDeleteUser(
+                            user['id'] ?? user['uid'] ?? '',
+                            user['fullName'] ?? user['email'] ?? '',
+                          ),
+                        );
+                      },
+                    ),
+                  ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: _showAddUserDialog,
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
-        icon: const Icon(Icons.person_add_rounded),
-        label: const Text('Thêm Nhân Viên', style: TextStyle(fontWeight: FontWeight.bold)),
+        child: const Icon(Icons.person_add_rounded),
       ),
     );
   }
@@ -228,7 +246,9 @@ class _SupervisorUserManageViewState extends State<SupervisorUserManageView> {
           ? Icon(
               icon,
               size: 16,
-              color: isSelected ? AppTheme.primaryColor : AppTheme.mutedForegroundColor,
+              color: isSelected
+                  ? AppTheme.primaryColor
+                  : AppTheme.mutedForegroundColor,
             )
           : null,
       label: Text(label),
@@ -238,7 +258,9 @@ class _SupervisorUserManageViewState extends State<SupervisorUserManageView> {
       labelStyle: TextStyle(
         fontSize: 12,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        color: isSelected ? AppTheme.primaryColor : AppTheme.mutedForegroundColor,
+        color: isSelected
+            ? AppTheme.primaryColor
+            : AppTheme.mutedForegroundColor,
       ),
       side: BorderSide(
         color: isSelected ? AppTheme.primaryColor : AppTheme.borderColor,
