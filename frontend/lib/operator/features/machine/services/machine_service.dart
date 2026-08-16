@@ -35,4 +35,28 @@ class MachineService {
       throw Exception('Lỗi khi lấy thông tin máy móc: $e');
     }
   }
+
+  Future<MachineModel> updateRunningHours(
+    String id,
+    double runningHours, {
+    String? shift,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/machines/$id/running-hours',
+        data: {
+          'running_hours': runningHours,
+          'shift': ?shift,
+        },
+      );
+      if (response.data != null) {
+        return MachineModel.fromJson(response.data!);
+      }
+      throw Exception('Cập nhật giờ máy chạy thất bại');
+    } on DioException catch (e) {
+      throw Exception(e.error ?? 'Không thể cập nhật giờ máy chạy');
+    } catch (e) {
+      throw Exception('Lỗi khi cập nhật giờ máy chạy: $e');
+    }
+  }
 }

@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 class OperatorQRBanner extends StatelessWidget {
   final VoidCallback onTap;
 
-  const OperatorQRBanner({
-    super.key,
-    required this.onTap,
-  });
+  const OperatorQRBanner({super.key, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +34,9 @@ class OperatorQRBanner extends StatelessWidget {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(6),
@@ -63,7 +62,7 @@ class OperatorQRBanner extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Xem thông số, lịch sử & báo lỗi khẩn cấp',
+                      'Xem thông số & báo lỗi khẩn cấp',
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w400,

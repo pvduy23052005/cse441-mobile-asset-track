@@ -266,6 +266,62 @@ export class MachineService implements OnModuleInit {
     return this.getMachineById(id);
   }
 
+  async logRunningHours(
+    id: string,
+    newHours: number,
+    loggedBy?: string,
+    shift?: string,
+  ): Promise<Machine> {
+    const docRef = this.firebaseService.firestore
+      .collection(this.machinesCollection)
+      .doc(id);
+
+    let doc = await docRef.get();
+    let machineId = id;
+    if (!doc.exists) {
+      const query = await this.firebaseService.firestore
+        .collection(this.machinesCollection)
+        .where('code', '==', id)
+        .limit(1)
+        .get();
+      if (query.empty) {
+        throw new NotFoundException(
+          `Machine with ID or Code '${id}' not found`,
+        );
+      }
+      doc = query.docs[0];
+      machineId = doc.id;
+    }
+
+    const machineData = doc.data() as FirestoreMachine;
+    const previousHours = machineData.running_hours ?? 0;
+    const updatedAt = new Date().toISOString();
+
+    await doc.ref.update({
+      running_hours: newHours,
+      updatedAt,
+    });
+
+    await this.firebaseService.firestore
+      .collection(this.runningHoursLogsCollection)
+      .add({
+        machineId: machineId,
+        machineCode: machineData.code || machineId,
+        machineName: machineData.name || '',
+        previousHours: previousHours,
+        newHours: newHours,
+        shift: shift || 'CA_HIEN_TAI',
+        loggedBy: loggedBy || 'Operator',
+        timestamp: updatedAt,
+      });
+
+    this.logger.log(
+      `Đã cập nhật giờ chạy máy ${machineData.code || machineId}: ${previousHours}h -> ${newHours}h bởi ${loggedBy || 'Operator'}`,
+    );
+
+    return this.getMachineById(machineId);
+  }
+
   // Work Orders Firestore API
   async getWorkOrders(): Promise<WorkOrder[]> {
     try {

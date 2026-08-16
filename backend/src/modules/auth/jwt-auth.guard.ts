@@ -13,6 +13,7 @@ export interface JwtPayload {
   email: string;
   role: string;
   fullName?: string;
+  full_name?: string;
 }
 
 export interface JwtAuthenticatedRequest extends Request {
