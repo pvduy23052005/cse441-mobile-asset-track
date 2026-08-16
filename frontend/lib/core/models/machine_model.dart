@@ -1,6 +1,43 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
+class MachineOperatorModel {
+  final String id;
+  final String fullName;
+  final String email;
+  final String? phone;
+  final String? role;
+
+  MachineOperatorModel({
+    required this.id,
+    required this.fullName,
+    required this.email,
+    this.phone,
+    this.role,
+  });
+
+  factory MachineOperatorModel.fromJson(Map<String, dynamic> json) {
+    return MachineOperatorModel(
+      id: json['id']?.toString() ?? '',
+      fullName:
+          json['fullName']?.toString() ?? json['full_name']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      phone: json['phone']?.toString() ?? json['phoneNumber']?.toString(),
+      role: json['role']?.toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'fullName': fullName,
+      'email': email,
+      if (phone != null) 'phone': phone,
+      if (role != null) 'role': role,
+    };
+  }
+}
+
 class MachineModel {
   final String id;
   final String code;
@@ -10,6 +47,8 @@ class MachineModel {
   final num? nextMaintenanceHours;
   final String status;
   final num runningHours;
+  final String? operatorId;
+  final MachineOperatorModel? operator;
   final Map<String, dynamic> specifications;
   final String? createdAt;
   final String? updatedAt;
@@ -23,6 +62,8 @@ class MachineModel {
     this.nextMaintenanceHours,
     required this.status,
     this.runningHours = 0,
+    this.operatorId,
+    this.operator,
     this.specifications = const {},
     this.createdAt,
     this.updatedAt,
@@ -39,7 +80,10 @@ class MachineModel {
     } else if (specs['next_maintenance_hours'] != null) {
       parsedNextMaint = specs['next_maintenance_hours'] as num?;
     } else if (specs['next_maintenance'] != null) {
-      final val = specs['next_maintenance'].toString().replaceAll(RegExp(r'[^0-9]'), '');
+      final val = specs['next_maintenance'].toString().replaceAll(
+        RegExp(r'[^0-9]'),
+        '',
+      );
       parsedNextMaint = num.tryParse(val);
     }
 
@@ -48,13 +92,21 @@ class MachineModel {
       code: json['code']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
       model: json['model']?.toString() ?? '',
-      location: json['location']?.toString() ??
+      location:
+          json['location']?.toString() ??
           specs['location']?.toString() ??
           specs['area']?.toString() ??
           '',
       nextMaintenanceHours: parsedNextMaint,
       status: json['status']?.toString() ?? 'ACTIVE',
       runningHours: json['running_hours'] as num? ?? 0,
+      operatorId:
+          json['operator_id']?.toString() ?? json['operatorId']?.toString(),
+      operator: json['operator'] is Map
+          ? MachineOperatorModel.fromJson(
+              Map<String, dynamic>.from(json['operator'] as Map),
+            )
+          : null,
       specifications: specs,
       createdAt: json['createdAt']?.toString(),
       updatedAt: json['updatedAt']?.toString(),
@@ -68,9 +120,12 @@ class MachineModel {
       'name': name,
       'model': model,
       'location': location,
-      if (nextMaintenanceHours != null) 'next_maintenance_hours': nextMaintenanceHours,
+      if (nextMaintenanceHours != null)
+        'next_maintenance_hours': nextMaintenanceHours,
       'status': status,
       'running_hours': runningHours,
+      if (operatorId != null) 'operator_id': operatorId,
+      if (operator != null) 'operator': operator!.toJson(),
       'specifications': specifications,
       if (createdAt != null) 'createdAt': createdAt,
       if (updatedAt != null) 'updatedAt': updatedAt,
@@ -90,9 +145,12 @@ class MachineModel {
       case 'UNDER_MAINTENANCE':
         return 'Bảo trì';
       case 'INACTIVE':
-        return 'Tạm dừng';
+      case 'STOPPED':
+        return 'Dừng máy';
       case 'ERROR':
-        return 'Lỗi / Cần sửa';
+      case 'SOS':
+      case 'CRITICAL':
+        return 'Báo lỗi SOS';
       default:
         return status.isNotEmpty ? status : 'Không xác định';
     }
@@ -101,45 +159,48 @@ class MachineModel {
   Color get statusColor {
     switch (status.toUpperCase()) {
       case 'ACTIVE':
-        return AppTheme.primaryColor;
+        return const Color(0xFF059669);
       case 'IN_PROGRESS':
       case 'REPAIRING':
-        return const Color(0xFF0284C7); // Cyan / Blue
+        return const Color(0xFF0284C7);
       case 'PENDING':
-        return const Color(0xFFD97706); // Amber
+        return const Color(0xFFD97706);
       case 'MAINTENANCE':
       case 'UNDER_MAINTENANCE':
-        return const Color(0xFFEA580C); // Orange
+        return const Color(0xFFEAB308);
       case 'INACTIVE':
-        return AppTheme.mutedForegroundColor;
+      case 'STOPPED':
+        return const Color(0xFF64748B);
       case 'ERROR':
-        return AppTheme.errorColor;
+      case 'SOS':
+      case 'CRITICAL':
+        return const Color(0xFFDC2626);
       default:
         return AppTheme.mutedForegroundColor;
     }
   }
 
   Color get statusBgColor {
-    return statusColor.withValues(alpha: 0.12);
-  }
-
-  IconData get statusIcon {
     switch (status.toUpperCase()) {
       case 'ACTIVE':
-        return Icons.grid_view_rounded;
+        return const Color(0xFFECFDF5);
       case 'IN_PROGRESS':
       case 'REPAIRING':
-        return Icons.precision_manufacturing_rounded;
+        return const Color(0xFFE0F2FE);
       case 'PENDING':
-        return Icons.memory_rounded;
+        return const Color(0xFFFEF3C7);
       case 'MAINTENANCE':
       case 'UNDER_MAINTENANCE':
-        return Icons.build_rounded;
-      case 'ERROR':
-        return Icons.memory_rounded;
+        return const Color(0xFFFEF9C3);
       case 'INACTIVE':
+      case 'STOPPED':
+        return const Color(0xFFF1F5F9);
+      case 'ERROR':
+      case 'SOS':
+      case 'CRITICAL':
+        return const Color(0xFFFEF2F2);
       default:
-        return Icons.power_settings_new_rounded;
+        return const Color(0xFFF8FAFC);
     }
   }
 }

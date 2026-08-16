@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  ForbiddenException,
   Get,
   Param,
   Patch,
@@ -15,10 +14,8 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import {
   FirestoreMachine,
   Machine,
-  MachineQrCodeResponse,
   MachineService,
   PMChecklist,
-  WorkOrder,
 } from './machine.service';
 
 @UseGuards(JwtAuthGuard)
@@ -27,21 +24,13 @@ export class MachineController {
   constructor(private readonly machineService: MachineService) {}
 
   @Get()
-  async getAllMachines(): Promise<Machine[]> {
-    return this.machineService.getAllMachines();
-  }
+  async getAllMachines(
+    @Req() req: JwtAuthenticatedRequest,
+  ): Promise<Machine[]> {
+    const userRole = req.user?.role?.toLowerCase();
+    const userId = req.user?.uid || req.user?.id;
 
-  @Get('work-orders')
-  async getWorkOrders(): Promise<WorkOrder[]> {
-    return this.machineService.getWorkOrders();
-  }
-
-  @Patch('work-orders/:id/status')
-  async updateWorkOrderStatus(
-    @Param('id') id: string,
-    @Body('status') status: string,
-  ): Promise<WorkOrder> {
-    return this.machineService.updateWorkOrderStatus(id, status);
+    return this.machineService.getMachinesForUser(userRole, userId);
   }
 
   @Get('pm-checklists')
@@ -52,20 +41,6 @@ export class MachineController {
   @Get(':id')
   async getMachineById(@Param('id') id: string): Promise<Machine> {
     return this.machineService.getMachineById(id);
-  }
-
-  @Get(':id/qrcode')
-  async getMachineQrCode(
-    @Param('id') id: string,
-    @Req() req: JwtAuthenticatedRequest,
-  ): Promise<MachineQrCodeResponse> {
-    const userRole = req.user?.role?.toLowerCase();
-    if (userRole !== 'supervisor' && userRole !== 'admin') {
-      throw new ForbiddenException(
-        'Chỉ Quản đốc (Supervisor) mới có quyền tạo và xem mã QR của thiết bị',
-      );
-    }
-    return this.machineService.generateMachineQrCode(id);
   }
 
   @Patch(':id/status')

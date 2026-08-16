@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -220,30 +219,18 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
     });
 
     try {
-      final List<String> base64Images = [];
-      for (final image in _selectedImages) {
-        final bytes = await image.readAsBytes();
-        final base64String = 'data:image/jpeg;base64,${base64Encode(bytes)}';
-        base64Images.add(base64String);
-      }
-
       final targetMachineId = widget.machine.id.isNotEmpty
           ? widget.machine.id
           : widget.machine.code;
 
-      debugPrint(
-        '[SOS Ticket] Gửi yêu cầu SOS cho thiết bị: $targetMachineId | Severity: $_selectedSeverity | Ảnh: ${base64Images.length}',
-      );
-
-      final result =
-          await ref.read(operatorTicketsProvider.notifier).createTicket(
-                machineId: targetMachineId,
-                description: _descriptionController.text.trim(),
-                severity: _selectedSeverity,
-                imagesUrls: base64Images.isNotEmpty ? base64Images : null,
-              );
-
-      debugPrint('[SOS Ticket] Tạo phiếu SOS thành công: $result');
+      await ref.read(operatorTicketsProvider.notifier).createTicket(
+            machineId: targetMachineId,
+            machineName: widget.machine.name,
+            machineCode: widget.machine.code,
+            description: _descriptionController.text.trim(),
+            severity: _selectedSeverity,
+            imageFiles: _selectedImages,
+          );
 
       if (mounted) {
         widget.onTicketCreated?.call();
@@ -660,4 +647,3 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
     );
   }
 }
-

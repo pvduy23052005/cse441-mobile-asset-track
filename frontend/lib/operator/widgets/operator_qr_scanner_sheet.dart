@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../core/models/machine_model.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../supervisor/features/machine_management/services/machine_service.dart';
+import '../features/machine/services/machine_service.dart';
 
 class OperatorQRScannerSheet extends StatefulWidget {
   const OperatorQRScannerSheet({super.key});
@@ -115,23 +115,63 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
   }
 
   String _extractMachineId(String raw) {
-    final trimmed = raw.trim();
+    var trimmed = raw.trim();
+
+    // Strip wrapping quotes
+    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+        (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+      trimmed = trimmed.substring(1, trimmed.length - 1).trim();
+    }
+
+    // JSON format
     if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
       try {
         final data = jsonDecode(trimmed);
         if (data is Map) {
-          return (data['id'] ?? data['machineId'] ?? data['code'] ?? trimmed)
-              .toString()
-              .trim();
+          final extracted = data['id'] ??
+              data['machineId'] ??
+              data['machine_id'] ??
+              data['code'] ??
+              data['machineCode'] ??
+              data['machine_code'];
+          if (extracted != null && extracted.toString().trim().isNotEmpty) {
+            return extracted.toString().trim();
+          }
         }
       } catch (_) {}
     }
-    if (trimmed.contains('/')) {
-      final segments = Uri.tryParse(trimmed)?.pathSegments;
-      if (segments != null && segments.isNotEmpty) {
-        return segments.last.trim();
+
+    // Prefix formats: machine:MC-101, id:MC-101, code:MC-101
+    final lower = trimmed.toLowerCase();
+    if (lower.startsWith('machine:') ||
+        lower.startsWith('machine_id:') ||
+        lower.startsWith('id:') ||
+        lower.startsWith('code:')) {
+      final parts = trimmed.split(':');
+      if (parts.length > 1 && parts[1].trim().isNotEmpty) {
+        return parts[1].trim();
       }
     }
+
+    // URL format: https://.../machines/MC-101 or ...?id=MC-101
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      final uri = Uri.tryParse(trimmed);
+      if (uri != null) {
+        if (uri.queryParameters.containsKey('id')) {
+          return uri.queryParameters['id']!.trim();
+        }
+        if (uri.queryParameters.containsKey('machineId')) {
+          return uri.queryParameters['machineId']!.trim();
+        }
+        if (uri.queryParameters.containsKey('code')) {
+          return uri.queryParameters['code']!.trim();
+        }
+        if (uri.pathSegments.isNotEmpty) {
+          return uri.pathSegments.last.trim();
+        }
+      }
+    }
+
     return trimmed;
   }
 
@@ -161,23 +201,50 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
 
       MachineModel? machine;
 
-      // 1. Try to fetch directly by ID
+      // 1. Try to fetch directly by ID / Code
       try {
         machine = await _machineService.getMachineById(targetId);
       } catch (e) {
-        debugPrint(
-          '[QR Scanner] getMachineById fallback to list search: $e',
-        );
+        debugPrint('[QR Scanner] getMachineById targetId error: $e');
+      }
+
+      // 2. Try raw code if different
+      if (machine == null && rawCode.trim() != targetId) {
         try {
-          final machines = await _machineService.getMachines();
+          machine = await _machineService.getMachineById(rawCode.trim());
+        } catch (_) {}
+      }
+
+      // 3. Fallback: Search in local list / loaded machines
+      if (machine == null) {
+        try {
+          final machines = _allMachines.isNotEmpty
+              ? _allMachines
+              : await _machineService.getMachines();
+
+          final q = targetId.toLowerCase().trim();
+          final rawQ = rawCode.toLowerCase().trim();
+          final stripped = q.replaceAll(RegExp(r'[^a-z0-9]'), '');
+
           for (final m in machines) {
-            if (m.id.toLowerCase() == targetId.toLowerCase() ||
-                m.code.toLowerCase() == targetId.toLowerCase()) {
+            final mId = m.id.toLowerCase().trim();
+            final mCode = m.code.toLowerCase().trim();
+            final mName = m.name.toLowerCase().trim();
+            final mCodeStripped = mCode.replaceAll(RegExp(r'[^a-z0-9]'), '');
+
+            if (mId == q ||
+                mCode == q ||
+                mId == rawQ ||
+                mCode == rawQ ||
+                (stripped.length >= 2 && mCodeStripped == stripped) ||
+                mName == q) {
               machine = m;
               break;
             }
           }
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[QR Scanner] Machine list search error: $e');
+        }
       }
 
       if (!mounted) return;

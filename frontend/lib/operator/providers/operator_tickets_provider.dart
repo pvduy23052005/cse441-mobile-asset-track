@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../core/offline/repositories/offline_ticket_repository.dart';
 import '../features/ticket/services/operator_ticket_service.dart';
 
 final operatorTicketServiceProvider = Provider<OperatorTicketService>((ref) {
@@ -13,8 +15,8 @@ class OperatorTicketsNotifier
   }
 
   Future<List<Map<String, dynamic>>> _fetchTickets() async {
-    final service = ref.read(operatorTicketServiceProvider);
-    return service.getMyTickets();
+    final offlineRepo = ref.read(offlineTicketRepositoryProvider);
+    return offlineRepo.getTicketsOfflineFirst();
   }
 
   Future<void> refresh() async {
@@ -24,30 +26,31 @@ class OperatorTicketsNotifier
 
   Future<Map<String, dynamic>> createTicket({
     required String machineId,
+    String? machineName,
+    String? machineCode,
     required String description,
     required String severity,
-    List<String>? imagesUrls,
+    List<XFile> imageFiles = const [],
     String? downtimeStart,
   }) async {
-    final service = ref.read(operatorTicketServiceProvider);
-    final result = await service.createTicket(
+    final offlineRepo = ref.read(offlineTicketRepositoryProvider);
+    final localTicket = await offlineRepo.createTicketOfflineFirst(
       machineId: machineId,
+      machineName: machineName,
+      machineCode: machineCode,
       description: description,
       severity: severity,
-      imagesUrls: imagesUrls,
+      imageFiles: imageFiles,
       downtimeStart: downtimeStart,
     );
 
-    // Tự động làm mới danh sách phiếu sau khi tạo thành công
     await refresh();
-    return result;
+    return localTicket.toDashboardTicketJson();
   }
 
   Future<Map<String, dynamic>> cancelTicket(String id, {String? reason}) async {
     final service = ref.read(operatorTicketServiceProvider);
     final result = await service.cancelTicket(id, reason: reason);
-
-    // Tự động làm mới danh sách phiếu sau khi hủy
     await refresh();
     return result;
   }

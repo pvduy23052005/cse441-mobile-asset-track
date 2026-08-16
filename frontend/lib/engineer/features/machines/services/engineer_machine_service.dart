@@ -16,4 +16,14 @@ class EngineerMachineService {
     } catch (_) {}
     return [];
   }
+
+  Future<MachineModel?> fetchMachineById(String id) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>('/machines/$id');
+      if (response.data != null) {
+        return MachineModel.fromJson(response.data!);
+      }
+    } catch (_) {}
+    return null;
+  }
 }

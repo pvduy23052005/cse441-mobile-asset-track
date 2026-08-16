@@ -7,7 +7,9 @@ import { MachineModule } from './modules/machine/machine.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { TicketsModule } from './modules/tickets/tickets.module';
 import { OperatorModule } from './operator/operator.module';
+import { SupervisorModule } from './supervisor/supervisor.module';
 import { UserModule } from './modules/user/user.module';
+import { UploadModule } from './modules/upload/upload.module';
 
 @Module({
   imports: [
@@ -20,7 +22,9 @@ import { UserModule } from './modules/user/user.module';
     MachineModule,
     TicketsModule,
     OperatorModule,
+    SupervisorModule,
     NotificationsModule,
+    UploadModule,
   ],
   providers: [AppService],
 })

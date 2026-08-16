@@ -72,15 +72,63 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
   }
 
   String _extractMachineCode(String raw) {
-    final trimmed = raw.trim();
+    var trimmed = raw.trim();
+
+    // Strip wrapping quotes
+    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+        (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+      trimmed = trimmed.substring(1, trimmed.length - 1).trim();
+    }
+
+    // JSON format
     if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
       try {
         final data = jsonDecode(trimmed);
         if (data is Map) {
-          return (data['code'] ?? data['id'] ?? data['machineId'] ?? trimmed).toString().trim();
+          final extracted = data['code'] ??
+              data['machineCode'] ??
+              data['machine_code'] ??
+              data['id'] ??
+              data['machineId'] ??
+              data['machine_id'];
+          if (extracted != null && extracted.toString().trim().isNotEmpty) {
+            return extracted.toString().trim();
+          }
         }
       } catch (_) {}
     }
+
+    // Prefix formats: machine:MC-101, id:MC-101, code:MC-101
+    final lower = trimmed.toLowerCase();
+    if (lower.startsWith('machine:') ||
+        lower.startsWith('machine_id:') ||
+        lower.startsWith('id:') ||
+        lower.startsWith('code:')) {
+      final parts = trimmed.split(':');
+      if (parts.length > 1 && parts[1].trim().isNotEmpty) {
+        return parts[1].trim();
+      }
+    }
+
+    // URL format
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      final uri = Uri.tryParse(trimmed);
+      if (uri != null) {
+        if (uri.queryParameters.containsKey('id')) {
+          return uri.queryParameters['id']!.trim();
+        }
+        if (uri.queryParameters.containsKey('machineId')) {
+          return uri.queryParameters['machineId']!.trim();
+        }
+        if (uri.queryParameters.containsKey('code')) {
+          return uri.queryParameters['code']!.trim();
+        }
+        if (uri.pathSegments.isNotEmpty) {
+          return uri.pathSegments.last.trim();
+        }
+      }
+    }
+
     return trimmed;
   }
 
@@ -101,12 +149,39 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
       } catch (_) {}
 
       MachineModel? found;
+
+      // 1. Try search in local cache first
+      final q = targetCode.toLowerCase().trim();
+      final rawQ = rawCode.toLowerCase().trim();
+      final stripped = q.replaceAll(RegExp(r'[^a-z0-9]'), '');
+
       for (final m in _machines) {
-        if (m.code.toLowerCase() == targetCode.toLowerCase() ||
-            m.id.toLowerCase() == targetCode.toLowerCase()) {
+        final mCode = m.code.toLowerCase().trim();
+        final mId = m.id.toLowerCase().trim();
+        final mCodeStripped = mCode.replaceAll(RegExp(r'[^a-z0-9]'), '');
+
+        if (mCode == q ||
+            mId == q ||
+            mCode == rawQ ||
+            mId == rawQ ||
+            (stripped.length >= 2 && mCodeStripped == stripped)) {
           found = m;
           break;
         }
+      }
+
+      // 2. Fallback: Query live API /machines/$targetCode
+      if (found == null) {
+        try {
+          found = await _machineService.fetchMachineById(targetCode);
+        } catch (_) {}
+      }
+
+      // 3. Fallback: Query live API with rawCode
+      if (found == null && rawCode.trim() != targetCode) {
+        try {
+          found = await _machineService.fetchMachineById(rawCode.trim());
+        } catch (_) {}
       }
 
       if (mounted) {
