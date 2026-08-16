@@ -16,6 +16,10 @@ class OperatorPaginationControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (totalPages <= 1) {
+      return const SizedBox.shrink();
+    }
+
     final bool canPrev = currentPage > 0 && onPrevPressed != null;
     final bool canNext =
         currentPage < totalPages - 1 && onNextPressed != null;
@@ -39,15 +43,28 @@ class OperatorPaginationControls extends StatelessWidget {
               backgroundColor: canPrev ? Colors.white : const Color(0xFFF8FAFC),
             ),
             onPressed: canPrev ? onPrevPressed : null,
-            child: Text(
-              '← Trang trước',
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
-                color: canPrev
-                    ? const Color(0xFF475569)
-                    : const Color(0xFF94A3B8),
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.chevron_left_rounded,
+                  size: 18,
+                  color: canPrev
+                      ? const Color(0xFF475569)
+                      : const Color(0xFF94A3B8),
+                ),
+                const SizedBox(width: 2),
+                Text(
+                  'Trang trước',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: canPrev
+                        ? const Color(0xFF475569)
+                        : const Color(0xFF94A3B8),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -103,15 +120,28 @@ class OperatorPaginationControls extends StatelessWidget {
               backgroundColor: canNext ? Colors.white : const Color(0xFFF8FAFC),
             ),
             onPressed: canNext ? onNextPressed : null,
-            child: Text(
-              'Trang sau →',
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
-                color: canNext
-                    ? const Color(0xFF475569)
-                    : const Color(0xFF94A3B8),
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Trang sau',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: canNext
+                        ? const Color(0xFF475569)
+                        : const Color(0xFF94A3B8),
+                  ),
+                ),
+                const SizedBox(width: 2),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 18,
+                  color: canNext
+                      ? const Color(0xFF475569)
+                      : const Color(0xFF94A3B8),
+                ),
+              ],
             ),
           ),
         ),

@@ -151,27 +151,28 @@ class _OperatorDashboardViewState
                 },
               ),
 
-              const SizedBox(height: 12),
-
               // Pagination Controls cho Máy Móc
-              OperatorPaginationControls(
-                currentPage: safeMachinePage,
-                totalPages: totalMachinePages,
-                onPrevPressed: safeMachinePage > 0
-                    ? () {
-                        ref
-                            .read(operatorDashboardPageProvider.notifier)
-                            .state = safeMachinePage - 1;
-                      }
-                    : null,
-                onNextPressed: safeMachinePage < totalMachinePages - 1
-                    ? () {
-                        ref
-                            .read(operatorDashboardPageProvider.notifier)
-                            .state = safeMachinePage + 1;
-                      }
-                    : null,
-              ),
+              if (totalMachinePages > 1) ...[
+                const SizedBox(height: 12),
+                OperatorPaginationControls(
+                  currentPage: safeMachinePage,
+                  totalPages: totalMachinePages,
+                  onPrevPressed: safeMachinePage > 0
+                      ? () {
+                          ref
+                              .read(operatorDashboardPageProvider.notifier)
+                              .state = safeMachinePage - 1;
+                        }
+                      : null,
+                  onNextPressed: safeMachinePage < totalMachinePages - 1
+                      ? () {
+                          ref
+                              .read(operatorDashboardPageProvider.notifier)
+                              .state = safeMachinePage + 1;
+                        }
+                      : null,
+                ),
+              ],
             ],
 
             const SizedBox(height: 24),
@@ -243,29 +244,31 @@ class _OperatorDashboardViewState
                 },
               ),
 
-              const SizedBox(height: 12),
-
               // Pagination Controls cho Phiếu Báo Lỗi SOS
-              OperatorPaginationControls(
-                currentPage: safeTicketPage,
-                totalPages: totalTicketPages,
-                onPrevPressed: safeTicketPage > 0
-                    ? () {
-                        ref
-                            .read(operatorTicketDashboardPageProvider.notifier)
-                            .state = safeTicketPage - 1;
-                      }
-                    : null,
-                onNextPressed: safeTicketPage < totalTicketPages - 1
-                    ? () {
-                        ref
-                            .read(operatorTicketDashboardPageProvider.notifier)
-                            .state = safeTicketPage + 1;
-                      }
-                    : null,
-              ),
+              if (totalTicketPages > 1) ...[
+                const SizedBox(height: 12),
+                OperatorPaginationControls(
+                  currentPage: safeTicketPage,
+                  totalPages: totalTicketPages,
+                  onPrevPressed: safeTicketPage > 0
+                      ? () {
+                          ref
+                              .read(
+                                  operatorTicketDashboardPageProvider.notifier)
+                              .state = safeTicketPage - 1;
+                        }
+                      : null,
+                  onNextPressed: safeTicketPage < totalTicketPages - 1
+                      ? () {
+                          ref
+                              .read(
+                                  operatorTicketDashboardPageProvider.notifier)
+                              .state = safeTicketPage + 1;
+                        }
+                      : null,
+                ),
+              ],
             ],
-
             const SizedBox(height: 24),
           ],
         ),
