@@ -1,9 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/models/machine_model.dart';
+import '../../../../core/services/upload_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../providers/operator_tickets_provider.dart';
 import 'sos_image_attachment_section.dart';
@@ -220,11 +220,17 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
     });
 
     try {
-      final List<String> base64Images = [];
-      for (final image in _selectedImages) {
-        final bytes = await image.readAsBytes();
-        final base64String = 'data:image/jpeg;base64,${base64Encode(bytes)}';
-        base64Images.add(base64String);
+      List<String>? uploadedImageUrls;
+      if (_selectedImages.isNotEmpty) {
+        debugPrint(
+          '[SOS Ticket] Đang tải ${_selectedImages.length} ảnh lên Cloudflare R2...',
+        );
+        final uploadService = ref.read(uploadServiceProvider);
+        uploadedImageUrls = await uploadService.uploadMultipleImages(
+          _selectedImages,
+          folder: 'tickets',
+        );
+        debugPrint('[SOS Ticket] Tải ảnh thành công: $uploadedImageUrls');
       }
 
       final targetMachineId = widget.machine.id.isNotEmpty
@@ -232,7 +238,7 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
           : widget.machine.code;
 
       debugPrint(
-        '[SOS Ticket] Gửi yêu cầu SOS cho thiết bị: $targetMachineId | Severity: $_selectedSeverity | Ảnh: ${base64Images.length}',
+        '[SOS Ticket] Gửi yêu cầu SOS cho thiết bị: $targetMachineId | Severity: $_selectedSeverity | Ảnh: ${uploadedImageUrls?.length ?? 0}',
       );
 
       final result =
@@ -240,7 +246,10 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
                 machineId: targetMachineId,
                 description: _descriptionController.text.trim(),
                 severity: _selectedSeverity,
-                imagesUrls: base64Images.isNotEmpty ? base64Images : null,
+                imagesUrls:
+                    (uploadedImageUrls != null && uploadedImageUrls.isNotEmpty)
+                        ? uploadedImageUrls
+                        : null,
               );
 
       debugPrint('[SOS Ticket] Tạo phiếu SOS thành công: $result');
@@ -660,4 +669,3 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
     );
   }
 }
-
