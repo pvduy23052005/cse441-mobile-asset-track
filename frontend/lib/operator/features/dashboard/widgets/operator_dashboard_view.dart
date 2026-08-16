@@ -21,6 +21,22 @@ class OperatorDashboardView extends ConsumerStatefulWidget {
 
 class _OperatorDashboardViewState
     extends ConsumerState<OperatorDashboardView> {
+  late final PageController _machinePageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _machinePageController = PageController(
+      initialPage: ref.read(operatorDashboardPageProvider),
+    );
+  }
+
+  @override
+  void dispose() {
+    _machinePageController.dispose();
+    super.dispose();
+  }
+
   void _openQRScanner() async {
     final machine = await OperatorQRScannerSheet.show(context);
     if (machine != null && mounted) {
@@ -44,10 +60,6 @@ class _OperatorDashboardViewState
         ? 1
         : (machines.length / operatorDashboardItemsPerPage).ceil();
     final safeMachinePage = currentMachinePage.clamp(0, totalMachinePages - 1);
-    final pagedMachines = machines
-        .skip(safeMachinePage * operatorDashboardItemsPerPage)
-        .take(operatorDashboardItemsPerPage)
-        .toList();
 
     // 2. Phân trang Danh sách phiếu SOS
     final totalTicketPages = (tickets.isEmpty)
@@ -78,7 +90,6 @@ class _OperatorDashboardViewState
 
             const SizedBox(height: 20),
 
-            // 2. Section Header: Danh Sách Máy Phụ Trách
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -109,7 +120,7 @@ class _OperatorDashboardViewState
             ),
             const SizedBox(height: 10),
 
-            // 3. Machines List
+            // 3. Machines List (Hỗ trợ vuốt ngang + Pagination Dots)
             if (isLoading && machines.isEmpty) ...[
               const Center(
                 child: Padding(
@@ -133,51 +144,75 @@ class _OperatorDashboardViewState
                   style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
                 ),
               ),
-            ] else ...[
+            ] else if (totalMachinePages == 1) ...[
               ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: pagedMachines.length,
+                itemCount: machines.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 8),
                 itemBuilder: (ctx, index) {
-                  final machine = pagedMachines[index];
-                  final globalIndex =
-                      safeMachinePage * operatorDashboardItemsPerPage + index;
+                  final machine = machines[index];
                   return OperatorMachineCard(
                     machine: machine,
-                    index: globalIndex,
+                    index: index,
                     onTap: () => MachineDetailModal.show(context, machine),
                   );
                 },
               ),
+            ] else ...[
+              SizedBox(
+                height: 242,
+                child: PageView.builder(
+                  controller: _machinePageController,
+                  itemCount: totalMachinePages,
+                  onPageChanged: (page) {
+                    ref.read(operatorDashboardPageProvider.notifier).state = page;
+                  },
+                  itemBuilder: (ctx, pageIdx) {
+                    final startIdx = pageIdx * operatorDashboardItemsPerPage;
+                    final endIdx = (startIdx + operatorDashboardItemsPerPage)
+                        .clamp(0, machines.length);
+                    final pageMachines = machines.sublist(startIdx, endIdx);
 
-              // Pagination Controls cho Máy Móc
-              if (totalMachinePages > 1) ...[
-                const SizedBox(height: 12),
-                OperatorPaginationControls(
-                  currentPage: safeMachinePage,
-                  totalPages: totalMachinePages,
-                  onPrevPressed: safeMachinePage > 0
-                      ? () {
-                          ref
-                              .read(operatorDashboardPageProvider.notifier)
-                              .state = safeMachinePage - 1;
-                        }
-                      : null,
-                  onNextPressed: safeMachinePage < totalMachinePages - 1
-                      ? () {
-                          ref
-                              .read(operatorDashboardPageProvider.notifier)
-                              .state = safeMachinePage + 1;
-                        }
-                      : null,
+                    return ListView.separated(
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: pageMachines.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
+                      itemBuilder: (ctx, idx) {
+                        final machine = pageMachines[idx];
+                        final globalIndex = startIdx + idx;
+                        return OperatorMachineCard(
+                          machine: machine,
+                          index: globalIndex,
+                          onTap: () =>
+                              MachineDetailModal.show(context, machine),
+                        );
+                      },
+                    );
+                  },
                 ),
-              ],
+              ),
+
+              const SizedBox(height: 10),
+
+              // Pagination Dots cho Máy Móc
+              OperatorPaginationDots(
+                currentPage: safeMachinePage,
+                totalPages: totalMachinePages,
+                onDotTapped: (targetPage) {
+                  _machinePageController.animateToPage(
+                    targetPage,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                },
+              ),
             ],
 
             const SizedBox(height: 24),
 
-            // 4. Section Header: Theo Dõi Phiếu Báo Lỗi SOS
             Text(
               'THEO DÕI PHIẾU BÁO LỖI SOS (${tickets.length})',
               style: const TextStyle(
