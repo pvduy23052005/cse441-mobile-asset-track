@@ -65,27 +65,13 @@ class MachineModel {
       'year': '2023',
     };
 
-    final rawTrouble = json['quickTroubleshooting'] as List<dynamic>?;
+    final rawTrouble = json['quickTroubleshooting'] as List<dynamic>? ??
+        json['quick_troubleshooting'] as List<dynamic>?;
     List<TroubleshootingItem> troubleList = [];
     if (rawTrouble != null) {
       troubleList = rawTrouble
           .map((item) => TroubleshootingItem.fromJson(Map<String, dynamic>.from(item as Map)))
           .toList();
-    } else {
-      troubleList = [
-        TroubleshootingItem(
-          issue: 'Trục chính phát tiếng rít lớn khi quay tốc độ cao > 8000 RPM',
-          solution: 'Kiểm tra áp suất bôi trơn trục chính. Siết lại vòng bi đỡ 7014C và bổ sung mỡ bò chịu nhiệt klyber.',
-        ),
-        TroubleshootingItem(
-          issue: 'Áp suất thủy lực sụt giảm dưới mốc an toàn 40 Bar',
-          solution: 'Kiểm tra van an toàn xả áp, kiểm tra mức dầu tại bình tích nạp khí N2 và xả bọt khí đường ống.',
-        ),
-        TroubleshootingItem(
-          issue: 'Nhiệt độ động cơ vượt mốc 75°C gây cảnh báo quá nhiệt',
-          solution: 'Vệ sinh quạt làm mát phía sau thân máy, kiểm tra cánh tản nhiệt và thông rửa két làm mát dầu.',
-        ),
-      ];
     }
 
     return MachineModel(

@@ -26,4 +26,18 @@ class EngineerMachineService {
     } catch (_) {}
     return null;
   }
+
+  Future<bool> updateTroubleshooting(String machineId, List<TroubleshootingItem> items) async {
+    try {
+      await _dio.put(
+        '/machines/$machineId',
+        data: {
+          'quick_troubleshooting': items.map((e) => e.toJson()).toList(),
+        },
+      );
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 }

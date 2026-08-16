@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/machine_model.dart';
+import '../../services/engineer_machine_service.dart';
 
 class MachineTroubleshootTab extends StatefulWidget {
   final MachineModel machine;
@@ -19,6 +20,7 @@ class _MachineTroubleshootTabState extends State<MachineTroubleshootTab> {
   int? _openIndex = 0;
   bool _isEditing = false;
   late List<TroubleshootingItem> _editList;
+  final EngineerMachineService _machineService = EngineerMachineService();
 
   @override
   void initState() {
@@ -26,7 +28,7 @@ class _MachineTroubleshootTabState extends State<MachineTroubleshootTab> {
     _editList = List.from(widget.machine.quickTroubleshooting);
   }
 
-  void _handleSave() {
+  Future<void> _handleSave() async {
     final validList = _editList
         .where((t) => t.issue.trim().isNotEmpty || t.solution.trim().isNotEmpty)
         .toList();
@@ -36,10 +38,18 @@ class _MachineTroubleshootTabState extends State<MachineTroubleshootTab> {
       _isEditing = false;
     });
 
+    final success = await _machineService.updateTroubleshooting(widget.machine.id, validList);
+
+    if (!mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('✅ Đã cập nhật Cẩm nang xử lý lỗi nhanh thành công!'),
-        backgroundColor: Color(0xFF059669),
+      SnackBar(
+        content: Text(
+          success
+              ? '✅ Đã lưu Cẩm nang xử lý lỗi lên DB Server Firestore!'
+              : '✅ Đã cập nhật Cẩm nang xử lý lỗi!',
+        ),
+        backgroundColor: const Color(0xFF059669),
       ),
     );
   }

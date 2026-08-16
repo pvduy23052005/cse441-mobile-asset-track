@@ -23,6 +23,7 @@ export interface Machine {
   location?: string;
   next_maintenance_hours?: number;
   specifications: Record<string, any>;
+  quick_troubleshooting?: Array<{ issue: string; solution: string }>;
   status: string;
   running_hours: number;
   operator_id?: string;
@@ -38,6 +39,7 @@ export interface FirestoreMachine {
   location?: string;
   next_maintenance_hours?: number;
   specifications?: Record<string, any>;
+  quick_troubleshooting?: Array<{ issue: string; solution: string }>;
   status?: string;
   running_hours?: number;
   operator_id?: string;
@@ -209,6 +211,7 @@ export class MachineService implements OnModuleInit {
           location: data.location || '',
           next_maintenance_hours: data.next_maintenance_hours,
           specifications: data.specifications || {},
+          quick_troubleshooting: data.quick_troubleshooting || [],
           status: data.status || 'ACTIVE',
           running_hours: data.running_hours ?? 0,
           operator_id: data.operator_id || undefined,
@@ -288,6 +291,7 @@ export class MachineService implements OnModuleInit {
           location: data.location || '',
           next_maintenance_hours: data.next_maintenance_hours,
           specifications: data.specifications || {},
+          quick_troubleshooting: data.quick_troubleshooting || [],
           status: data.status || 'ACTIVE',
           running_hours: data.running_hours ?? 0,
           operator_id: data.operator_id || undefined,
@@ -328,6 +332,7 @@ export class MachineService implements OnModuleInit {
       location: data.location || '',
       next_maintenance_hours: data.next_maintenance_hours,
       specifications: data.specifications || {},
+      quick_troubleshooting: data.quick_troubleshooting || [],
       status: data.status || 'ACTIVE',
       running_hours: data.running_hours ?? 0,
       operator_id: data.operator_id || undefined,
