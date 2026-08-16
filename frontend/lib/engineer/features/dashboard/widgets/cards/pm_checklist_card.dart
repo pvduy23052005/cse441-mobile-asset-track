@@ -68,21 +68,27 @@ class PmChecklistCard extends StatelessWidget {
           const SizedBox(width: 8),
 
           SizedBox(
-            height: 34,
-            child: ElevatedButton(
+            height: 44,
+            child: ElevatedButton.icon(
               onPressed: () => onOpenPM(pmChecklist),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF59E0B),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+              icon: const Icon(Icons.play_arrow_rounded, size: 18),
+              label: const Text(
+                'Làm PM',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.3,
                 ),
               ),
-              child: const Text(
-                'Thực Hiện PM',
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD97706),
+                foregroundColor: Colors.white,
+                elevation: 2,
+                shadowColor: const Color(0xFFD97706).withValues(alpha: 0.4),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
               ),
             ),
           ),
