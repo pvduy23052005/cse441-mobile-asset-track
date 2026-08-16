@@ -22,7 +22,7 @@ export class CreateUserDto {
 
   @IsNotEmpty({ message: 'Vai trò không được để trống' })
   @IsEnum(UserRole, {
-    message: 'Vai trò không hợp lệ (operator, engineer, supervisor, admin)',
+    message: 'Vai trò không hợp lệ (operator, engineer, supervisor)',
   })
   role: UserRole;
 }

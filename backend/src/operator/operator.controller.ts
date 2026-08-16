@@ -30,7 +30,6 @@ export class OperatorTicketController {
     if (
       userRole &&
       userRole !== 'operator' &&
-      userRole !== 'admin' &&
       userRole !== 'supervisor'
     ) {
       throw new ForbiddenException(

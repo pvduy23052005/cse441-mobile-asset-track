@@ -1,6 +1,43 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
+class MachineOperatorModel {
+  final String id;
+  final String fullName;
+  final String email;
+  final String? phone;
+  final String? role;
+
+  MachineOperatorModel({
+    required this.id,
+    required this.fullName,
+    required this.email,
+    this.phone,
+    this.role,
+  });
+
+  factory MachineOperatorModel.fromJson(Map<String, dynamic> json) {
+    return MachineOperatorModel(
+      id: json['id']?.toString() ?? '',
+      fullName:
+          json['fullName']?.toString() ?? json['full_name']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      phone: json['phone']?.toString() ?? json['phoneNumber']?.toString(),
+      role: json['role']?.toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'fullName': fullName,
+      'email': email,
+      if (phone != null) 'phone': phone,
+      if (role != null) 'role': role,
+    };
+  }
+}
+
 class MachineModel {
   final String id;
   final String code;
@@ -11,6 +48,7 @@ class MachineModel {
   final String status;
   final num runningHours;
   final String? operatorId;
+  final MachineOperatorModel? operator;
   final Map<String, dynamic> specifications;
   final String? createdAt;
   final String? updatedAt;
@@ -25,6 +63,7 @@ class MachineModel {
     required this.status,
     this.runningHours = 0,
     this.operatorId,
+    this.operator,
     this.specifications = const {},
     this.createdAt,
     this.updatedAt,
@@ -63,6 +102,11 @@ class MachineModel {
       runningHours: json['running_hours'] as num? ?? 0,
       operatorId:
           json['operator_id']?.toString() ?? json['operatorId']?.toString(),
+      operator: json['operator'] is Map
+          ? MachineOperatorModel.fromJson(
+              Map<String, dynamic>.from(json['operator'] as Map),
+            )
+          : null,
       specifications: specs,
       createdAt: json['createdAt']?.toString(),
       updatedAt: json['updatedAt']?.toString(),
@@ -81,6 +125,7 @@ class MachineModel {
       'status': status,
       'running_hours': runningHours,
       if (operatorId != null) 'operator_id': operatorId,
+      if (operator != null) 'operator': operator!.toJson(),
       'specifications': specifications,
       if (createdAt != null) 'createdAt': createdAt,
       if (updatedAt != null) 'updatedAt': updatedAt,

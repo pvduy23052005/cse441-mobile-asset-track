@@ -7,6 +7,14 @@ import {
 import * as QRCode from 'qrcode';
 import { FirebaseService } from '../firebase/firebase.service';
 
+export interface MachineOperatorInfo {
+  id: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  role?: string;
+}
+
 export interface Machine {
   id: string;
   code: string;
@@ -18,6 +26,7 @@ export interface Machine {
   status: string;
   running_hours: number;
   operator_id?: string;
+  operator?: MachineOperatorInfo | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -142,6 +151,48 @@ export class MachineService implements OnModuleInit {
     await this.seedAllFirebaseCollections();
   }
 
+  private async getOperatorInfo(
+    operatorId?: string,
+  ): Promise<MachineOperatorInfo | null> {
+    if (!operatorId) return null;
+    try {
+      const userDoc = await this.firebaseService.firestore
+        .collection('users')
+        .doc(operatorId)
+        .get();
+
+      if (userDoc.exists) {
+        const userData = (userDoc.data() || {}) as Record<string, unknown>;
+        return {
+          id: userDoc.id,
+          fullName:
+            (typeof userData['full_name'] === 'string'
+              ? userData['full_name']
+              : typeof userData['fullName'] === 'string'
+                ? userData['fullName']
+                : typeof userData['name'] === 'string'
+                  ? userData['name']
+                  : '') || '',
+          email: typeof userData['email'] === 'string' ? userData['email'] : '',
+          phone:
+            typeof userData['phone'] === 'string'
+              ? userData['phone']
+              : typeof userData['phoneNumber'] === 'string'
+                ? userData['phoneNumber']
+                : undefined,
+          role:
+            typeof userData['role'] === 'string'
+              ? userData['role']
+              : 'operator',
+        };
+      }
+      return null;
+    } catch (e) {
+      this.logger.warn(`Error fetching operator info for ${operatorId}: ${e}`);
+      return null;
+    }
+  }
+
   async getAllMachines(): Promise<Machine[]> {
     try {
       const snapshot = await this.firebaseService.firestore
@@ -178,7 +229,6 @@ export class MachineService implements OnModuleInit {
     const allMachines = await this.getAllMachines();
     const normalizedRole = role?.toLowerCase();
 
-    // Supervisor, Engineer, Admin get to view all machines
     if (normalizedRole !== 'operator') {
       return allMachines;
     }
@@ -210,6 +260,7 @@ export class MachineService implements OnModuleInit {
 
       const foundDoc = querySnapshot.docs[0];
       const data = foundDoc.data() as FirestoreMachine;
+      const operator = await this.getOperatorInfo(data.operator_id);
       return {
         id: foundDoc.id,
         code: data.code || '',
@@ -221,12 +272,14 @@ export class MachineService implements OnModuleInit {
         status: data.status || 'ACTIVE',
         running_hours: data.running_hours ?? 0,
         operator_id: data.operator_id || undefined,
+        operator,
         createdAt: data.createdAt,
         updatedAt: data.updatedAt,
       };
     }
 
     const data = doc.data() as FirestoreMachine;
+    const operator = await this.getOperatorInfo(data.operator_id);
     return {
       id: doc.id,
       code: data.code || '',
@@ -238,6 +291,7 @@ export class MachineService implements OnModuleInit {
       status: data.status || 'ACTIVE',
       running_hours: data.running_hours ?? 0,
       operator_id: data.operator_id || undefined,
+      operator,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     };
