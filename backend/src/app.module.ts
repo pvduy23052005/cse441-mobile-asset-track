@@ -8,6 +8,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { TicketsModule } from './modules/tickets/tickets.module';
 import { OperatorModule } from './operator/operator.module';
 import { UserModule } from './modules/user/user.module';
+import { UploadModule } from './modules/upload/upload.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { UserModule } from './modules/user/user.module';
     TicketsModule,
     OperatorModule,
     NotificationsModule,
+    UploadModule,
   ],
   providers: [AppService],
 })
