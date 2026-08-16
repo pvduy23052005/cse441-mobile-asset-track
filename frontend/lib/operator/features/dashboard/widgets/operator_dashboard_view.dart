@@ -55,13 +55,11 @@ class _OperatorDashboardViewState
     final tickets = ticketsAsync.valueOrNull ?? [];
     final isLoading = machinesAsync.isLoading || ticketsAsync.isLoading;
 
-    // 1. Phân trang Danh sách máy
     final totalMachinePages = (machines.isEmpty)
         ? 1
         : (machines.length / operatorDashboardItemsPerPage).ceil();
     final safeMachinePage = currentMachinePage.clamp(0, totalMachinePages - 1);
 
-    // 2. Phân trang Danh sách phiếu SOS
     final totalTicketPages = (tickets.isEmpty)
         ? 1
         : (tickets.length / operatorTicketDashboardItemsPerPage).ceil();
@@ -85,7 +83,6 @@ class _OperatorDashboardViewState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Banner Thao tác công nhân / Quét QR
             OperatorQRBanner(onTap: _openQRScanner),
 
             const SizedBox(height: 20),
@@ -120,7 +117,6 @@ class _OperatorDashboardViewState
             ),
             const SizedBox(height: 10),
 
-            // 3. Machines List (Hỗ trợ vuốt ngang + Pagination Dots)
             if (isLoading && machines.isEmpty) ...[
               const Center(
                 child: Padding(
@@ -197,7 +193,6 @@ class _OperatorDashboardViewState
 
               const SizedBox(height: 10),
 
-              // Pagination Dots cho Máy Móc
               OperatorPaginationDots(
                 currentPage: safeMachinePage,
                 totalPages: totalMachinePages,
@@ -224,7 +219,6 @@ class _OperatorDashboardViewState
             ),
             const SizedBox(height: 10),
 
-            // 5. Tickets List Phân Trang
             if (isLoading && tickets.isEmpty) ...[
               const Center(
                 child: Padding(
@@ -279,7 +273,6 @@ class _OperatorDashboardViewState
                 },
               ),
 
-              // Pagination Controls cho Phiếu Báo Lỗi SOS
               if (totalTicketPages > 1) ...[
                 const SizedBox(height: 12),
                 OperatorPaginationControls(

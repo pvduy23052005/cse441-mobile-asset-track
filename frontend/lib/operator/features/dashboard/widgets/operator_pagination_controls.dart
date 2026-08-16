@@ -72,7 +72,6 @@ class OperatorPaginationControls extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Button Trang trước (Chỉ giữ Icon)
         Material(
           color: Colors.transparent,
           child: InkWell(
@@ -103,7 +102,6 @@ class OperatorPaginationControls extends StatelessWidget {
 
         const SizedBox(width: 16),
 
-        // Center Text: Trang X / Y
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
@@ -142,7 +140,6 @@ class OperatorPaginationControls extends StatelessWidget {
 
         const SizedBox(width: 16),
 
-        // Button Trang sau (Chỉ giữ Icon)
         Material(
           color: Colors.transparent,
           child: InkWell(
