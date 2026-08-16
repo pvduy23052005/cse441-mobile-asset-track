@@ -17,9 +17,9 @@ export interface Machine {
   specifications: Record<string, any>;
   status: string;
   running_hours: number;
+  operator_id?: string;
   createdAt?: string;
   updatedAt?: string;
-  [key: string]: any;
 }
 
 export interface FirestoreMachine {
@@ -31,6 +31,7 @@ export interface FirestoreMachine {
   specifications?: Record<string, any>;
   status?: string;
   running_hours?: number;
+  operator_id?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -159,6 +160,7 @@ export class MachineService implements OnModuleInit {
           specifications: data.specifications || {},
           status: data.status || 'ACTIVE',
           running_hours: data.running_hours ?? 0,
+          operator_id: data.operator_id || undefined,
           createdAt: data.createdAt,
           updatedAt: data.updatedAt,
         };
@@ -167,6 +169,26 @@ export class MachineService implements OnModuleInit {
       this.logger.error(`Error fetching machines from Firestore: ${error}`);
       return [];
     }
+  }
+
+  async getMachinesForUser(
+    role?: string,
+    userId?: string,
+  ): Promise<Machine[]> {
+    const allMachines = await this.getAllMachines();
+    const normalizedRole = role?.toLowerCase();
+
+    // Supervisor, Engineer, Admin get to view all machines
+    if (normalizedRole !== 'operator') {
+      return allMachines;
+    }
+
+    if (!userId) {
+      return [];
+    }
+
+    const cleanUserId = userId.trim();
+    return allMachines.filter((machine) => machine.operator_id === cleanUserId);
   }
 
   async getMachineById(id: string): Promise<Machine> {
@@ -198,6 +220,7 @@ export class MachineService implements OnModuleInit {
         specifications: data.specifications || {},
         status: data.status || 'ACTIVE',
         running_hours: data.running_hours ?? 0,
+        operator_id: data.operator_id || undefined,
         createdAt: data.createdAt,
         updatedAt: data.updatedAt,
       };
@@ -214,6 +237,7 @@ export class MachineService implements OnModuleInit {
       specifications: data.specifications || {},
       status: data.status || 'ACTIVE',
       running_hours: data.running_hours ?? 0,
+      operator_id: data.operator_id || undefined,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     };

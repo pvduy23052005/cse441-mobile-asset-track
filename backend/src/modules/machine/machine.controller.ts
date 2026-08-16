@@ -24,8 +24,13 @@ export class MachineController {
   constructor(private readonly machineService: MachineService) {}
 
   @Get()
-  async getAllMachines(): Promise<Machine[]> {
-    return this.machineService.getAllMachines();
+  async getAllMachines(
+    @Req() req: JwtAuthenticatedRequest,
+  ): Promise<Machine[]> {
+    const userRole = req.user?.role?.toLowerCase();
+    const userId = req.user?.uid || req.user?.id;
+
+    return this.machineService.getMachinesForUser(userRole, userId);
   }
 
   @Get('pm-checklists')
