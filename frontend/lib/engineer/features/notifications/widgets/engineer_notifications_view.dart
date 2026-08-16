@@ -162,35 +162,7 @@ class _EngineerNotificationsViewState extends State<EngineerNotificationsView> {
                   height: 1.4,
                 ),
               ),
-              if (item.targetId != null && item.targetId!.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.tag_rounded,
-                          size: 16, color: Color(0xFF0284C7)),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          'Mã tham chiếu Ticket: ${item.targetId}',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF0284C7),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
