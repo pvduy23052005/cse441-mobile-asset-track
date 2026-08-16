@@ -1,45 +1,49 @@
 # BÀI TẬP LỚN CUỐI KỲ - BÁO CÁO MẪU HOÀN CHỈNH
+
 # ASSETTRACK: HỆ THỐNG QUẢN LÝ LÝ LỊCH THIẾT BỊ & BẢO TRÌ PHÒNG NGỪA NHÀ MÁY THÔNG MINH
 
 **Học phần:** CSE441 - Phát triển ứng dụng di động (Flutter)  
 **Học kỳ / Năm học:** Học kỳ hè - Năm học 2025-2026  
 **Giảng viên hướng dẫn:** TS. Kiều Tuấn Dũng  
 **Phương pháp tiếp cận:** Phân tích & Thiết kế Hướng đối tượng & Hệ thống (OOAD / SAD)  
-**Nhóm thực hiện:** Nhóm 08 AssetTrack (Lớp CSE441_01)  
+**Nhóm thực hiện:** Nhóm 08 AssetTrack (Lớp CSE441_01)
 
 ---
 
 ## THÔNG TIN ĐỊNH DANH DỰ ÁN
 
-* **Tên đề tài:** AssetTrack - Hệ Thống Quản Lý Lý Lịch Thiết Bị, Bảo Trì Phòng Ngừa (PM) & Báo Sự Cố Khẩn Cấp (SOS Ticket) Nhà Máy Sản Xuất
-* **Mã đề tài:** CSE441-AssetTrack
-* **Phạm vi triển khai:** 1 Phân xưởng sản xuất quy mô vừa & nhỏ (Single Workshop Scope)
-* **Link GitHub Repository:** [https://github.com/pvduy23052005/cse441-mobile-asset-track](https://github.com/pvduy23052005/cse441-mobile-asset-track)
+- **Tên đề tài:** AssetTrack - Hệ Thống Quản Lý Lý Lịch Thiết Bị, Bảo Trì Phòng Ngừa (PM) & Báo Sự Cố Khẩn Cấp (SOS Ticket) Nhà Máy Sản Xuất
+- **Mã đề tài:** CSE441-AssetTrack
+- **Phạm vi triển khai:** 1 Phân xưởng sản xuất quy mô vừa & nhỏ (Single Workshop Scope)
+- **Link GitHub Repository:** [https://github.com/pvduy23052005/cse441-mobile-asset-track](https://github.com/pvduy23052005/cse441-mobile-asset-track)
 
 ---
 
 ## BẢNG PHÂN CÔNG NHIỆM VỤ & ĐÓNG GÓP THÀNH VIÊN
 
-| STT | Mã Sinh Viên | Họ và Tên | Vai trò chính | Nhiệm vụ chính được phân công | Pull Requests / Commits | % Đóng góp |
-|:---:|:---:|:---|:---|:---|:---|:---:|
-| 1 | 2351170589 | **Phùng Văn Duy** | **Lead Developer / Operator Specialist** | Phụ trách toàn bộ **Phân hệ Operator**: Tích hợp quét mã QR (`mobile_scanner`), Hộ chiếu thiết bị (QR Passport), Khai báo giờ chạy/km, Form tạo Ticket SOS khẩn cấp + chụp ảnh camera, Hủy Ticket Pending, Xây dựng cơ chế Offline Persistence & Local SQLite Queue (NFR-06). | PR #1, PR #3, PR #5 (56 commits) | 50% |
-| 2 | 2351170589 | **Lê Quý Dương** | **Full-stack Eng / ME Engineer Specialist** | Phụ trách toàn bộ **Phân hệ ME Engineer & Supervisor**: Luồng Push Notification FCM, Transaction tiếp nhận Ticket, Thực hiện PM Checklist + ảnh bằng chứng, Quản lý vật tư tủ nhanh & đề xuất linh kiện, Canvas chữ ký số (`signature`), Dashboard giám sát Downtime (`fl_chart`), Cấu hình hệ thống & Import nhân sự Excel. | PR #2, PR #4, PR #6 (52 commits) | 50% |
+| STT | Mã Sinh Viên | Họ và Tên         | Vai trò chính                               | Nhiệm vụ chính được phân công                                                                                                                                                                                                                                                                                                                                                 | % Đóng góp |
+| :-: | :----------: | :---------------- | :------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------: |
+|  1  |  2351170589  | **Phùng Văn Duy** | **Lead Developer / Operator Specialist**    | Phụ trách toàn bộ **Phân hệ Operator**: Tích hợp quét mã QR (`mobile_scanner`), thông tin máy, Khai báo giờ chạy/km, Form tạo Ticket SOS khẩn cấp + chụp ảnh camera, Hủy Ticket Pending, Xây dựng module Upload và quản lý lưu trữ ảnh hiện trường sự cố lên **Cloudflare (Cloudflare R2 / Images)**, Xây dựng cơ chế Offline Persistence & Local SQLite Queue (NFR-06). |    50%     |
+|  2  |  2351170587  | **Lê Quý Dương**  | **Full-stack Eng / ME Engineer Specialist** | Phụ trách toàn bộ **Phân hệ ME Engineer & Supervisor**: Luồng Push Notification FCM, Transaction tiếp nhận Ticket, Thực hiện PM Checklist + ảnh bằng chứng, Quản lý vật tư tủ nhanh & đề xuất linh kiện, Canvas chữ ký số (`signature`), Dashboard giám sát Downtime (`fl_chart`), Cấu hình hệ thống & Import nhân sự Excel.                                                  |    50%     |
 
 ---
 
 ## PHẦN 1: TỔNG QUAN & XÁC ĐỊNH YÊU CẦU
 
 ### 1.1 Khảo sát Hiện trạng & Phát biểu Bài toán
+
 Trong các nhà máy sản xuất công nghiệp (đặc biệt quy mô vừa & nhỏ SME < 50 máy), sự cố máy dừng đột xuất gây nghẽn dây chuyền và tổn thất kinh tế rất lớn bởi 4 bất cập cốt lõi:
+
 1. **Bảo trì bị động & Quên mốc:** Công nhân không theo dõi số giờ máy chạy tích lũy, dẫn đến trễ lịch thay dầu mỡ/siết ốc định kỳ.
 2. **Quy trình báo hỏng thủ công & Chậm trễ:** Báo lỗi qua giấy tờ/chat gây trôi tin, không kích hoạt được báo động tức thời đến kỹ sư cơ điện (ME), kéo dài thời gian dừng máy (Downtime).
-3. **Thất lạc lý lịch máy & Vật tư:** Không có hồ sơ số ghi nhận các lần hỏng hóc và các linh kiện đã thay từ *Tủ vật tư nhanh* tại xưởng.
+3. **Thất lạc lý lịch máy & Vật tư:** Không có hồ sơ số ghi nhận các lần hỏng hóc và các linh kiện đã thay từ _Tủ vật tư nhanh_ tại xưởng.
 4. **Thiếu cam kết nghiệm thu:** Không có cơ chế bàn giao minh bạch, có chữ ký số xác nhận giữa Quản đốc và Kỹ sư trước khi khởi động lại máy.
 
 ### 1.2 Phân tích Tác nhân Hệ thống
-* **Actor 1: Operator (Công nhân Vận hành Máy):** Quét tem QR dán trên thân máy xem thông số kỹ thuật, khai báo số giờ/km máy chạy sau mỗi ca làm việc, chủ động tạo **Ticket SOS** báo hỏng khẩn cấp kèm ảnh chụp lỗi và hủy Ticket nếu báo nhầm.
-* **Actor 2: ME Engineer (Kỹ sư Cơ điện / Bảo trì):** Nhận Push Notification khẩn cấp (< 3s), bấm tiếp nhận Ticket sửa chữa, thực hiện các hạng mục PM Checklist định kỳ kèm ảnh chụp đối chứng, tự lấy linh kiện từ *Tủ vật tư nhanh* và ghi log phụ tùng tiêu hao.
-* **Actor 3: Factory Supervisor (Quản đốc Phân xưởng):** Ký tên điện tử trực tiếp trên màn hình cảm ứng để nghiệm thu bàn giao máy đưa về trạng thái `Active`, phê duyệt đề xuất linh kiện giá trị cao (> ngưỡng duyệt), theo dõi biểu đồ Downtime phân xưởng thời gian thực và quản lý nhân sự qua file Excel.
+
+- **Actor 1: Operator (Công nhân Vận hành Máy):** Quét tem QR dán trên thân máy xem thông số kỹ thuật, khai báo số giờ/km máy chạy sau mỗi ca làm việc, chủ động tạo **Ticket SOS** báo hỏng khẩn cấp kèm ảnh chụp lỗi và hủy Ticket nếu báo nhầm.
+- **Actor 2: ME Engineer (Kỹ sư Cơ điện / Bảo trì):** Nhận Push Notification khẩn cấp (< 3s), bấm tiếp nhận Ticket sửa chữa, thực hiện các hạng mục PM Checklist định kỳ kèm ảnh chụp đối chứng, tự lấy linh kiện từ _Tủ vật tư nhanh_ và ghi log phụ tùng tiêu hao.
+- **Actor 3: Factory Supervisor (Quản đốc Phân xưởng):** Ký tên điện tử trực tiếp trên màn hình cảm ứng để nghiệm thu bàn giao máy đưa về trạng thái `Active`, phê duyệt đề xuất linh kiện giá trị cao (> ngưỡng duyệt), theo dõi biểu đồ Downtime phân xưởng thời gian thực và quản lý nhân sự qua file Excel.
 
 ---
 
@@ -90,17 +94,18 @@ flowchart LR
 ### 1.4 Mô tả Chi tiết Use Case Trọng tâm
 
 #### Use Case ID: `UC3` - Tạo Ticket Báo lỗi Khẩn cấp SOS
-* **Tác nhân chính:** Operator (Công nhân Vận hành)
-* **Tiền điều kiện:** Operator đã quét mã QR trên máy móc gặp sự cố và đăng nhập đúng vai trò `operator`.
-* **Hậu điều kiện:** Ticket sự cố được tạo với trạng thái `pending`; Máy chuyển sang trạng thái `repairing`; Thông báo đẩy FCM gửi tới toàn bộ kỹ sư ME trong vòng < 3 giây; Ticket được lưu trữ an toàn trong SQLite nếu mất kết nối mạng.
-* **Luồng sự kiện chính:**
+
+- **Tác nhân chính:** Operator (Công nhân Vận hành)
+- **Tiền điều kiện:** Operator đã quét mã QR trên máy móc gặp sự cố và đăng nhập đúng vai trò `operator`.
+- **Hậu điều kiện:** Ticket sự cố được tạo với trạng thái `pending`; Máy chuyển sang trạng thái `repairing`; Thông báo đẩy FCM gửi tới toàn bộ kỹ sư ME trong vòng < 3 giây; Ticket được lưu trữ an toàn trong SQLite nếu mất kết nối mạng.
+- **Luồng sự kiện chính:**
   1. Operator bấm chọn nút `[BÁO LỖI SOS KHẨN CẤP]` từ màn hình Hộ chiếu thiết bị.
   2. Operator chọn mức độ nghiêm trọng (`Low`, `Medium`, `High`, `Critical`) và nhập mô tả hiện trạng sự cố (tiếng kêu, rò rỉ van...).
   3. Operator sử dụng camera chụp ảnh lỗi thực tế làm minh chứng.
   4. Operator bấm `[GỬI TICKET SOS]`.
   5. Hệ thống kiểm tra kết nối mạng:
-     - *Có mạng:* Lưu Ticket vào Firestore `tickets` và kích hoạt Cloud Function gửi Push Notification FCM tới kỹ sư ME.
-     - *Mất mạng:* Lưu vào SQLite Offline Queue, gắn mã `client_generated_id` (UUID), hiển thị Banner đỏ và tự upload khi có kết nối trở lại.
+     - _Có mạng:_ Lưu Ticket vào Firestore `tickets` và kích hoạt Cloud Function gửi Push Notification FCM tới kỹ sư ME.
+     - _Mất mạng:_ Lưu vào SQLite Offline Queue, gắn mã `client_generated_id` (UUID), hiển thị Banner đỏ và tự upload khi có kết nối trở lại.
   6. Trạng thái máy tự động cập nhật sang `repairing`.
 
 ---
@@ -108,7 +113,9 @@ flowchart LR
 ## PHẦN 2: PHÂN TÍCH HƯỚNG ĐỐI TƯỢNG
 
 ### 2.1 Trích xuất Thực thể Nghiệp vụ
+
 Dựa trên phân tích yêu cầu nghiệp vụ nhà máy, trích xuất 6 Lớp Thực thể Cốt lõi:
+
 1. **`UserProfile`:** Lưu giữ định danh, họ tên, email, vai trò (`operator`, `me_engineer`, `supervisor`) và mã nhân viên.
 2. **`Machine`:** Lưu giữ lý lịch thiết bị, mã QR duy nhất, model, thông số kỹ thuật, trạng thái vận hành (`active`, `repairing`, `maintenance`, `inactive`), số giờ chạy tích lũy và mốc bảo trì định kỳ `pm_threshold_hours`.
 3. **`Ticket`:** Lưu giữ phiếu báo hỏng khẩn cấp SOS do Operator tạo, mức độ nghiêm trọng, mô tả lỗi, mảng ảnh hiện trường, kỹ sư tiếp nhận, thời gian dừng máy (Downtime) và chữ ký nghiệm thu.
@@ -162,7 +169,7 @@ stateDiagram-v2
 +-----------------------------------------------------------------------+
 |                       DATA & INFRASTRUCTURE LAYER                     |
 |  - AuthRepositoryImpl            - TicketFirestoreRepositoryImpl      |
-|  - SqliteOfflineQueueHelper      - FirebaseStorageService (Photos)    |
+|  - SqliteOfflineQueueHelper      - CloudflareStorageService (R2)      |
 |  - FirebaseMessagingEngine (FCM) - Supabase / PostgreSQL Client       |
 +-----------------------------------------------------------------------+
 ```
@@ -278,13 +285,13 @@ sequenceDiagram
 
 ### 3.4 Mẫu Thiết kế Áp dụng
 
-| Design Pattern | Nơi áp dụng trong Mã nguồn | Mục đích Kỹ thuật |
-|:---|:---|:---|
-| **Repository Pattern** | `lib/repositories/ticket_repository.dart` | Tách biệt hoàn toàn tầng Giao diện Flutter với nguồn dữ liệu Backend (Firestore / Supabase / SQLite). |
-| **State / Observer Pattern** | `lib/state/machine_passport_notifier.dart` | Quản lý vòng đời trạng thái bất đồng bộ (`AsyncValue`) phản ứng tức thời với Riverpod Notifier. |
-| **Factory Method Pattern** | `Ticket.fromFirestore(DocumentSnapshot doc)` | Khởi tạo đối tượng `Ticket` an toàn từ dữ liệu JSON động của Cloud Firestore. |
-| **Singleton Pattern** | `SqliteQueueDatabase.instance` | Đảm bảo duy nhất một kết nối cơ sở dữ liệu SQLite cục bộ phục vụ chế độ Offline Queue. |
-| **Optimistic Locking Pattern** | `TicketRepository.claimTicket()` | Sử dụng Firestore Transaction chống tranh chấp tài nguyên (Race Condition) khi 2 kỹ sư ME cùng bấm tiếp nhận 1 Ticket. |
+| Design Pattern                 | Nơi áp dụng trong Mã nguồn                   | Mục đích Kỹ thuật                                                                                                      |
+| :----------------------------- | :------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| **Repository Pattern**         | `lib/repositories/ticket_repository.dart`    | Tách biệt hoàn toàn tầng Giao diện Flutter với nguồn dữ liệu Backend (Firestore / Supabase / SQLite).                  |
+| **State / Observer Pattern**   | `lib/state/machine_passport_notifier.dart`   | Quản lý vòng đời trạng thái bất đồng bộ (`AsyncValue`) phản ứng tức thời với Riverpod Notifier.                        |
+| **Factory Method Pattern**     | `Ticket.fromFirestore(DocumentSnapshot doc)` | Khởi tạo đối tượng `Ticket` an toàn từ dữ liệu JSON động của Cloud Firestore.                                          |
+| **Singleton Pattern**          | `SqliteQueueDatabase.instance`               | Đảm bảo duy nhất một kết nối cơ sở dữ liệu SQLite cục bộ phục vụ chế độ Offline Queue.                                 |
+| **Optimistic Locking Pattern** | `TicketRepository.claimTicket()`             | Sử dụng Firestore Transaction chống tranh chấp tài nguyên (Race Condition) khi 2 kỹ sư ME cùng bấm tiếp nhận 1 Ticket. |
 
 ---
 
@@ -348,9 +355,9 @@ class Ticket {
 
 ### 4.2 Thiết kế Giao diện Luồng Người dùng
 
-* **Bảng màu Chuẩn Nhà máy:** Xanh công nghiệp (`#1E3A8A`), Trạng thái Máy (`Active`, `Repairing`, `Maintenance`), Mức độ nghiêm trọng (`Critical`, `High`, `Medium`, `Low`).
-* **Quy chuẩn Tương tác Cảm ứng & Đeo găng tay (NFR-05):** Mọi nút bấm quan trọng (`Gửi SOS`, `Tiếp nhận`, `Ký tên`, `Tích checklist`) đạt kích thước tối thiểu **$48 \times 48$dp**.
-* **Luồng Điều hướng Phân quyền:**
+- **Bảng màu Chuẩn Nhà máy:** Xanh công nghiệp (`#1E3A8A`), Trạng thái Máy (`Active`, `Repairing`, `Maintenance`), Mức độ nghiêm trọng (`Critical`, `High`, `Medium`, `Low`).
+- **Quy chuẩn Tương tác Cảm ứng & Đeo găng tay (NFR-05):** Mọi nút bấm quan trọng (`Gửi SOS`, `Tiếp nhận`, `Ký tên`, `Tích checklist`) đạt kích thước tối thiểu **$48 \times 48$dp**.
+- **Luồng Điều hướng Phân quyền:**
   - `Operator`: Quét QR -> Hộ chiếu Máy -> Nhập giờ chạy / Báo Ticket SOS.
   - `ME Engineer`: Notification -> Danh sách Ticket -> Tiếp nhận -> Làm PM Checklist -> Ghi log vật tư.
   - `Supervisor`: Dashboard Downtime -> Duyệt linh kiện -> Ký tên điện tử nghiệm thu.
@@ -437,9 +444,11 @@ class TicketListNotifier extends AsyncNotifier<List<Ticket>> {
 ## PHẦN 6: KIỂM THỬ ĐỐI TƯỢNG & ĐẢM BẢO CHẤT LƯỢNG
 
 ### 6.1 Kiểm thử Đơn vị Lớp Đối tượng
+
 ```bash
 flutter test test/models/ticket_and_machine_test.dart
 ```
+
 ```text
 00:03 +4: All tests passed!
 - test 1: Machine entity calculates next PM threshold correctly (PASSED)
@@ -449,6 +458,7 @@ flutter test test/models/ticket_and_machine_test.dart
 ```
 
 ### 6.2 Kiểm tra Tuân thủ Chuẩn Mã nguồn
+
 ```text
 Analyzing assettrack_mobile...
 No issues found! (0 errors, 0 warnings, 0 lints)
@@ -456,19 +466,20 @@ No issues found! (0 errors, 0 warnings, 0 lints)
 
 ### 6.3 Ma trận Kiểm thử Thủ công
 
-| STT | Kịch bản Test | Dữ liệu đầu vào | Kết quả Thực tế | Trạng thái |
-|:---:|:---|:---|:---|:---:|
-| 1 | **Quét mã QR Máy móc** | Hướng camera vào tem QR `MC-102` | Nhận diện & Decode < 1.2s; mở đúng Hộ chiếu Máy dập thủy lực | **PASS** |
-| 2 | **Validation Nhập Giờ chạy** | Nhập `450h` khi số cũ là `463h` | Nút Lưu bị vô hiệu hóa; cảnh báo đỏ "Chỉ số phải lớn hơn lần trước" | **PASS** |
-| 3 | **Tạo Ticket SOS Mất mạng** | Tắt Wifi/4G, bấm Gửi Ticket SOS kèm ảnh | Lưu an toàn vào SQLite Queue, hiển thị Banner đỏ, tự upload khi có mạng | **PASS** |
-| 4 | **Race Condition Tiếp nhận** | 2 Kỹ sư ME cùng bấm Tiếp nhận 1 Ticket | Kỹ sư 1 tiếp nhận thành công; Kỹ sư 2 nhận Toast "Ticket đã được nhận" | **PASS** |
-| 5 | **Nghiệm thu Chữ ký số** | Quản đốc ký tay lên Canvas và xác nhận | Upload chữ ký PNG, máy tự động chuyển trạng thái về Active | **PASS** |
+| STT | Kịch bản Test                | Dữ liệu đầu vào                         | Kết quả Thực tế                                                         | Trạng thái |
+| :-: | :--------------------------- | :-------------------------------------- | :---------------------------------------------------------------------- | :--------: |
+|  1  | **Quét mã QR Máy móc**       | Hướng camera vào tem QR `MC-102`        | Nhận diện & Decode < 1.2s; mở đúng Hộ chiếu Máy dập thủy lực            |  **PASS**  |
+|  2  | **Validation Nhập Giờ chạy** | Nhập `450h` khi số cũ là `463h`         | Nút Lưu bị vô hiệu hóa; cảnh báo đỏ "Chỉ số phải lớn hơn lần trước"     |  **PASS**  |
+|  3  | **Tạo Ticket SOS Mất mạng**  | Tắt Wifi/4G, bấm Gửi Ticket SOS kèm ảnh | Lưu an toàn vào SQLite Queue, hiển thị Banner đỏ, tự upload khi có mạng |  **PASS**  |
+|  4  | **Race Condition Tiếp nhận** | 2 Kỹ sư ME cùng bấm Tiếp nhận 1 Ticket  | Kỹ sư 1 tiếp nhận thành công; Kỹ sư 2 nhận Toast "Ticket đã được nhận"  |  **PASS**  |
+|  5  | **Nghiệm thu Chữ ký số**     | Quản đốc ký tay lên Canvas và xác nhận  | Upload chữ ký PNG, máy tự động chuyển trạng thái về Active              |  **PASS**  |
 
 ---
 
 ## PHẦN 7: MINH CHỨNG PHÁT TRIỂN & TRUNG THỰC HỌC THUẬT
 
 ### 7.1 Thống kê Lịch sử Commits
+
 ```text
 * a1c2e3f (HEAD -> main, origin/main) feat(operator): implement offline SQLite queue & auto sync for SOS tickets
 * 8b9d0e1 feat(sign-off): integrate digital signature canvas & automated machine activation
@@ -483,16 +494,19 @@ No issues found! (0 errors, 0 warnings, 0 lints)
 ## PHẦN 8: TỔNG KẾT & HƯỚNG PHÁT TRIỂN
 
 ### 8.1 Kết quả Đạt được
+
 1. **Mô hình hóa OOAD Chuẩn mực:** Bóc tách 6 thực thể nghiệp vụ rõ ràng, thiết kế sơ đồ Use Case, Sequence Diagrams, State Transitions và Kiến trúc Clean Layered phân tách rành mạch.
 2. **Giải quyết triệt để Bài toán Nhà xưởng:** Số hóa toàn diện Hộ chiếu thiết bị bằng QR, tự động hóa cảnh báo bảo trì theo giờ chạy, gửi Ticket SOS tức thời và số hóa nghiệm thu chữ ký.
 3. **Độ tin cậy & Chất lượng:** Hỗ trợ hoạt động Offline trong nhà xưởng (NFR-06), 0 Lints warnings và hoàn thành 100% các tiêu chí nghiệm thu.
 
 ### 8.2 Hạn chế & Định hướng Mở rộng
-* *Hạn chế:* Hiện tại việc đọc chỉ số giờ chạy máy vẫn cần Operator nhập thủ công sau mỗi ca.
-* *Hướng phát triển:* Tích hợp thiết bị phần cứng **IoT Sensor (ESP32 / Modbus)** đọc trực tiếp tín hiệu từ rơ-le dòng điện của máy để tự động truyền số giờ chạy thực tế về hệ thống Cloud theo thời gian thực.
+
+- _Hạn chế:_ Hiện tại việc đọc chỉ số giờ chạy máy vẫn cần Operator nhập thủ công sau mỗi ca.
+- _Hướng phát triển:_ Tích hợp thiết bị phần cứng **IoT Sensor (ESP32 / Modbus)** đọc trực tiếp tín hiệu từ rơ-le dòng điện của máy để tự động truyền số giờ chạy thực tế về hệ thống Cloud theo thời gian thực.
 
 ---
-**Đại diện Nhóm AssetTrack xác nhận:**  
-*(Ký và ghi rõ họ tên)*  
 
-**Phùng Văn Duy (2351170589)** (Phụ trách Phân hệ Operator) — **Lê Quý Dương (2351170589)** (Phụ trách Phân hệ ME & Supervisor)
+**Đại diện Nhóm AssetTrack xác nhận:**  
+_(Ký và ghi rõ họ tên)_
+
+**Phùng Văn Duy (2351170589)** (Phụ trách Phân hệ Operator) — **Lê Quý Dương (2351170587)** (Phụ trách Phân hệ ME & Supervisor)

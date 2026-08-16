@@ -26,9 +26,9 @@ Trong các nhà máy sản xuất công nghiệp, sự cố hỏng hóc máy mó
 
 | Tác nhân (Actor) | Thành viên Phụ trách | Phạm vi Chức năng Cốt lõi |
 | :--- | :--- | :--- |
-| **1. Công nhân Vận hành (Operator)** | **Phùng Văn Duy (2351170589)** | • **QR Machine Passport:** Quét mã QR (`mobile_scanner`), tra cứu Hộ chiếu thiết bị, thông số kỹ thuật, cẩm nang lỗi.<br>• **Running Hours Logging:** Khai báo số giờ chạy máy / km đầu/cuối ca, validation real-time.<br>• **Breakdown SOS Ticket:** Tạo Ticket báo hỏng khẩn cấp, chọn mức độ nghiêm trọng, chụp ảnh hiện trường qua camera.<br>• **Offline Mode (NFR-06):** Local cache SQLite, lưu tạm giờ chạy & Ticket khi mất mạng, tự động đồng bộ khi có kết nối. |
-| **2. Kỹ sư Cơ điện (ME Engineer)** | **Lê Quý Dương (2351170589)** | • Nhận Push Notification khẩn cấp thời gian thực khi có Ticket SOS.<br>• Tiếp nhận Ticket sửa chữa, thực hiện PM Checklist bảo trì định kỳ kèm ảnh minh chứng bắt buộc.<br>• Ghi nhận log vật tư tủ nhanh và gửi đề xuất linh kiện đắt tiền lên Quản đốc. |
-| **3. Quản đốc Phân xưởng (Supervisor)** | **Lê Quý Dương (2351170589)** | • Giám sát thời gian dừng máy (Downtime), đo lường chỉ số hiệu suất phân xưởng qua Real-time Dashboard.<br>• Phê duyệt đề xuất linh kiện đắt tiền vượt ngưỡng chi phí cấu hình.<br>• Ký tên điện tử nghiệm thu trực tiếp trên màn hình cảm ứng để đưa máy về `Active` hoặc từ chối kèm lý do (`Rejected`).<br>• Quản lý và import danh sách nhân sự phân xưởng từ file Excel. |
+| **1. Công nhân Vận hành (Operator)** | **Phùng Văn Duy (2351170589)** | • **QR Machine Passport:** Quét mã QR (`mobile_scanner`), tra cứu Hộ chiếu thiết bị, thông số kỹ thuật, cẩm nang lỗi.<br>• **Running Hours Logging:** Khai báo số giờ chạy máy / km đầu/cuối ca, validation real-time.<br>• **Breakdown SOS Ticket:** Tạo Ticket báo hỏng khẩn cấp, chọn mức độ nghiêm trọng, chụp ảnh hiện trường qua camera.<br>• **Cloudflare Image Upload:** Tích hợp module upload & tối ưu hóa ảnh hiện trường lên Cloudflare (Cloudflare R2 / Images).<br>• **Offline Mode (NFR-06):** Local cache SQLite, lưu tạm giờ chạy & Ticket khi mất mạng, tự động đồng bộ khi có kết nối. |
+| **2. Kỹ sư Cơ điện (ME Engineer)** | **Lê Quý Dương (2351170587)** | • Nhận Push Notification khẩn cấp thời gian thực khi có Ticket SOS.<br>• Tiếp nhận Ticket sửa chữa, thực hiện PM Checklist bảo trì định kỳ kèm ảnh minh chứng bắt buộc.<br>• Ghi nhận log vật tư tủ nhanh và gửi đề xuất linh kiện đắt tiền lên Quản đốc. |
+| **3. Quản đốc Phân xưởng (Supervisor)** | **Lê Quý Dương (2351170587)** | • Giám sát thời gian dừng máy (Downtime), đo lường chỉ số hiệu suất phân xưởng qua Real-time Dashboard.<br>• Phê duyệt đề xuất linh kiện đắt tiền vượt ngưỡng chi phí cấu hình.<br>• Ký tên điện tử nghiệm thu trực tiếp trên màn hình cảm ứng để đưa máy về `Active` hoặc từ chối kèm lý do (`Rejected`).<br>• Quản lý và import danh sách nhân sự phân xưởng từ file Excel. |
 
 ---
 
@@ -40,11 +40,13 @@ Trong các nhà máy sản xuất công nghiệp, sự cố hỏng hóc máy mó
 - **State Management:** Riverpod.
 - **QR Code Scanner:** `mobile_scanner` (decode mã QR trong < 1.5s).
 - **Digital Signature:** `signature` Canvas SDK (xuất ảnh chữ ký PNG).
+- **Image Storage & CDN:** Cloudflare (Cloudflare R2 Storage / Cloudflare Images).
 - **Offline Storage & Sync:** SQLite (`sqflite`) lưu trữ Local Queue khi mất mạng, tự động đồng bộ khi có kết nối trở lại.
 
 ### Backend & Infrastructure:
 
 - **BaaS Platform:** [Supabase](https://supabase.com/) / Firebase (PostgreSQL / Firestore NoSQL).
+- **Cloud Storage:** Cloudflare R2 / Firebase Storage lưu trữ ảnh lỗi và ảnh chữ ký.
 - **Security:** Row-Level Security (RLS) / Security Rules phân quyền theo phân xưởng (`workshop_id`).
 - **Realtime & Cloud Functions:** Database Triggers, Cloud Functions.
 - **Push Notification:** Firebase Cloud Messaging (FCM).
