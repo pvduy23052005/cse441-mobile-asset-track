@@ -12,14 +12,46 @@ import {
 } from '@nestjs/common';
 import type { JwtAuthenticatedRequest } from '../modules/auth/jwt-auth.guard';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
+import {
+  Machine,
+  MachineService,
+} from '../modules/machine/machine.service';
 import { CreateTicketDto } from '../modules/tickets/dto/create-ticket.dto';
 import { Ticket } from '../modules/tickets/interfaces/ticket.interface';
 import { TicketsService } from '../modules/tickets/tickets.service';
 
 @UseGuards(JwtAuthGuard)
+@Controller('operator/machines')
+export class OperatorMachineController {
+  constructor(private readonly machineService: MachineService) { }
+
+  @Get()
+  async getMyMachines(
+    @Req() req: JwtAuthenticatedRequest,
+  ): Promise<Machine[]> {
+    const userRole = req.user?.role?.toLowerCase();
+    if (userRole && userRole !== 'operator' && userRole !== 'supervisor') {
+      throw new ForbiddenException(
+        'Chỉ người vận hành (Operator) mới có quyền truy cập danh sách máy phụ trách',
+      );
+    }
+
+    const operatorId = req.user?.uid || req.user?.id;
+    if (!operatorId) {
+      throw new UnauthorizedException(
+        'Không tìm thấy ID người dùng từ thông tin xác thực JWT',
+      );
+    }
+
+    return this.machineService.getMachinesForUser('operator', operatorId);
+  }
+
+}
+
+@UseGuards(JwtAuthGuard)
 @Controller('operator/tickets')
 export class OperatorTicketController {
-  constructor(private readonly ticketsService: TicketsService) {}
+  constructor(private readonly ticketsService: TicketsService) { }
 
   @Post()
   async createTicket(

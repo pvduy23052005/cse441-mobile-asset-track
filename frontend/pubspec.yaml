@@ -53,6 +53,7 @@ dependencies:
   path: ^1.9.1
   uuid: ^4.6.0
   connectivity_plus: ^7.3.1
+  sqflite_common_ffi: ^2.4.2
 
 dev_dependencies:
   flutter_test:

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/models/machine_model.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/machine_formatters.dart';
+import '../../../../core/utils/storage_service.dart';
+import '../../../../supervisor/features/machine_management/widgets/assign_operator_dialog.dart';
 import '../services/machine_service.dart';
 import '../../ticket/widgets/create_sos_ticket_modal.dart';
 
@@ -65,8 +67,24 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
     }
   }
 
+  void _openAssignOperatorModal(BuildContext context) {
+    AssignOperatorDialog.show(
+      context,
+      machine: _currentMachine,
+      onOperatorAssigned: (updatedMachine) {
+        setState(() {
+          _currentMachine = updatedMachine;
+        });
+        widget.onStatusUpdated?.call(updatedMachine);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final String userRole = StorageService.getUserRole()?.toLowerCase() ?? '';
+    final bool isSupervisor = userRole == 'supervisor';
+
     final String locationText = _currentMachine.location.isNotEmpty
         ? _currentMachine.location
         : (_currentMachine.specifications['location']?.toString() ??
@@ -323,7 +341,7 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
                                 ),
                               ),
                               if (_currentMachine.operator?.phone != null &&
-                                  _currentMachine.operator!.phone!.isNotEmpty)
+                                  _currentMachine.operator!.phone!.isNotEmpty) ...[
                                 Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 8,
@@ -356,8 +374,80 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
                                     ],
                                   ),
                                 ),
+                                const SizedBox(width: 8),
+                              ],
+
+                              // Supervisor Reassign Button (if already assigned)
+                              if (isSupervisor && _currentMachine.operator != null)
+                                InkWell(
+                                  onTap: () => _openAssignOperatorModal(context),
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFE0F2FE),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: const Color(0xFFBAE6FD),
+                                      ),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.sync_alt_rounded,
+                                          size: 13,
+                                          color: Color(0xFF0284C7),
+                                        ),
+                                        SizedBox(width: 3),
+                                        Text(
+                                          'Đổi',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF0284C7),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
+
+                          // Quick CTA Button if no operator is assigned yet (Supervisor only)
+                          if (isSupervisor && _currentMachine.operator == null) ...[
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF0284C7),
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () => _openAssignOperatorModal(context),
+                                icon: const Icon(
+                                  Icons.person_add_alt_1_rounded,
+                                  size: 16,
+                                ),
+                                label: const Text(
+                                  'Chọn Operator tiếp quản máy ngay',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),

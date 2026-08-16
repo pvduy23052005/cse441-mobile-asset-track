@@ -242,40 +242,80 @@ export class MachineService implements OnModuleInit {
   }
 
   async getMachineById(id: string): Promise<Machine> {
+    const cleanId = (id || '').trim();
+    if (!cleanId) {
+      throw new NotFoundException('Mã hoặc ID thiết bị không được để trống');
+    }
+
     const docRef = this.firebaseService.firestore
       .collection(this.machinesCollection)
-      .doc(id);
+      .doc(cleanId);
     const doc = await docRef.get();
 
     if (!doc.exists) {
-      const querySnapshot = await this.firebaseService.firestore
+      // 1. Try exact code match
+      let querySnapshot = await this.firebaseService.firestore
         .collection(this.machinesCollection)
-        .where('code', '==', id)
+        .where('code', '==', cleanId)
         .limit(1)
         .get();
 
       if (querySnapshot.empty) {
-        throw new NotFoundException(`Machine with ID or Code '${id}' not found`);
+        querySnapshot = await this.firebaseService.firestore
+          .collection(this.machinesCollection)
+          .where('code', '==', cleanId.toUpperCase())
+          .limit(1)
+          .get();
       }
 
-      const foundDoc = querySnapshot.docs[0];
-      const data = foundDoc.data() as FirestoreMachine;
-      const operator = await this.getOperatorInfo(data.operator_id);
-      return {
-        id: foundDoc.id,
-        code: data.code || '',
-        name: data.name || '',
-        model: data.model || '',
-        location: data.location || '',
-        next_maintenance_hours: data.next_maintenance_hours,
-        specifications: data.specifications || {},
-        status: data.status || 'ACTIVE',
-        running_hours: data.running_hours ?? 0,
-        operator_id: data.operator_id || undefined,
-        operator,
-        createdAt: data.createdAt,
-        updatedAt: data.updatedAt,
-      };
+      if (querySnapshot.empty) {
+        querySnapshot = await this.firebaseService.firestore
+          .collection(this.machinesCollection)
+          .where('code', '==', cleanId.toLowerCase())
+          .limit(1)
+          .get();
+      }
+
+      if (!querySnapshot.empty) {
+        const foundDoc = querySnapshot.docs[0];
+        const data = foundDoc.data() as FirestoreMachine;
+        const operator = await this.getOperatorInfo(data.operator_id);
+        return {
+          id: foundDoc.id,
+          code: data.code || '',
+          name: data.name || '',
+          model: data.model || '',
+          location: data.location || '',
+          next_maintenance_hours: data.next_maintenance_hours,
+          specifications: data.specifications || {},
+          status: data.status || 'ACTIVE',
+          running_hours: data.running_hours ?? 0,
+          operator_id: data.operator_id || undefined,
+          operator,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
+        };
+      }
+
+      const all = await this.getAllMachines();
+      const lower = cleanId.toLowerCase();
+      const strippedLower = lower.replace(/[^a-z0-9]/g, '');
+
+      const found = all.find(
+        (m) =>
+          m.id.toLowerCase() === lower ||
+          m.code.toLowerCase() === lower ||
+          m.name.toLowerCase() === lower ||
+          (strippedLower.length >= 2 &&
+            m.code.toLowerCase().replace(/[^a-z0-9]/g, '') === strippedLower),
+      );
+
+      if (found) {
+        const operator = await this.getOperatorInfo(found.operator_id);
+        return { ...found, operator };
+      }
+
+      throw new NotFoundException(`Machine with ID or Code '${cleanId}' not found`);
     }
 
     const data = doc.data() as FirestoreMachine;
@@ -370,6 +410,38 @@ export class MachineService implements OnModuleInit {
     });
 
     return this.getMachineById(id);
+  }
+
+  async assignOperator(id: string, operatorId: string): Promise<Machine> {
+    const docRef = this.firebaseService.firestore
+      .collection(this.machinesCollection)
+      .doc(id);
+
+    let doc = await docRef.get();
+    let machineId = id;
+
+    if (!doc.exists) {
+      const querySnapshot = await this.firebaseService.firestore
+        .collection(this.machinesCollection)
+        .where('code', '==', id)
+        .limit(1)
+        .get();
+
+      if (querySnapshot.empty) {
+        throw new NotFoundException(`Machine with ID or Code '${id}' not found`);
+      }
+
+      doc = querySnapshot.docs[0];
+      machineId = doc.id;
+    }
+
+    const updatedAt = new Date().toISOString();
+    await doc.ref.update({
+      operator_id: operatorId ? operatorId.trim() : null,
+      updatedAt,
+    });
+
+    return this.getMachineById(machineId);
   }
 
   async logRunningHours(

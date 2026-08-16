@@ -1,8 +1,10 @@
 import {
+  Body,
   Controller,
   ForbiddenException,
   Get,
   Param,
+  Patch,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -13,11 +15,15 @@ import {
   MachineQrCodeResponse,
   MachineService,
 } from '../modules/machine/machine.service';
+import { UserService } from '../modules/user/user.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('supervisor')
 export class SupervisorController {
-  constructor(private readonly machineService: MachineService) { }
+  constructor(
+    private readonly machineService: MachineService,
+    private readonly userService: UserService,
+  ) {}
 
   @Get('machines')
   async getAllMachines(
@@ -30,6 +36,20 @@ export class SupervisorController {
       );
     }
     return this.machineService.getAllMachines();
+  }
+
+  @Get('operators')
+  async getOperators(
+    @Req() req: JwtAuthenticatedRequest,
+  ): Promise<any[]> {
+    const userRole = req.user?.role?.toLowerCase();
+    if (userRole !== 'supervisor') {
+      throw new ForbiddenException(
+        'Chỉ Quản đốc (Supervisor) mới có quyền truy cập danh sách nhân sự',
+      );
+    }
+    const allUsers = await this.userService.getAllUsers();
+    return allUsers.filter((u) => u.role?.toLowerCase() === 'operator');
   }
 
   @Get('machines/:id/qrcode')
@@ -46,17 +66,18 @@ export class SupervisorController {
     return this.machineService.generateMachineQrCode(id);
   }
 
-  @Get('machines/:id')
-  async getMachineById(
+  @Patch('machines/:id/assign-operator')
+  async assignOperator(
     @Param('id') id: string,
+    @Body('operator_id') operatorId: string,
     @Req() req: JwtAuthenticatedRequest,
   ): Promise<Machine> {
     const userRole = req.user?.role?.toLowerCase();
     if (userRole !== 'supervisor') {
       throw new ForbiddenException(
-        'Chỉ Quản đốc (Supervisor) mới có quyền truy cập thông tin thiết bị',
+        'Chỉ Quản đốc (Supervisor) mới có quyền phân công người vận hành',
       );
     }
-    return await this.machineService.getMachineById(id);
+    return this.machineService.assignOperator(id, operatorId);
   }
 }
