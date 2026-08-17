@@ -242,27 +242,27 @@ CREATE TABLE public.machines (
 
 -- 4. Tickets Table (SOS Breakdown)
 CREATE TABLE public.tickets (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    client_generated_id UUID UNIQUE NOT NULL,
-    workshop_id UUID NOT NULL REFERENCES public.workshops(id) ON DELETE CASCADE,
-    machine_id UUID NOT NULL REFERENCES public.machines(id) ON DELETE CASCADE,
-    reporter_id UUID NOT NULL REFERENCES public.profiles(id),
-    assignee_id UUID REFERENCES public.profiles(id),
-    supervisor_id UUID REFERENCES public.profiles(id),
-    severity TEXT NOT NULL CHECK (severity IN ('low', 'medium', 'high', 'critical')),
+    id TEXT PRIMARY KEY, -- Firestore Document ID
+    machine_id TEXT NOT NULL REFERENCES public.machines(id) ON DELETE CASCADE,
+    machine_code TEXT NOT NULL,
+    machine_name TEXT NOT NULL,
+    reporter_id TEXT NOT NULL REFERENCES public.profiles(id),
+    reporter_name TEXT NOT NULL,
+    reporter_email TEXT NOT NULL,
+    engineer_id TEXT REFERENCES public.profiles(id),
+    engineer_name TEXT,
+    severity TEXT NOT NULL CHECK (severity IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
+    status TEXT NOT NULL CHECK (status IN ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'APPROVED', 'REJECTED', 'CANCELLED')) DEFAULT 'PENDING',
     description TEXT NOT NULL,
-    image_urls TEXT[] DEFAULT '{}',
-    status TEXT NOT NULL CHECK (status IN ('pending', 'in_progress', 'completed', 'approved', 'rejected', 'cancelled')) DEFAULT 'pending',
+    images_urls TEXT[] DEFAULT '{}',
     downtime_start TIMESTAMPTZ DEFAULT now(),
     downtime_end TIMESTAMPTZ,
     claimed_at TIMESTAMPTZ,
-    supervisor_signature_url TEXT,
     rejection_reason TEXT,
-    rejected_by UUID REFERENCES public.profiles(id),
     cancelled_at TIMESTAMPTZ,
-    cancellation_reason TEXT,
-    cancelled_by UUID REFERENCES public.profiles(id),
-    created_at TIMESTAMPTZ DEFAULT now()
+    cancelled_reason TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- 5. PM Checklists Table

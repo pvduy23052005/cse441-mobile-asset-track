@@ -21,16 +21,16 @@
 
 ## BẢNG PHÂN CÔNG NHIỆM VỤ & ĐÓNG GÓP THÀNH VIÊN
 
-| STT | Mã Sinh Viên | Họ và Tên         | Vai trò chính                               | Nhiệm vụ chính được phân công                                                                                                                                                                                                                                                                                                                                                 | % Đóng góp |
-| :-: | :----------: | :---------------- | :------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------: |
-|  1  |  2351170589  | **Phùng Văn Duy** | **Lead Developer / Operator, ME Workflow & Master Data** | • **Phân hệ Operator & ME Workflow:** Tích hợp quét mã QR (`mobile_scanner`), Hộ chiếu thiết bị (QR Passport), Khai báo giờ chạy/km, Form tạo Ticket SOS khẩn cấp + chụp ảnh camera, Hủy Ticket Pending, Quy trình ME thực hiện PM Checklist + ảnh bằng chứng, ghi log vật tư tủ nhanh & đề xuất linh kiện, Cơ chế Offline Queue SQLite (NFR-06).<br>• **Quản lý Máy móc & Thiết bị:** Quản lý danh mục máy móc (CRUD), tạo & in tem mã QR định danh, cấu hình mốc giờ bảo trì định kỳ (`pm_threshold_hours`), quản lý cẩm nang xử lý lỗi nhanh.<br>• **Quản lý Người dùng & Nhân sự:** Quản lý danh sách tài khoản nhân sự, phân quyền Role (`operator`, `me_engineer`, `supervisor`), import danh sách nhân sự từ file Excel.<br>• **Cloudflare Storage:** Tích hợp dịch vụ Upload và quản lý lưu trữ ảnh hiện trường lên **Cloudflare (Cloudflare R2 / Images)**. |    50%     |
-|  2  |  2351170587  | **Lê Quý Dương**  | **Full-stack Eng / Supervisor Specialist** | • **Dashboard Supervisor:** Xây dựng Dashboard Quản đốc thời gian thực, biểu đồ phân tích thời gian dừng máy (Downtime Analysis - Pie Chart & Bar Chart), đo lường chỉ số OEE và cảnh báo sự cố toàn phân xưởng (`fl_chart`).<br>• **Nhận Nghiệm thu từ Engineer:** Tiếp nhận yêu cầu nghiệm thu Ticket sửa chữa / Phiếu bảo trì PM từ Kỹ sư ME, kiểm tra ảnh minh chứng đối chứng & danh mục vật tư thay thế, tích hợp Canvas chữ ký số (`signature`) trực tiếp trên màn hình cảm ứng để nghiệm thu đưa máy về `Active` hoặc từ chối kèm lý do (`Rejected`).<br>• **Phê duyệt Vật tư:** Tiếp nhận và xử lý phê duyệt các đề xuất linh kiện đắt tiền vượt ngưỡng chi phí của phân xưởng. |    50%     |
+| STT | Mã Sinh Viên | Họ và Tên         | Vai trò chính                                            | Nhiệm vụ chính được phân công                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | % Đóng góp |
+| :-: | :----------: | :---------------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------: |
+|  1  |  2351170589  | **Phùng Văn Duy** | **Lead Architect / Full-stack Developer**                | • **Kiến trúc Hệ thống Backend & Frontend:** Thiết kế kiến trúc tổng thể hệ thống Frontend (Flutter) & Backend (BaaS/Cloud), xây dựng cơ chế Offline cho Operator (SQLite Queue & Auto Sync — NFR-06).<br>• **Phân hệ Operator:** Tích hợp camera quét mã QR, Hộ chiếu thiết bị (QR Passport), Khai báo giờ chạy/km, Form tạo Ticket SOS khẩn cấp + chụp ảnh camera, Hủy Ticket Pending.<br>• **Quản lý Máy móc & Thiết bị:** Quản lý danh mục máy móc (CRUD), tạo & in tem mã QR định danh, cấu hình mốc giờ bảo trì định kỳ, quản lý cẩm nang xử lý lỗi nhanh.<br>• **Quản lý Người dùng & Nhân sự:** Quản lý danh sách tài khoản nhân sự, phân quyền Role (`operator`, `me_engineer`, `supervisor`), import danh sách nhân sự từ file Excel.<br>• **Cloudflare Storage:** Tích hợp dịch vụ Upload và quản lý lưu trữ ảnh hiện trường lên **Cloudflare (Cloudflare R2 / Images)**. |    50%     |
+|  2  |  2351170587  | **Lê Quý Dương**  | **Full-stack Eng / ME Engineer & Supervisor Specialist** | • **Chế độ Offline cho Engineer (Offline Mode for ME — NFR-06):** Caching danh sách PM Checklist & Ticket sửa chữa cục bộ, lưu tạm kết quả tick checklist, ảnh bằng chứng linh kiện và log vật tư tủ nhanh khi mất mạng, tự động đồng bộ lên hệ thống khi có mạng trở lại.<br>• **Phân hệ ME Engineer (ME Workflow):** Nhận Push Notification khẩn cấp từ Firebase FCM (< 3s), Màn hình danh sách Ticket/PM & Transaction tiếp nhận sửa chữa (`in_progress`), Thực hiện quy trình PM Checklist bảo dưỡng định kỳ kèm upload ảnh minh chứng, Ghi log vật tư tủ nhanh SME & gửi đề xuất linh kiện đắt tiền.<br>• **Dashboard Supervisor:** Xây dựng Dashboard Quản đốc thời gian thực, biểu đồ phân tích thời gian dừng máy (Downtime Analysis - Pie Chart & Bar Chart với `fl_chart`), đo lường chỉ số OEE và cảnh báo sự cố toàn phân xưởng.<br>• **Nhận Nghiệm thu từ Engineer:** Màn hình tiếp nhận phiếu nghiệm thu từ Kỹ sư ME, kiểm tra ảnh minh chứng đối chứng & danh mục vật tư thay thế, tích hợp Canvas chữ ký số (`signature`) trực tiếp trên màn hình cảm ứng để nghiệm thu đưa máy về `Active` hoặc từ chối kèm lý do (`Rejected`).<br>• **Phê duyệt Vật tư:** Tiếp nhận và xử lý phê duyệt các đề xuất linh kiện đắt tiền vượt ngưỡng chi phí của phân xưởng. |    50%     |
 
 ---
 
 ## PHẦN 1: TỔNG QUAN & XÁC ĐỊNH YÊU CẦU
 
-### 1.1 Khảo sát Hiện trạng & Phát biểu Bài toán
+### 1.1 Đặt vấn đề & Bài toán Nghiệp vụ
 
 Trong các nhà máy sản xuất công nghiệp (đặc biệt quy mô vừa & nhỏ SME < 50 máy), sự cố máy dừng đột xuất gây nghẽn dây chuyền và tổn thất kinh tế rất lớn bởi 4 bất cập cốt lõi:
 
@@ -43,70 +43,124 @@ Trong các nhà máy sản xuất công nghiệp (đặc biệt quy mô vừa & 
 
 - **Actor 1: Operator (Công nhân Vận hành Máy):** Quét tem QR dán trên thân máy xem thông số kỹ thuật, khai báo số giờ/km máy chạy sau mỗi ca làm việc, chủ động tạo **Ticket SOS** báo hỏng khẩn cấp kèm ảnh chụp lỗi và hủy Ticket nếu báo nhầm.
 - **Actor 2: ME Engineer (Kỹ sư Cơ điện / Bảo trì):** Nhận Push Notification khẩn cấp (< 3s), bấm tiếp nhận Ticket sửa chữa, thực hiện các hạng mục PM Checklist định kỳ kèm ảnh chụp đối chứng, tự lấy linh kiện từ _Tủ vật tư nhanh_ và ghi log phụ tùng tiêu hao.
-- **Actor 3: Factory Supervisor (Quản đốc Phân xưởng):** Ký tên điện tử trực tiếp trên màn hình cảm ứng để nghiệm thu bàn giao máy đưa về trạng thái `Active`, phê duyệt đề xuất linh kiện giá trị cao (> ngưỡng duyệt), theo dõi biểu đồ Downtime phân xưởng thời gian thực và quản lý nhân sự qua file Excel.
+- **Actor 3: Factory Supervisor (Quản đốc Phân xưởng):** Ký tên điện tử trực tiếp trên màn hình cảm ứng để nghiệm thu bàn giao máy đưa về trạng thái , phê duyệt đề xuất linh kiện giá trị cao (> ngưỡng duyệt), theo dõi biểu đồ Downtime phân xưởng thời gian thực và quản lý nhân sự qua file Excel.
 
 ---
 
-### 1.3 Danh sách Use Cases & Sơ đồ Use Case Tổng thể
+### 1.3 Danh sách Use Cases & Sơ đồ Use Case Trọng tâm
+
+Hệ thống tập trung vào 5 Use Cases cốt lõi quyết định toàn bộ luồng nghiệp vụ bảo trì, vận hành và quản lý thiết bị:
 
 ```mermaid
 flowchart LR
-    subgraph Actors["Tác nhân Nguồn"]
+    subgraph Actors["Tác nhân"]
         Operator["Công nhân Vận hành (Operator)"]
+        Admin["Quản lý Hệ thống (Admin / Duy)"]
         ME["Kỹ sư Cơ điện (ME Engineer)"]
         Supervisor["Quản đốc Phân xưởng (Supervisor)"]
     end
 
-    subgraph System["Hệ thống Di động AssetTrack - Single Workshop"]
-        UC1["Quét QR & Xem Hộ chiếu Thiết bị"]
-        UC2["Khai báo Giờ chạy / Km (Đầu & Cuối ca)"]
-        UC3["Tạo Ticket Báo lỗi Khẩn cấp SOS"]
-        UC4["Hủy Ticket SOS (Khi còn Pending)"]
-        UC5["Tiếp nhận Ticket Sửa chữa SOS (FCM)"]
-        UC6["Thực thi PM Checklist Định kỳ"]
-        UC7["Ghi Log Phụ tùng Tủ nhanh SME"]
-        UC8["Gửi Đề xuất Linh kiện Đắt tiền"]
-        UC9["Nghiệm thu & Ký tên Điện tử (Digital Sign-off)"]
-        UC10["Phê duyệt Đề xuất Linh kiện"]
-        UC11["Giám sát Dashboard Downtime & OEE"]
-        UC12["Quản lý & Import Nhân sự Excel"]
+    subgraph System["Hệ thống Di động AssetTrack - 5 Use Cases Trọng tâm"]
+        UC03["UC-03: Tạo Ticket Báo lỗi Khẩn cấp SOS"]
+        UC05["UC-05: Quản lý Danh mục Máy móc & Sinh Tem QR"]
+        UC07["UC-07: Tiếp nhận Ticket Sửa chữa SOS (Claim)"]
+        UC08["UC-08: Thực thi PM Checklist & Lưu Offline"]
+        UC10["UC-10: Tiếp nhận Nghiệm thu & Ký tên Điện tử"]
     end
 
-    Operator --> UC1
-    Operator --> UC2
-    Operator --> UC3
-    Operator --> UC4
-
-    ME --> UC1
-    ME --> UC5
-    ME --> UC6
-    ME --> UC7
-    ME --> UC8
-
-    Supervisor --> UC9
+    Operator --> UC03
+    Admin --> UC05
+    ME --> UC07
+    ME --> UC08
     Supervisor --> UC10
-    Supervisor --> UC11
-    Supervisor --> UC12
 ```
 
 ---
 
-### 1.4 Mô tả Chi tiết Use Case Trọng tâm
+### 1.4 Bảng Đặc tả Chi tiết Các Use Case Trọng tâm
 
-#### Use Case ID: `UC3` - Tạo Ticket Báo lỗi Khẩn cấp SOS
+#### Bảng 1.1: Đặc tả Use Case UC-03 - Tạo Ticket Báo lỗi Khẩn cấp SOS
+| Thuộc tính | Nội dung đặc tả |
+| :--- | :--- |
+| **Use Case ID** | **UC-03** |
+| **Use Case Name** | **Tạo Ticket Báo lỗi Khẩn cấp SOS** |
+| **Created By** | Phùng Văn Duy |
+| **Date Created** | 16/07/2026 |
+| **Actor** | Operator (Công nhân Vận hành) |
+| **Description** | Operator tạo phiếu báo hỏng khẩn cấp khi máy móc xảy ra sự cố đột xuất trong ca làm việc, đính kèm ảnh hiện trường sự cố được lưu trữ trên Cloudflare. |
+| **Trigger** | Máy móc gặp sự cố bất ngờ và Operator bấm nút "[BÁO LỖI SOS KHẨN CẤP]". |
+| **Pre-conditions** | Operator đã đăng nhập tài khoản và quét định danh máy gặp sự cố; máy đang ở trạng thái `active`. |
+| **Post conditions** | Ticket mới được tạo ở trạng thái `pending`; Máy chuyển trạng thái sang `repairing`; Push Notification FCM được bắn đến toàn bộ kỹ sư ME trong < 3s; Thời gian dừng máy (Downtime) bắt đầu được tính. |
+| **Flow of Events** | 1. Operator bấm chọn nút "[BÁO LỖI SOS KHẨN CẤP]" từ màn hình Hộ chiếu thiết bị.<br>2. Operator chọn mức độ nghiêm trọng (`Low`, `Medium`, `High`, `Critical`).<br>3. Operator nhập mô tả chi tiết hiện trạng sự cố (tiếng ồn, rò rỉ áp suất, cháy khét...).<br>4. Operator bấm mở camera chụp 1 hoặc nhiều ảnh hiện trường lỗi thực tế.<br>5. Ứng dụng nén ảnh, tạo đường dẫn tạm và tải ảnh lên dịch vụ Cloudflare R2 / Images.<br>6. Operator bấm "[GỬI TICKET SOS]".<br>7. Hệ thống tạo bản ghi `tickets`, cập nhật trạng thái máy sang `repairing`, kích hoạt Cloud Function gửi Push Notification FCM tới toàn bộ ME Engineer. |
+| **Alternative Flow** | • **A1 (Thiết bị mất mạng / Offline Mode):** Ứng dụng sinh `client_generated_id` (UUID), lưu ảnh vào bộ nhớ cục bộ (`path_provider`), ghi toàn bộ Ticket vào SQLite Queue, hiển thị Banner đỏ và đưa vào luồng đồng bộ nền tự động khi có mạng.<br>• **A2 (Chưa chụp ảnh minh chứng):** Hệ thống hiển thị thông báo nhắc nhở cần ít nhất 1 ảnh hiện trường trước khi gửi Ticket. |
 
-- **Tác nhân chính:** Operator (Công nhân Vận hành)
-- **Tiền điều kiện:** Operator đã quét mã QR trên máy móc gặp sự cố và đăng nhập đúng vai trò `operator`.
-- **Hậu điều kiện:** Ticket sự cố được tạo với trạng thái `pending`; Máy chuyển sang trạng thái `repairing`; Thông báo đẩy FCM gửi tới toàn bộ kỹ sư ME trong vòng < 3 giây; Ticket được lưu trữ an toàn trong SQLite nếu mất kết nối mạng.
-- **Luồng sự kiện chính:**
-  1. Operator bấm chọn nút `[BÁO LỖI SOS KHẨN CẤP]` từ màn hình Hộ chiếu thiết bị.
-  2. Operator chọn mức độ nghiêm trọng (`Low`, `Medium`, `High`, `Critical`) và nhập mô tả hiện trạng sự cố (tiếng kêu, rò rỉ van...).
-  3. Operator sử dụng camera chụp ảnh lỗi thực tế làm minh chứng.
-  4. Operator bấm `[GỬI TICKET SOS]`.
-  5. Hệ thống kiểm tra kết nối mạng:
-     - _Có mạng:_ Lưu Ticket vào Firestore `tickets` và kích hoạt Cloud Function gửi Push Notification FCM tới kỹ sư ME.
-     - _Mất mạng:_ Lưu vào SQLite Offline Queue, gắn mã `client_generated_id` (UUID), hiển thị Banner đỏ và tự upload khi có kết nối trở lại.
-  6. Trạng thái máy tự động cập nhật sang `repairing`.
+---
+
+#### Bảng 1.2: Đặc tả Use Case UC-05 - Quản lý Danh mục Máy móc & Sinh Tem Mã QR
+| Thuộc tính | Nội dung đặc tả |
+| :--- | :--- |
+| **Use Case ID** | **UC-05** |
+| **Use Case Name** | **Quản lý Danh mục Máy móc & Sinh Tem Mã QR** |
+| **Created By** | Phùng Văn Duy |
+| **Date Created** | 18/07/2026 |
+| **Actor** | Phụ trách Quản lý Thiết bị (Admin / Duy) |
+| **Description** | Thêm mới, cập nhật thông tin máy móc, thiết lập các mốc giờ bảo trì định kỳ `pm_threshold_hours` và tự động sinh mã QR để in tem dán lên máy. |
+| **Trigger** | Người quản lý truy cập màn hình "Quản lý Thiết bị" và chọn Thêm máy hoặc Chỉnh sửa máy. |
+| **Pre-conditions** | Người dùng có quyền quản trị/quản lý thiết bị. |
+| **Post conditions** | Thông tin máy móc được lưu vào cơ sở dữ liệu `machines`; Tem mã QR định danh chuẩn được sinh ra và sẵn sàng xuất in. |
+| **Flow of Events** | 1. Người quản lý truy cập module Quản lý Máy móc.<br>2. Bấm nút "[THÊM THIẾT BỊ MỚI]".<br>3. Nhập mã máy (`code`), tên máy, model, thông số kỹ thuật (công suất, năm sản xuất...) và danh sách mốc bảo dưỡng định kỳ (`pm_threshold_hours` dạng mảng `[500, 1000, 2000]`).<br>4. Bấm "[LƯU THIẾT BỊ]".<br>5. Hệ thống tạo bản ghi `Machine`, tự động sinh mã QR đồ họa chứa chuỗi định danh máy.<br>6. Người quản lý bấm "[XUẤT TEM QR / IN TEM]" để in ấn tem dán cơ học. |
+| **Alternative Flow** | • **A1 (Trùng mã máy):** Hệ thống báo lỗi "Mã thiết bị đã tồn tại trong phân xưởng" và yêu cầu nhập mã khác. |
+
+---
+
+#### Bảng 1.3: Đặc tả Use Case UC-07 - Tiếp nhận Ticket Sửa chữa SOS
+| Thuộc tính | Nội dung đặc tả |
+| :--- | :--- |
+| **Use Case ID** | **UC-07** |
+| **Use Case Name** | **Tiếp nhận Ticket Sửa chữa SOS (Claim Ticket)** |
+| **Created By** | Lê Quý Dương |
+| **Date Created** | 19/07/2026 |
+| **Actor** | ME Engineer (Kỹ sư Cơ điện) |
+| **Description** | Kỹ sư Cơ điện nhận thông báo đẩy thời gian thực, xem danh sách sự cố và bấm nút tiếp nhận xử lý để khóa ticket, tránh trùng lặp giữa các kỹ sư. |
+| **Trigger** | Kỹ sư ME nhận Push Notification FCM hoặc mở danh sách Ticket chờ xử lý. |
+| **Pre-conditions** | Kỹ sư ME đã đăng nhập với vai trò `me_engineer`; Ticket đang ở trạng thái `pending`. |
+| **Post conditions** | Trạng thái Ticket chuyển sang `in_progress`; Ghi nhận `assignee_id` là kỹ sư tiếp nhận; Nút tiếp nhận bị khóa đối với các kỹ sư khác. |
+| **Flow of Events** | 1. Kỹ sư ME nhận Push Notification khẩn cấp trên điện thoại kèm âm thanh cảnh báo sự cố.<br>2. Bấm vào thông báo để mở màn hình chi tiết Ticket (xem mã máy, mức độ sự cố, mô tả và ảnh hiện trường).<br>3. Kỹ sư ME bấm nút "[TIẾP NHẬN XỬ LÝ]".<br>4. Hệ thống thực hiện Firestore Transaction kiểm tra trạng thái Ticket.<br>5. Cập nhật `status = 'in_progress'`, gán `assignee_id` là kỹ sư hiện tại.<br>6. Màn hình chuyển sang giao diện quy trình sửa chữa và ghi nhận thời gian bắt đầu xử lý. |
+| **Alternative Flow** | • **A1 (Ticket đã được kỹ sư khác nhận):** Giao diện hiển thị cảnh báo "Ticket này đã được kỹ sư [Tên Kỹ sư] tiếp nhận lúc [Thời gian]" và tự động cập nhật lại danh sách. |
+
+---
+
+#### Bảng 1.4: Đặc tả Use Case UC-08 - Thực thi PM Checklist Bảo dưỡng Định kỳ
+| Thuộc tính | Nội dung đặc tả |
+| :--- | :--- |
+| **Use Case ID** | **UC-08** |
+| **Use Case Name** | **Thực thi PM Checklist Bảo dưỡng Định kỳ & Lưu Offline** |
+| **Created By** | Lê Quý Dương |
+| **Date Created** | 20/07/2026 |
+| **Actor** | ME Engineer (Kỹ sư Cơ điện) |
+| **Description** | Kỹ sư ME thực hiện các đầu việc kiểm tra bảo dưỡng định kỳ (tra dầu mỡ, siết bu lông...), chụp ảnh minh chứng bắt buộc cho từng hạng mục và hoàn thành phiếu PM kể cả khi mất mạng. |
+| **Trigger** | Phiếu PM Checklist được hệ thống tự động sinh khi máy đạt mốc giờ chạy hoặc ME mở danh sách PM đến hạn. |
+| **Pre-conditions** | Kỹ sư ME đã tiếp nhận phiếu PM; phiếu ở trạng thái `in_progress`. |
+| **Post conditions** | Tất cả các hạng mục checklist được tick chọn; Ảnh minh chứng linh kiện mới được đính kèm; Phiếu PM chuyển trạng thái sang `completed` và chuyển đến Quản đốc chờ nghiệm thu. |
+| **Flow of Events** | 1. Kỹ sư ME mở phiếu PM Checklist của thiết bị.<br>2. Duyệt qua từng hạng mục kiểm tra kỹ thuật (VD: 1. Kiểm tra mức dầu; 2. Đo dòng động cơ; 3. Vệ sinh lưới lọc...).<br>3. Kỹ sư tích chọn `[x]` sau khi hoàn thành từng hạng mục.<br>4. Đối với các hạng mục bắt buộc ảnh (`photoRequired = true`), kỹ sư bấm chụp ảnh linh kiện mới thay thế làm minh chứng.<br>5. Sau khi hoàn tất 100% checklist, kỹ sư bấm "[HOÀN THÀNH BẢO DƯỠNG & GỬI NGHIỆM THU]".<br>6. Hệ thống cập nhật trạng thái phiếu PM sang `completed` và gửi thông báo tới Quản đốc. |
+| **Alternative Flow** | • **A1 (Mất mạng trong phân xưởng):** Ứng dụng lưu trạng thái checklist và ảnh chụp cục bộ vào SQLite Cache, tự động gửi dữ liệu lên máy chủ khi thiết bị có kết nối mạng.<br>• **A2 (Thiếu ảnh minh chứng):** Hệ thống báo lỗi và cuộn màn hình đến vị trí hạng mục thiếu ảnh. |
+
+---
+
+#### Bảng 1.5: Đặc tả Use Case UC-10 - Tiếp nhận Nghiệm thu & Ký tên Điện tử
+| Thuộc tính | Nội dung đặc tả |
+| :--- | :--- |
+| **Use Case ID** | **UC-10** |
+| **Use Case Name** | **Tiếp nhận Nghiệm thu & Ký tên Điện tử (Digital Sign-off)** |
+| **Created By** | Lê Quý Dương |
+| **Date Created** | 22/07/2026 |
+| **Actor** | Factory Supervisor (Quản đốc Phân xưởng) |
+| **Description** | Quản đốc tiếp nhận phiếu sửa chữa/PM đã hoàn thành từ Kỹ sư ME, kiểm tra ảnh đối chứng, vẽ chữ ký điện tử trực tiếp trên màn hình cảm ứng để nghiệm thu đưa máy về `Active` hoặc từ chối nghiệm thu. |
+| **Trigger** | Quản đốc nhận thông báo nghiệm thu hoặc mở danh sách Ticket/PM có trạng thái `completed`. |
+| **Pre-conditions** | Ticket hoặc PM Checklist đã được Kỹ sư ME hoàn thành và gửi nghiệm thu (`status = 'completed'`); Quản đốc đăng nhập với vai trò `supervisor`. |
+| **Post conditions** | Nếu duyệt: Chữ ký số được lưu, trạng thái Ticket chuyển sang `approved`, máy chuyển về `active`, chốt thời gian Downtime; Nếu từ chối: Ticket chuyển sang `rejected` kèm lý do và trả lại cho ME làm lại. |
+| **Flow of Events** | 1. Quản đốc mở màn hình "Nghiệm thu Thiết bị".<br>2. Chọn phiếu Ticket/PM cần nghiệm thu để xem tóm tắt sự cố, các hạng mục đã sửa, danh sách vật tư đã thay và ảnh chụp đối chứng trước - sau.<br>3. Quản đốc kiểm tra thực tế máy và chọn:<br>   - _Trường hợp 1 (Đạt yêu cầu):_ Bấm nút "[NGHIỆM THU]", xuất hiện Canvas vẽ chữ ký số. Quản đốc dùng ngón tay vẽ chữ ký trực tiếp trên màn hình cảm ứng, bấm "[XÁC NHẬN KÝ & ĐƯA MÁY VÀO HOẠT ĐỘNG]".<br>   - _Trường hợp 2 (Không đạt yêu cầu):_ Bấm nút "[TỪ CHỐI]", nhập lý do từ chối (VD: Máy vẫn còn tiếng ồn lạ, thiếu ảnh linh kiện...) và bấm "[XÁC NHẬN TỪ CHỐI]".<br>4. Hệ thống lưu ảnh chữ ký vector/base64 vào trường `supervisor_signature_url`, cập nhật trạng thái `approved` (hoặc `rejected`), đóng chu trình Downtime và đưa trạng thái máy về `active`. |
+| **Alternative Flow** | • **A1 (Chưa vẽ chữ ký):** Hệ thống hiển thị thông báo "Vui lòng ký tên xác nhận vào khung chữ ký trước khi hoàn tất nghiệm thu." |
 
 ---
 
@@ -118,7 +172,7 @@ Dựa trên phân tích yêu cầu nghiệp vụ nhà máy, trích xuất 6 Lớ
 
 1. **`UserProfile`:** Lưu giữ định danh, họ tên, email, vai trò (`operator`, `me_engineer`, `supervisor`) và mã nhân viên.
 2. **`Machine`:** Lưu giữ lý lịch thiết bị, mã QR duy nhất, model, thông số kỹ thuật, trạng thái vận hành (`active`, `repairing`, `maintenance`, `inactive`), số giờ chạy tích lũy (lưu trực tiếp trong 1 trường `running_hours` của Machine) và mốc bảo trì định kỳ `pm_threshold_hours`.
-3. **`Ticket`:** Lưu giữ phiếu báo hỏng khẩn cấp SOS do Operator tạo, mức độ nghiêm trọng, mô tả lỗi, mảng ảnh hiện trường, kỹ sư tiếp nhận, thời gian dừng máy (Downtime) và chữ ký nghiệm thu.
+3. **`Ticket`:** Lưu giữ phiếu báo hỏng khẩn cấp SOS do Operator tạo. Bao gồm đầy đủ thông tin: định danh thiết bị (`machine_id`, `machine_code`, `machine_name`), người báo (`reporter_id`, `reporter_name`, `reporter_email`), kỹ sư tiếp nhận (`engineer_id`, `engineer_name`), mức độ khẩn cấp (`severity`), trạng thái (`status`), mô tả hiện tượng sự cố (`description`), mảng đường dẫn ảnh hiện trường (`images_urls`), mốc thời gian dừng máy (`downtime_start`, `downtime_end`), thời điểm tiếp nhận (`claimed_at`), lý do từ chối (`rejection_reason`), lý do hủy (`cancelled_reason`, `cancelled_at`), thời gian tạo (`created_at`) và cập nhật (`updated_at`).
 4. **`PmChecklist`:** Lưu giữ phiếu bảo trì định kỳ tự động sinh theo giờ máy chạy, gồm mốc giờ kích hoạt, kỹ sư thực hiện và trạng thái phê duyệt.
 5. **`PmChecklistItem`:** Lưu danh mục từng thao tác bảo dưỡng (tra dầu, siết ốc...), trạng thái hoàn thành và ảnh minh chứng linh kiện mới.
 6. **`SparePartLog` & `SparePartsRequest`:** Lưu nhật ký phụ tùng tự lấy từ tủ nhanh và các đề xuất linh kiện đắt tiền cần Quản đốc phê duyệt.
@@ -206,18 +260,26 @@ classDiagram
 
     class Ticket {
         +String id
-        +String clientGeneratedId
         +String machineId
         +String machineCode
+        +String machineName
         +String reporterId
-        +String assigneeId
+        +String reporterName
+        +String reporterEmail
+        +String engineerId
+        +String engineerName
         +String severity
-        +String description
-        +List~String~ imageUrls
         +String status
+        +String description
+        +List~String~ imagesUrls
         +DateTime downtimeStart
         +DateTime downtimeEnd
-        +String supervisorSignatureUrl
+        +DateTime claimedAt
+        +String rejectionReason
+        +DateTime cancelledAt
+        +String cancelledReason
+        +DateTime createdAt
+        +DateTime updatedAt
         +calculateDowntimeDuration() Duration
     }
 
@@ -289,73 +351,114 @@ sequenceDiagram
 | :----------------------------- | :------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
 | **Repository Pattern**         | `lib/repositories/ticket_repository.dart`    | Tách biệt hoàn toàn tầng Giao diện Flutter với nguồn dữ liệu Backend (Firestore / Supabase / SQLite).                  |
 | **State / Observer Pattern**   | `lib/state/machine_passport_notifier.dart`   | Quản lý vòng đời trạng thái bất đồng bộ (`AsyncValue`) phản ứng tức thời với Riverpod Notifier.                        |
-| **Factory Method Pattern**     | `Ticket.fromFirestore(DocumentSnapshot doc)` | Khởi tạo đối tượng `Ticket` an toàn từ dữ liệu JSON động của Cloud Firestore.                                          |
-| **Singleton Pattern**          | `SqliteQueueDatabase.instance`               | Đảm bảo duy nhất một kết nối cơ sở dữ liệu SQLite cục bộ phục vụ chế độ Offline Queue.                                 |
-| **Optimistic Locking Pattern** | `TicketRepository.claimTicket()`             | Sử dụng Firestore Transaction chống tranh chấp tài nguyên (Race Condition) khi 2 kỹ sư ME cùng bấm tiếp nhận 1 Ticket. |
-
----
-
-## PHẦN 4: THIẾT KẾ CƠ SỞ DỮ LIỆU & GIAO DIỆN
-
-### 4.1 Ánh xạ Đối tượng - Cơ sở Dữ liệu
-
-```dart
-// lib/models/ticket_model.dart - Đóng gói Entity Đối tượng Ticket
+| **Factory Method Pattern**   // lib/models/ticket_model.dart - Đóng gói Entity Đối tượng Ticket
 class Ticket {
   final String id;
-  final String clientGeneratedId;
   final String machineId;
   final String machineCode;
+  final String machineName;
   final String reporterId;
-  final String? assigneeId;
-  final String severity;
+  final String reporterName;
+  final String reporterEmail;
+  final String? engineerId;
+  final String? engineerName;
+  final String severity; // LOW, MEDIUM, HIGH, CRITICAL
+  final String status;   // PENDING, IN_PROGRESS, COMPLETED, APPROVED, REJECTED, CANCELLED
   final String description;
-  final List<String> imageUrls;
-  final String status;
+  final List<String> imagesUrls;
   final DateTime downtimeStart;
   final DateTime? downtimeEnd;
-  final String? supervisorSignatureUrl;
+  final DateTime? claimedAt;
+  final String? rejectionReason;
+  final DateTime? cancelledAt;
+  final String? cancelledReason;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   const Ticket({
     required this.id,
-    required this.clientGeneratedId,
     required this.machineId,
     required this.machineCode,
+    required this.machineName,
     required this.reporterId,
-    this.assigneeId,
+    required this.reporterName,
+    required this.reporterEmail,
+    this.engineerId,
+    this.engineerName,
     required this.severity,
-    required this.description,
-    required this.imageUrls,
     required this.status,
+    required this.description,
+    required this.imagesUrls,
     required this.downtimeStart,
     this.downtimeEnd,
-    this.supervisorSignatureUrl,
+    this.claimedAt,
+    this.rejectionReason,
+    this.cancelledAt,
+    this.cancelledReason,
+    required this.createdAt,
+    required this.updatedAt,
   });
+
+  factory Ticket.fromFirestore(String docId, Map<String, dynamic> data) {
+    return Ticket(
+      id: docId,
+      machineId: data['machine_id'] ?? '',
+      machineCode: data['machine_code'] ?? '',
+      machineName: data['machine_name'] ?? '',
+      reporterId: data['reporter_id'] ?? '',
+      reporterName: data['reporter_name'] ?? '',
+      reporterEmail: data['reporter_email'] ?? '',
+      engineerId: data['engineer_id'],
+      engineerName: data['engineer_name'],
+      severity: (data['severity'] ?? 'LOW').toString().toUpperCase(),
+      status: (data['status'] ?? 'PENDING').toString().toUpperCase(),
+      description: data['description'] ?? '',
+      imagesUrls: List<String>.from(data['images_urls'] ?? []),
+      downtimeStart: DateTime.tryParse(data['downtime_start'] ?? '') ?? DateTime.now(),
+      downtimeEnd: data['downtime_end'] != null ? DateTime.tryParse(data['downtime_end']) : null,
+      claimedAt: data['claimed_at'] != null ? DateTime.tryParse(data['claimed_at']) : null,
+      rejectionReason: data['rejection_reason'],
+      cancelledAt: data['cancelled_at'] != null ? DateTime.tryParse(data['cancelled_at']) : null,
+      cancelledReason: data['cancelled_reason'],
+      createdAt: DateTime.tryParse(data['created_at'] ?? '') ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(data['updated_at'] ?? '') ?? DateTime.now(),
+    );
+  }
 
   Map<String, dynamic> toFirestoreMap() {
     return {
-      'client_generated_id': clientGeneratedId,
       'machine_id': machineId,
       'machine_code': machineCode,
+      'machine_name': machineName,
       'reporter_id': reporterId,
-      'assignee_id': assigneeId,
+      'reporter_name': reporterName,
+      'reporter_email': reporterEmail,
+      'engineer_id': engineerId,
+      'engineer_name': engineerName,
       'severity': severity,
-      'description': description,
-      'image_urls': imageUrls,
       'status': status,
+      'description': description,
+      'images_urls': imagesUrls,
       'downtime_start': downtimeStart.toIso8601String(),
       'downtime_end': downtimeEnd?.toIso8601String(),
-      'supervisor_signature_url': supervisorSignatureUrl,
+      'claimed_at': claimedAt?.toIso8601String(),
+      'rejection_reason': rejectionReason,
+      'cancelled_at': cancelledAt?.toIso8601String(),
+      'cancelled_reason': cancelledReason,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
     };
+  }
+
+  Duration get downtimeDuration {
+    final end = downtimeEnd ?? DateTime.now();
+    return end.difference(downtimeStart);
   }
 }
 ```
 
 ---
-
-### 4.2 Thiết kế Giao diện Luồng Người dùng
-
-- **Bảng màu Chuẩn Nhà máy:** Xanh công nghiệp (`#1E3A8A`), Trạng thái Máy (`Active`, `Repairing`, `Maintenance`), Mức độ nghiêm trọng (`Critical`, `High`, `Medium`, `Low`).
+ `Repairing`, `Maintenance`), Mức độ nghiêm trọng (`Critical`, `High`, `Medium`, `Low`).
 - **Quy chuẩn Tương tác Cảm ứng & Đeo găng tay (NFR-05):** Mọi nút bấm quan trọng (`Gửi SOS`, `Tiếp nhận`, `Ký tên`, `Tích checklist`) đạt kích thước tối thiểu **$48 \times 48$dp**.
 - **Luồng Điều hướng Phân quyền:**
   - `Operator`: Quét QR -> Hộ chiếu Máy -> Nhập giờ chạy / Báo Ticket SOS.
@@ -509,4 +612,4 @@ No issues found! (0 errors, 0 warnings, 0 lints)
 **Đại diện Nhóm AssetTrack xác nhận:**  
 _(Ký và ghi rõ họ tên)_
 
-**Phùng Văn Duy (2351170589)** (Phụ trách Phân hệ Operator, ME Workflow, Quản lý Máy móc & Người dùng) — **Lê Quý Dương (2351170587)** (Phụ trách Dashboard Supervisor & Nghiệm thu từ Engineer)
+**Phùng Văn Duy (2351170589)** (Phụ trách Kiến trúc Hệ thống, Offline Mode Operator, Quản lý Máy móc & Người dùng) — **Lê Quý Dương (2351170587)** (Phụ trách Offline Mode ME, ME Workflow, Dashboard Supervisor & Nghiệm thu)

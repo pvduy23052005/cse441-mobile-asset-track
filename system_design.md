@@ -346,30 +346,32 @@ classDiagram
     }
 
     class Ticket {
-        +UUID id
-        +UUID clientGeneratedId
-        +UUID workshopId
-        +UUID machineId
-        +UUID reporterId
-        +UUID assigneeId
-        +UUID supervisorId
-        +SeverityLevel severity
+        +String id
+        +String machineId
+        +String machineCode
+        +String machineName
+        +String reporterId
+        +String reporterName
+        +String reporterEmail
+        +String engineerId
+        +String engineerName
+        +String severity
+        +String status
         +String description
-        +List imageUrls
-        +TaskStatus status
+        +List~String~ imagesUrls
         +DateTime downtimeStart
         +DateTime downtimeEnd
-        +String supervisorSignatureUrl
+        +DateTime claimedAt
         +String rejectionReason
-        +UUID rejectedBy
         +DateTime cancelledAt
-        +String cancellationReason
-        +UUID cancelledBy
-        +claim()
+        +String cancelledReason
+        +DateTime createdAt
+        +DateTime updatedAt
+        +claim(String engineerId, String engineerName)
         +complete()
-        +approve()
-        +reject()
-        +cancel()
+        +approve(String supervisorSignatureUrl)
+        +reject(String reason)
+        +cancel(String reason)
     }
 
     class PmChecklist {

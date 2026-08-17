@@ -439,32 +439,32 @@ Phân công nhiệm vụ rõ ràng theo phân hệ và vai trò người dùng t
 
 | Phân hệ / Module | Thành viên Phụ trách Chính | Công việc & Phạm vi chi tiết |
 | :--- | :--- | :--- |
-| **Phân hệ 1: Operator, ME Workflow, Quản lý Máy móc & Người dùng** | **Phùng Văn Duy (2351170589)** | • **QR Machine Passport & Operator:** Tích hợp camera `mobile_scanner`, decode QR < 1.5s, hiển thị Hộ chiếu thiết bị, thông số kỹ thuật, lịch sử bảo trì, popup nhập giờ chạy/km, validation logic, ghi nhận `running_hours_log`.<br>• **SOS Breakdown Ticket:** Form báo sự cố khẩn cấp, chọn mức độ nghiêm trọng, chụp ảnh camera, gửi Ticket SOS `tickets`, hủy ticket pending.<br>• **ME Workflow:** Nhận thông báo FCM, tiếp nhận sửa chữa, thực hiện PM Checklist kèm upload ảnh minh chứng, ghi log vật tư tủ nhanh & gửi đề xuất linh kiện.<br>• **Quản lý Máy móc & Thiết bị:** CRUD danh mục máy móc, sinh và xuất mã QR tem máy, cấu hình mốc bảo trì định kỳ (`pm_threshold_hours`), quản lý cẩm nang xử lý lỗi nhanh.<br>• **Quản lý Người dùng & Nhân sự:** Quản lý danh sách tài khoản nhân sự, phân quyền Role (`operator`, `me_engineer`, `supervisor`), import danh sách nhân sự từ file Excel.<br>• **Cloudflare Image Upload:** Tích hợp dịch vụ upload & tối ưu hóa ảnh hiện trường sự cố lên **Cloudflare (Cloudflare R2 / Images)**.<br>• **Offline Mode & Sync (NFR-06):** Thiết lập Local cache SQLite / Persistent Queue lưu tạm giờ chạy & Ticket SOS khi mất mạng, tự động đồng bộ khi có mạng. |
-| **Phân hệ 2: Dashboard Supervisor & Nhận Nghiệm thu** | **Lê Quý Dương (2351170587)** | • **Dashboard Supervisor:** Xây dựng Dashboard Quản đốc thời gian thực, biểu đồ phân tích thời gian dừng máy (Downtime Analysis - Pie Chart & Bar Chart), đo lường chỉ số OEE và cảnh báo sự cố toàn phân xưởng (`fl_chart`).<br>• **Nhận Nghiệm thu từ Engineer:** Màn hình tiếp nhận yêu cầu nghiệm thu Ticket sửa chữa / Phiếu bảo trì PM từ Kỹ sư ME, kiểm tra ảnh minh chứng & vật tư thay thế, tích hợp Canvas chữ ký số (`signature`) trực tiếp trên màn hình cảm ứng để nghiệm thu đưa máy về `Active` hoặc từ chối kèm lý do (`Rejected`).<br>• **Phê duyệt Vật tư:** Tiếp nhận và xử lý phê duyệt các đề xuất linh kiện đắt tiền vượt ngưỡng chi phí của phân xưởng. |
+| **Phân hệ 1: Kiến trúc Backend & Frontend, Operator & Master Data** | **Phùng Văn Duy (2351170589)** | • **Kiến trúc Hệ thống Backend & Frontend:** Thiết kế kiến trúc tổng thể hệ thống Frontend (Flutter) & Backend (BaaS/Cloud), xây dựng cơ chế Offline cho Operator (SQLite Queue & Auto Sync — NFR-06).<br>• **QR Machine Passport & Operator Workflow:** Tích hợp camera `mobile_scanner`, decode QR < 1.5s, hiển thị Hộ chiếu thiết bị, thông số kỹ thuật, lịch sử bảo trì, popup nhập giờ chạy/km, validation logic, ghi nhận `running_hours_log`, form tạo Ticket SOS khẩn cấp + chụp ảnh camera, hủy ticket pending.<br>• **Quản lý Máy móc & Thiết bị:** CRUD danh mục máy móc, sinh và xuất mã QR tem máy, cấu hình mốc bảo trì định kỳ (`pm_threshold_hours`), quản lý cẩm nang xử lý lỗi nhanh.<br>• **Quản lý Người dùng & Nhân sự:** Quản lý danh sách tài khoản nhân sự, phân quyền Role (`operator`, `me_engineer`, `supervisor`), import danh sách nhân sự từ file Excel.<br>• **Cloudflare Image Upload:** Tích hợp dịch vụ upload & tối ưu hóa ảnh hiện trường sự cố lên **Cloudflare (Cloudflare R2 / Images)**. |
+| **Phân hệ 2: ME Workflow, Offline Engineer, Dashboard Supervisor & Nghiệm thu** | **Lê Quý Dương (2351170587)** | • **Chế độ Offline cho Engineer (Offline Mode for ME — NFR-06):** Caching danh sách PM Checklist & Ticket sửa chữa cục bộ, lưu tạm kết quả tick checklist, ảnh bằng chứng linh kiện và log vật tư tủ nhanh khi mất mạng, tự động đồng bộ lên hệ thống khi có mạng trở lại.<br>• **ME Engineer Workflow:** Nhận Push Notification từ Firebase FCM, màn hình danh sách Ticket/PM, Transaction `UPDATE tickets` tiếp nhận sửa chữa, UI thực hiện PM Checklist kèm upload ảnh minh chứng, UI ghi log & đề xuất vật tư thay thế.<br>• **Dashboard Supervisor:** Xây dựng Dashboard Quản đốc thời gian thực, biểu đồ phân tích thời gian dừng máy (Downtime Analysis - Pie Chart & Bar Chart với `fl_chart`), đo lường chỉ số OEE và cảnh báo sự cố toàn phân xưởng.<br>• **Nhận Nghiệm thu từ Engineer:** Màn hình tiếp nhận yêu cầu nghiệm thu Ticket sửa chữa / Phiếu bảo trì PM từ Kỹ sư ME, kiểm tra ảnh minh chứng & vật tư thay thế, tích hợp Canvas chữ ký số (`signature`) trực tiếp trên màn hình cảm ứng để nghiệm thu đưa máy về `Active` hoặc từ chối kèm lý do (`Rejected`).<br>• **Phê duyệt Vật tư:** Tiếp nhận và xử lý phê duyệt các đề xuất linh kiện đắt tiền vượt ngưỡng chi phí của phân xưởng. |
 
 ---
 
 ### 7.2. Lịch trình phát triển (Roadmap 5 Tuần)
 
-- **Tuần 1: Khởi động hệ thống & Nền tảng**
-  - *Phùng Văn Duy:* Khởi tạo Flutter Project, cấu hình Riverpod, xây dựng Industrial Design System (Theme nhà máy, nút bấm 48dp, typography), màn hình Login & Quản lý phân quyền Role người dùng.
+- **Tuần 1: Khởi động hệ thống & Thiết kế Kiến trúc Nền tảng**
+  - *Phùng Văn Duy:* Thiết kế Kiến trúc Hệ thống Clean Layered, khởi tạo Flutter Project, cấu hình Riverpod, xây dựng Industrial Design System (Theme nhà máy, nút bấm 48dp, typography), màn hình Login & Quản lý phân quyền Role người dùng.
   - *Lê Quý Dương:* Tạo Firebase Project, cấu hình Firestore Collections, thiết lập Security Rules & Cloud Functions cơ bản.
 
-- **Tuần 2: Hoàn thiện Quản lý Máy móc, Người dùng & QR Passport**
-  - *Phùng Văn Duy:* Hoàn thiện module Quản lý máy móc (CRUD, in tem QR), Quản lý tài khoản người dùng & import Excel, UI camera quét QR, màn hình Hộ chiếu thiết bị, popup nhập giờ chạy máy/km, xây dựng cơ chế **Offline Queue** bằng SQLite.
-  - *Lê Quý Dương:* Thiết lập cấu trúc dữ liệu Dashboard & khung giao diện Supervisor.
+- **Tuần 2: Hoàn thiện Quản lý Máy móc, Người dùng, QR Passport & SQLite Offline Operator**
+  - *Phùng Văn Duy:* Hoàn thiện module Quản lý máy móc (CRUD, in tem QR), Quản lý tài khoản người dùng & import Excel, UI camera quét QR, màn hình Hộ chiếu thiết bị, popup nhập giờ chạy máy/km, xây dựng cơ chế **Offline Queue** bằng SQLite (cache thông tin máy, lưu lượt nhập giờ khi offline).
+  - *Lê Quý Dương:* Thiết lập cấu trúc dữ liệu Dashboard & khung giao diện ME/Supervisor, chuẩn bị schema SQLite cache cho PM Checklist của ME.
 
 - **Tuần 3: Hoàn thiện Ticket SOS, ME Workflow & Cloudflare Upload**
-  - *Phùng Văn Duy:* Form tạo Ticket SOS khẩn cấp, module upload ảnh lên **Cloudflare (Cloudflare R2 / Images)**, tiếp nhận Ticket sửa chữa và thực hiện PM Checklist.
-  - *Lê Quý Dương:* Cloud Function tự động chuyển trạng thái máy & gửi FCM; xây dựng module nhận dữ liệu nghiệm thu cho Supervisor.
+  - *Phùng Văn Duy:* Form tạo Ticket SOS khẩn cấp, module upload ảnh lên **Cloudflare (Cloudflare R2 / Images)**, xử lý nén ảnh và đồng bộ Ticket offline.
+  - *Lê Quý Dương:* Màn hình danh sách Ticket/PM cho ME Engineer, Cloud Function chuyển trạng thái máy & trigger push notification FCM tới ME, quy trình tiếp nhận Ticket sửa chữa.
 
-- **Tuần 4: Hoàn thiện Nghiệm thu Chữ ký số & Phê duyệt Vật tư**
-  - *Phùng Văn Duy:* Tối ưu luồng trải nghiệm Operator & ME, test độ trễ quét QR, kiểm thử chức năng hủy Ticket khi còn Pending, hoàn thiện UI thông báo phản hồi.
-  - *Lê Quý Dương:* Canvas chữ ký số nghiệm thu (`signature`) của Supervisor, UI phê duyệt đề xuất vật tư vượt ngưỡng.
+- **Tuần 4: Hoàn thiện PM Checklist Offline, Nghiệm thu Chữ ký số & Phê duyệt Vật tư**
+  - *Phùng Văn Duy:* Tối ưu luồng trải nghiệm Operator & cơ chế retry đồng bộ SQLite offline, test độ trễ quét QR, kiểm thử chức năng hủy Ticket khi còn Pending, hoàn thiện UI thông báo phản hồi.
+  - *Lê Quý Dương:* UI Checklist bảo dưỡng định kỳ (kèm lưu offline và upload ảnh linh kiện), Canvas chữ ký số nghiệm thu (`signature`) của Supervisor, UI phê duyệt đề xuất vật tư vượt ngưỡng.
 
 - **Tuần 5: Hoàn thiện Dashboard Downtime, Tích hợp Toàn diện & Đóng gói**
   - *Lê Quý Dương:* Hoàn thiện Dashboard biểu đồ Downtime (Pie Chart + Bar Chart), thống kê OEE phân xưởng.
-  - *Cả 2 thành viên (Phùng Văn Duy & Lê Quý Dương):* Kiểm thử End-to-End toàn bộ luồng thực tế (Operator quét QR báo hỏng SOS $\rightarrow$ ME nhận thông báo sửa $\rightarrow$ Supervisor nhận nghiệm thu & ký chữ ký số), kiểm thử mất mạng/có mạng, tối ưu hiệu năng và đóng gói bản build APK/IPA.
+  - *Cả 2 thành viên (Phùng Văn Duy & Lê Quý Dương):* Kiểm thử End-to-End toàn bộ luồng thực tế (Operator quét QR báo hỏng SOS $\rightarrow$ ME nhận thông báo sửa $\rightarrow$ Supervisor nhận nghiệm thu & ký chữ ký số), kiểm thử mất mạng/có mạng cả 2 phía Operator & ME Engineer, tối ưu hiệu năng và đóng gói bản build APK/IPA.
 
 ---
 
