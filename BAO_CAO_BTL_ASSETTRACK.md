@@ -168,14 +168,14 @@ flowchart LR
 
 ### 2.1 Trích xuất Thực thể Nghiệp vụ
 
-Dựa trên phân tích yêu cầu nghiệp vụ nhà máy, trích xuất 6 Lớp Thực thể Cốt lõi:
+Dựa trên phân tích yêu cầu nghiệp vụ quản trị thiết bị và bảo trì phân xưởng, hệ thống trích xuất 6 Lớp Thực thể Cốt lõi:
 
-1. **`UserProfile`:** Lưu giữ định danh, họ tên, email, vai trò (`operator`, `me_engineer`, `supervisor`) và mã nhân viên.
-2. **`Machine`:** Lưu giữ lý lịch thiết bị, mã QR duy nhất, model, thông số kỹ thuật, trạng thái vận hành (`active`, `repairing`, `maintenance`, `inactive`), số giờ chạy tích lũy (lưu trực tiếp trong 1 trường `running_hours` của Machine) và mốc bảo trì định kỳ `pm_threshold_hours`.
-3. **`Ticket`:** Lưu giữ phiếu báo hỏng khẩn cấp SOS do Operator tạo. Bao gồm đầy đủ thông tin: định danh thiết bị (`machine_id`, `machine_code`, `machine_name`), người báo (`reporter_id`, `reporter_name`, `reporter_email`), kỹ sư tiếp nhận (`engineer_id`, `engineer_name`), mức độ khẩn cấp (`severity`), trạng thái (`status`), mô tả hiện tượng sự cố (`description`), mảng đường dẫn ảnh hiện trường (`images_urls`), mốc thời gian dừng máy (`downtime_start`, `downtime_end`), thời điểm tiếp nhận (`claimed_at`), lý do từ chối (`rejection_reason`), lý do hủy (`cancelled_reason`, `cancelled_at`), thời gian tạo (`created_at`) và cập nhật (`updated_at`).
-4. **`PmChecklist`:** Lưu giữ phiếu bảo trì định kỳ tự động sinh theo giờ máy chạy, gồm mốc giờ kích hoạt, kỹ sư thực hiện và trạng thái phê duyệt.
-5. **`PmChecklistItem`:** Lưu danh mục từng thao tác bảo dưỡng (tra dầu, siết ốc...), trạng thái hoàn thành và ảnh minh chứng linh kiện mới.
-6. **`SparePartLog` & `SparePartsRequest`:** Lưu nhật ký phụ tùng tự lấy từ tủ nhanh và các đề xuất linh kiện đắt tiền cần Quản đốc phê duyệt.
+1. **`UserProfile`:** Quản lý thông tin tài khoản người dùng, phân quyền truy cập theo vai trò (`operator`, `me_engineer`, `supervisor`) và mã nhân viên trong nhà máy.
+2. **`Machine`:** Quản lý toàn diện hồ sơ lý lịch thiết bị máy móc, mã QR định danh duy nhất, trạng thái vận hành, số giờ máy chạy tích lũy và mốc bảo dưỡng định kỳ.
+3. **`Ticket`:** Quản lý toàn bộ vòng đời phiếu báo hỏng khẩn cấp SOS, thời gian dừng máy (Downtime) và quá trình tiếp nhận sửa chữa của kỹ sư cơ điện.
+4. **`PmChecklist`:** Quản lý phiếu bảo dưỡng định kỳ tự động kích hoạt theo số giờ máy chạy và quy trình nghiệm thu bàn giao giữa kỹ sư và quản đốc.
+5. **`PmChecklistItem`:** Quản lý chi tiết từng hạng mục kiểm tra bảo dưỡng kỹ thuật và ảnh chụp đối chứng linh kiện mới thay thế.
+6. **`SparePartLog` & `SparePartsRequest`:** Quản lý nhật ký phụ tùng tiêu hao tự lấy từ tủ nhanh và các phiếu đề xuất linh kiện giá trị cao chờ Quản đốc phê duyệt.
 
 ---
 
@@ -201,31 +201,136 @@ stateDiagram-v2
 
 ## PHẦN 3: THIẾT KẾ HƯỚNG ĐỐI TƯỢNG & KIẾN TRÚC
 
-### 3.1 Thiết kế Kiến trúc Tầng
+### 3.1 Thiết kế Kiến trúc Tầng & Cấu trúc Thư mục Hệ thống (Frontend & Backend)
+
+Hệ thống **AssetTrack** được thiết kế theo mô hình Kiến trúc phân tầng sạch (**Clean Layered Architecture**) ở phía Frontend (Flutter Mobile App) kết hợp cùng Kiến trúc dịch vụ phân tán (**Modular Services & Cloud BaaS**) ở phía Backend (NestJS API + Firebase Ecosystem + Cloudflare Storage), đảm bảo tính module hóa cao, dễ bảo trì, mở rộng và vận hành ổn định trong môi trường phân xưởng công nghiệp (kể cả khi mất mạng).
+
+#### 1. Cấu trúc Thư mục Phía Frontend (Flutter Mobile App - `frontend/lib/`)
+
+Mã nguồn ứng dụng di động được tổ chức theo từng phân hệ người dùng kết hợp với tầng dùng chung (`core/` & `shared_features/`):
 
 ```text
-+-----------------------------------------------------------------------+
-|                    PRESENTATION LAYER (FLUTTER UI)                    |
-|  - MachinePassportScreen         - SosCreateTicketScreen              |
-|  - MeTicketListScreen            - PmChecklistExecutionScreen         |
-|  - DigitalSignOffCanvasScreen    - SupervisorDashboardScreen          |
-+-----------------------------------------------------------------------+
-                                   │  ▲
-                                   ▼  │ Riverpod AsyncNotifier State
-+-----------------------------------------------------------------------+
-|                   DOMAIN & STATE MANAGEMENT LAYER                     |
-|  - MachinePassportNotifier       - TicketManagementNotifier           |
-|  - PmChecklistController         - OfflineSyncService                 |
-|  - Entity Models: Machine, Ticket, PmChecklist, UserProfile           |
-+-----------------------------------------------------------------------+
-                                   │  ▲
-                                   ▼  │ Repository Interfaces
-+-----------------------------------------------------------------------+
-|                       DATA & INFRASTRUCTURE LAYER                     |
-|  - AuthRepositoryImpl            - TicketFirestoreRepositoryImpl      |
-|  - SqliteOfflineQueueHelper      - CloudflareStorageService (R2)      |
-|  - FirebaseMessagingEngine (FCM) - Supabase / PostgreSQL Client       |
-+-----------------------------------------------------------------------+
+frontend/lib/
+├── core/                                # Tầng hạ tầng & tài nguyên dùng chung toàn app
+│   ├── network/                         # Cấu hình API Client (Dio, HTTP interceptors)
+│   │   └── api_client.dart
+│   ├── models/                          # Các Entity models cốt lõi
+│   │   ├── machine_model.dart           # Model máy móc (running_hours, pm_thresholds)
+│   │   ├── ticket_model.dart            # Model Ticket SOS khẩn cấp
+│   │   ├── user_model.dart              # Model người dùng & phân quyền
+│   │   └── notification_model.dart      # Model thông báo
+│   ├── offline/                         # Động cơ đồng bộ Offline-First (NFR-06)
+│   │   ├── database/                    # Quản lý SQLite Database cục bộ
+│   │   │   └── app_local_database.dart
+│   │   ├── models/                      # Model lưu trữ cục bộ & hàng đợi đồng bộ
+│   │   │   ├── local_ticket_model.dart
+│   │   │   └── sync_task_model.dart
+│   │   ├── repositories/                # Repository xử lý Offline cho Operator & ME
+│   │   │   ├── offline_ticket_repository.dart
+│   │   │   └── offline_engineer_repository.dart
+│   │   ├── services/                    # Lắng nghe mạng & điều phối Auto Sync
+│   │   │   ├── network_connectivity_service.dart
+│   │   │   └── sync_manager.dart
+│   │   └── widgets/                     # Banner cảnh báo trạng thái mạng
+│   │       └── offline_sync_banner.dart
+│   ├── services/                        # Các Service dùng chung (Auth, Upload, FCM)
+│   │   ├── auth_service.dart
+│   │   ├── upload_service.dart          # Tải ảnh hiện trường lên Cloudflare
+│   │   └── notification_service.dart
+│   ├── theme/ & routes/                 # Design System công nghiệp & Định tuyến
+│   └── widgets/                         # Reusable UI widgets (Buttons, Headers, Dialogs)
+│
+├── operator/                            # Phân hệ Công nhân Vận hành (Operator)
+│   ├── features/
+│   │   ├── dashboard/                   # Màn hình Dashboard Operator & QR banner
+│   │   ├── machine/                     # Hộ chiếu thiết bị & thông số kỹ thuật
+│   │   ├── ticket/                      # Tạo Ticket SOS, chọn mức độ, chụp ảnh lỗi
+│   │   └── checklist/                   # Khai báo giờ chạy máy / km đầu-cuối ca
+│   ├── providers/                       # Riverpod State Notifiers cho Operator
+│   └── screens/                         # Màn hình chính điều hướng Operator
+│
+├── engineer/                            # Phân hệ Kỹ sư Cơ điện (ME Engineer)
+│   ├── features/
+│   │   ├── dashboard/                   # Thống kê lệnh sửa chữa & PM đến hạn
+│   │   ├── ticket_management/           # Tiếp nhận Ticket SOS (Claim) & sửa chữa
+│   │   ├── machines/                    # Tra cứu lý lịch & cẩm nang lỗi kỹ thuật
+│   │   └── spare_parts/                 # Ghi log vật tư tủ nhanh & đề xuất linh kiện
+│   └── screens/                         # Màn hình chính điều hướng Kỹ sư ME
+│
+├── supervisor/                          # Phân hệ Quản đốc Phân xưởng (Supervisor)
+│   ├── features/
+│   │   ├── dashboard/                   # Dashboard giám sát thời gian dừng máy (Downtime)
+│   │   ├── analytics/                   # Biểu đồ phân tích hiệu suất & tỷ lệ máy hỏng
+│   │   ├── approvals/                   # Nghiệm thu sửa chữa & Canvas chữ ký số
+│   │   ├── machine_management/          # Quản lý danh mục máy móc & sinh tem QR
+│   │   └── user_management/             # Quản lý nhân sự & phân quyền vai trò
+│   └── screens/                         # Màn hình chính điều hướng Quản đốc
+│
+└── shared_features/                     # Các màn hình dùng chung (Login, Splash, Profile)
+```
+
+---
+
+#### 2. Cấu trúc Thư mục Phía Backend (NestJS Server - `backend/src/`)
+
+Mã nguồn máy chủ được thiết kế theo kiến trúc Module hóa chuẩn của **NestJS**:
+
+```text
+backend/src/
+├── main.ts                              # Điểm khởi chạy ứng dụng (Bootstrap, ValidationPipe, CORS)
+├── app.module.ts                        # Root Module tập hợp tất cả feature modules
+├── app.service.ts
+│
+├── common/                              # Các hằng số, Guards và Decorators dùng chung
+│   └── constants/
+│       ├── user-role.enum.ts            # Định nghĩa các vai trò (operator, me_engineer, supervisor)
+│       └── firestore-collections.enum.ts# Danh mục collections trong Cloud Firestore
+│
+├── modules/                             # Các Domain Modules nghiệp vụ
+│   ├── auth/                            # Module Xác thực & Phân quyền
+│   │   ├── auth.controller.ts           # Endpoint đăng nhập /auth/login
+│   │   ├── auth.service.ts              # Xử lý cấp phát và verify mã JWT Token
+│   │   ├── jwt-auth.guard.ts            # Guard chặn và bảo vệ endpoint bằng Bearer Token
+│   │   └── dto/                         # DTO kiểm tra dữ liệu đăng nhập
+│   │
+│   ├── tickets/                         # Module Quản lý Sự cố & Ticket SOS
+│   │   ├── tickets.controller.ts        # REST Endpoints /api/tickets (CRUD, Claim, Cancel)
+│   │   ├── tickets.service.ts           # Xử lý vòng đời sự cố, downtime và transaction
+│   │   ├── interfaces/ticket.interface.ts # Interface chuẩn của đối tượng Ticket
+│   │   ├── enums/                       # TicketStatus, TicketSeverity
+│   │   └── dto/create-ticket.dto.ts     # DTO validate dữ liệu báo lỗi khẩn cấp
+│   │
+│   ├── machine/                         # Module Quản lý Máy móc & Hộ chiếu Thiết bị
+│   │   ├── machine.controller.ts        # Endpoint tra cứu mã QR, cập nhật giờ chạy máy
+│   │   ├── machine.service.ts           # Kiểm tra ngưỡng bảo trì định kỳ pm_threshold_hours
+│   │   └── machine.module.ts
+│   │
+│   ├── user/                            # Module Quản lý Người dùng & Nhân sự
+│   │   ├── user.controller.ts           # CRUD tài khoản nhân sự
+│   │   ├── user.service.ts              # Quản lý hồ sơ và phân quyền
+│   │   └── dto/create-user.dto.ts
+│   │
+│   ├── upload/                          # Module Lưu trữ Đám mây Cloudflare
+│   │   ├── upload.controller.ts         # Endpoint nhận upload ảnh hiện trường / chữ ký
+│   │   ├── upload.service.ts            # Tải ảnh lên Cloudflare R2 / Images
+│   │   └── dto/upload-response.dto.ts
+│   │
+│   ├── notifications/                   # Module Thông báo Đẩy Firebase FCM
+│   │   ├── notifications.controller.ts  # Endpoint gửi thông báo & đăng ký device token
+│   │   ├── notifications.service.ts     # Bắn Push Notification khẩn cấp (< 3s)
+│   │   └── interfaces/notification.interface.ts
+│   │
+│   └── firebase/                        # Module Tích hợp Firebase Admin SDK
+│       ├── firebase.service.ts          # Kết nối Firestore & xác thực Firebase Token
+│       └── firebase-auth.guard.ts
+│
+├── operator/                            # Controller phân luồng riêng cho Operator
+│   ├── operator.controller.ts
+│   └── operator.module.ts
+│
+└── supervisor/                          # Controller phân luồng riêng cho Quản đốc
+    ├── supervisor.controller.ts
+    └── supervisor.module.ts
 ```
 
 ---
@@ -343,15 +448,13 @@ sequenceDiagram
     end
 ```
 
----
 
-### 3.4 Mẫu Thiết kế Áp dụng
+## PHẦN 4: THIẾT KẾ CƠ SỞ DỮ LIỆU & GIAO DIỆN
 
-| Design Pattern                 | Nơi áp dụng trong Mã nguồn                   | Mục đích Kỹ thuật                                                                                                      |
-| :----------------------------- | :------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
-| **Repository Pattern**         | `lib/repositories/ticket_repository.dart`    | Tách biệt hoàn toàn tầng Giao diện Flutter với nguồn dữ liệu Backend (Firestore / Supabase / SQLite).                  |
-| **State / Observer Pattern**   | `lib/state/machine_passport_notifier.dart`   | Quản lý vòng đời trạng thái bất đồng bộ (`AsyncValue`) phản ứng tức thời với Riverpod Notifier.                        |
-| **Factory Method Pattern**   // lib/models/ticket_model.dart - Đóng gói Entity Đối tượng Ticket
+### 4.1 Ánh xạ Đối tượng - Cơ sở Dữ liệu
+
+```dart
+// lib/models/ticket_model.dart - Đóng gói Entity Đối tượng Ticket
 class Ticket {
   final String id;
   final String machineId;
@@ -458,8 +561,11 @@ class Ticket {
 ```
 
 ---
- `Repairing`, `Maintenance`), Mức độ nghiêm trọng (`Critical`, `High`, `Medium`, `Low`).
-- **Quy chuẩn Tương tác Cảm ứng & Đeo găng tay (NFR-05):** Mọi nút bấm quan trọng (`Gửi SOS`, `Tiếp nhận`, `Ký tên`, `Tích checklist`) đạt kích thước tối thiểu **$48 \times 48$dp**.
+
+### 4.2 Thiết kế Giao diện Luồng Người dùng
+
+- **Bảng màu Chuẩn Nhà máy:** Xanh công nghiệp (`#1E3A8A`), Trạng thái Máy (`Active`, `Repairing`, `Maintenance`), Mức độ nghiêm trọng (`Critical`, `High`, `Medium`, `Low`).
+- **Quy chuẩn Tương tác Cảm ứng & Đeo găng tay (NFR-05):** Mọi nút bấm quan trọng (`Gửi SOS`, `Tiếp nhận`, `Ký tên`, `Tích checklist`) đạt kích thước tối thiểu **$48 	imes 48$dp**.
 - **Luồng Điều hướng Phân quyền:**
   - `Operator`: Quét QR -> Hộ chiếu Máy -> Nhập giờ chạy / Báo Ticket SOS.
   - `ME Engineer`: Notification -> Danh sách Ticket -> Tiếp nhận -> Làm PM Checklist -> Ghi log vật tư.
@@ -607,9 +713,3 @@ No issues found! (0 errors, 0 warnings, 0 lints)
 - _Hạn chế:_ Hiện tại việc đọc chỉ số giờ chạy máy vẫn cần Operator nhập thủ công sau mỗi ca.
 - _Hướng phát triển:_ Tích hợp thiết bị phần cứng **IoT Sensor (ESP32 / Modbus)** đọc trực tiếp tín hiệu từ rơ-le dòng điện của máy để tự động truyền số giờ chạy thực tế về hệ thống Cloud theo thời gian thực.
 
----
-
-**Đại diện Nhóm AssetTrack xác nhận:**  
-_(Ký và ghi rõ họ tên)_
-
-**Phùng Văn Duy (2351170589)** (Phụ trách Kiến trúc Hệ thống, Offline Mode Operator, Quản lý Máy móc & Người dùng) — **Lê Quý Dương (2351170587)** (Phụ trách Offline Mode ME, ME Workflow, Dashboard Supervisor & Nghiệm thu)
