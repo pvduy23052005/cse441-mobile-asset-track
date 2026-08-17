@@ -13,11 +13,13 @@ import '../services/network_connectivity_service.dart';
 import '../services/sync_manager.dart';
 
 class OfflineEngineerRepository {
-  final Ref _ref;
+  final Ref? _ref;
   final Dio _dio;
+  final NetworkConnectivityService _connectivity;
   final _uuid = const Uuid();
 
-  OfflineEngineerRepository(this._ref, this._dio);
+  OfflineEngineerRepository(this._dio, [this._ref])
+      : _connectivity = NetworkConnectivityService();
 
   // Helper to save JSON string to local_kv_cache
   Future<void> _saveCache(String key, String jsonData) async {
@@ -57,8 +59,7 @@ class OfflineEngineerRepository {
   // --------------------------------------------------------------------------
   Future<List<TicketModel>> getTicketsOfflineFirst() async {
     const cacheKey = 'engineer_tickets';
-    final isOnline =
-        await _ref.read(networkConnectivityServiceProvider).checkOnline();
+    final isOnline = await _connectivity.checkOnline();
 
     if (isOnline) {
       try {
@@ -96,8 +97,7 @@ class OfflineEngineerRepository {
   }
 
   Future<TicketModel?> claimTicketOfflineFirst(String ticketId) async {
-    final isOnline =
-        await _ref.read(networkConnectivityServiceProvider).checkOnline();
+    final isOnline = await _connectivity.checkOnline();
 
     if (isOnline) {
       try {
@@ -120,7 +120,7 @@ class OfflineEngineerRepository {
 
     if (index != -1) {
       updatedTicket = tickets[index].copyWith(
-        status: 'IN_PROGRESS',
+        status: TicketStatus.inProgress,
       );
       tickets[index] = updatedTicket;
       await _saveCache('engineer_tickets', jsonEncode(tickets.map((t) => t.toJson()).toList()));
@@ -141,8 +141,7 @@ class OfflineEngineerRepository {
     String ticketId, {
     List<SparePartItem>? usedParts,
   }) async {
-    final isOnline =
-        await _ref.read(networkConnectivityServiceProvider).checkOnline();
+    final isOnline = await _connectivity.checkOnline();
     final payload = {
       'used_spare_parts': usedParts?.map((p) => p.toJson()).toList() ?? [],
     };
@@ -170,7 +169,8 @@ class OfflineEngineerRepository {
 
     if (index != -1) {
       updatedTicket = tickets[index].copyWith(
-        status: 'COMPLETED',
+        status: TicketStatus.pendingApproval,
+        usedSpareParts: usedParts ?? tickets[index].usedSpareParts,
       );
       tickets[index] = updatedTicket;
       await _saveCache('engineer_tickets', jsonEncode(tickets.map((t) => t.toJson()).toList()));
@@ -191,8 +191,7 @@ class OfflineEngineerRepository {
   // --------------------------------------------------------------------------
   Future<List<MachineModel>> getMachinesOfflineFirst() async {
     const cacheKey = 'engineer_machines';
-    final isOnline =
-        await _ref.read(networkConnectivityServiceProvider).checkOnline();
+    final isOnline = await _connectivity.checkOnline();
 
     if (isOnline) {
       try {
@@ -227,8 +226,7 @@ class OfflineEngineerRepository {
     String machineId,
     List<TroubleshootingItem> items,
   ) async {
-    final isOnline =
-        await _ref.read(networkConnectivityServiceProvider).checkOnline();
+    final isOnline = await _connectivity.checkOnline();
     final payload = {
       'troubleshooting_guide': items.map((e) => e.toJson()).toList(),
     };
@@ -292,13 +290,16 @@ class OfflineEngineerRepository {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
 
-    final syncManager = _ref.read(syncManagerProvider.notifier);
-    await syncManager.updatePendingCount();
+    if (_ref != null) {
+      try {
+        final syncManager = _ref.read(syncManagerProvider.notifier);
+        await syncManager.updatePendingCount();
 
-    final isOnline =
-        await _ref.read(networkConnectivityServiceProvider).checkOnline();
-    if (isOnline) {
-      unawaited(syncManager.syncPendingQueue());
+        final isOnline = await _connectivity.checkOnline();
+        if (isOnline) {
+          unawaited(syncManager.syncPendingQueue());
+        }
+      } catch (_) {}
     }
   }
 }
@@ -306,5 +307,5 @@ class OfflineEngineerRepository {
 final offlineEngineerRepositoryProvider =
     Provider<OfflineEngineerRepository>((ref) {
   final dio = ApiClient.instance;
-  return OfflineEngineerRepository(ref, dio);
+  return OfflineEngineerRepository(dio, ref);
 });
