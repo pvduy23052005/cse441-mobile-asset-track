@@ -6,7 +6,6 @@ import '../../../providers/operator_dashboard_provider.dart';
 import '../../../providers/operator_machines_provider.dart';
 import '../../../providers/operator_tickets_provider.dart';
 import '../../../widgets/operator_qr_scanner_sheet.dart';
-import '../../../../supervisor/features/machine_management/widgets/add_machine_modal.dart';
 import '../../machine/widgets/machine_detail_modal.dart';
 import '../../ticket/widgets/sos_ticket_card.dart';
 import 'operator_machine_card.dart';
@@ -91,7 +90,7 @@ class _OperatorDashboardViewState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   OperatorQRBanner(
-                    onTap: () => AddMachineModal.show(context),
+                    onTap: _openQRScanner,
                   ),
 
                   const SizedBox(height: 20),
