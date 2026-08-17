@@ -25,7 +25,7 @@ export class TicketsService {
   constructor(
     private readonly firebaseService: FirebaseService,
     private readonly notificationsService: NotificationsService,
-  ) {}
+  ) { }
 
   private get collection() {
     return this.firebaseService.firestore.collection(this.collectionName);
