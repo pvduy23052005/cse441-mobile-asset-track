@@ -136,36 +136,14 @@ class _EngineerTicketListViewState extends State<EngineerTicketListView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header Title & Engineer Badge
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Text(
-                    'NHIỆM VỤ KỸ SƯ CƠ ĐIỆN (ME TASKS)',
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w900, // font-extrabold
-                      color: Color(0xFF475569), // text-slate-600
-                      letterSpacing: 0.6,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF1F5F9), // bg-slate-100
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
-                    ),
-                    child: const Text(
-                      'Kỹ sư: Trần Minh Đức',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF334155), // text-slate-700
-                      ),
-                    ),
-                  ),
-                ],
+              const Text(
+                'NHIỆM VỤ KỸ SƯ CƠ ĐIỆN (ME TASKS)',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w900, // font-extrabold
+                  color: Color(0xFF475569), // text-slate-600
+                  letterSpacing: 0.6,
+                ),
               ),
 
               const SizedBox(height: 12),
