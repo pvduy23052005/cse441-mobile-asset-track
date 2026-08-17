@@ -148,4 +148,67 @@ class TicketModel {
         return TicketSeverity.medium;
     }
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'code': code,
+      'machine_id': machineId,
+      'machine_code': machineCode,
+      'machine_name': machineName,
+      'description': description,
+      'severity': severity.name.toUpperCase(),
+      'status': status == TicketStatus.inProgress
+          ? 'IN_PROGRESS'
+          : status == TicketStatus.pendingApproval
+              ? 'COMPLETED'
+              : status == TicketStatus.closed
+                  ? 'CLOSED'
+                  : status == TicketStatus.rejected
+                      ? 'REJECTED'
+                      : status == TicketStatus.cancelled
+                          ? 'CANCELLED'
+                          : 'OPEN',
+      'imageUrl': imageUrl,
+      'rejection_reason': rejectionReason,
+      'reporter_name': reporterName,
+      'engineer_name': engineerName,
+      'created_at': createdAt,
+      'used_spare_parts': usedSpareParts.map((p) => p.toJson()).toList(),
+    };
+  }
+
+  TicketModel copyWith({
+    String? id,
+    String? code,
+    String? machineId,
+    String? machineCode,
+    String? machineName,
+    String? description,
+    TicketSeverity? severity,
+    TicketStatus? status,
+    String? imageUrl,
+    String? rejectionReason,
+    String? reporterName,
+    String? engineerName,
+    String? createdAt,
+    List<SparePartItem>? usedSpareParts,
+  }) {
+    return TicketModel(
+      id: id ?? this.id,
+      code: code ?? this.code,
+      machineId: machineId ?? this.machineId,
+      machineCode: machineCode ?? this.machineCode,
+      machineName: machineName ?? this.machineName,
+      description: description ?? this.description,
+      severity: severity ?? this.severity,
+      status: status ?? this.status,
+      imageUrl: imageUrl ?? this.imageUrl,
+      rejectionReason: rejectionReason ?? this.rejectionReason,
+      reporterName: reporterName ?? this.reporterName,
+      engineerName: engineerName ?? this.engineerName,
+      createdAt: createdAt ?? this.createdAt,
+      usedSpareParts: usedSpareParts ?? this.usedSpareParts,
+    );
+  }
 }
