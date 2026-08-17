@@ -1,45 +1,27 @@
-import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/offline/repositories/offline_engineer_repository.dart';
 import '../models/ticket_model.dart';
 
 class EngineerTicketService {
-  final Dio _dio = ApiClient.instance;
+  final OfflineEngineerRepository _offlineRepo;
+
+  EngineerTicketService([OfflineEngineerRepository? repo])
+      : _offlineRepo = repo ??
+            OfflineEngineerRepository(
+              ProviderContainer(),
+              ApiClient.instance,
+            );
 
   Future<List<TicketModel>> fetchTicketsFromApi() async {
-    try {
-      final response = await _dio.get<List<dynamic>>('/tickets');
-      if (response.data != null) {
-        return response.data!
-            .map((item) => TicketModel.fromJson(Map<String, dynamic>.from(item as Map)))
-            .toList();
-      }
-    } catch (_) {}
-    return [];
+    return _offlineRepo.getTicketsOfflineFirst();
   }
 
   Future<TicketModel?> claimTicket(String id) async {
-    try {
-      final response = await _dio.patch<Map<String, dynamic>>('/tickets/$id/claim');
-      if (response.data != null) {
-        return TicketModel.fromJson(Map<String, dynamic>.from(response.data!));
-      }
-    } catch (_) {}
-    return null;
+    return _offlineRepo.claimTicketOfflineFirst(id);
   }
 
   Future<TicketModel?> completeTicket(String id, {List<SparePartItem>? usedParts}) async {
-    try {
-      final payload = {
-        'used_spare_parts': usedParts?.map((p) => p.toJson()).toList() ?? [],
-      };
-      final response = await _dio.patch<Map<String, dynamic>>(
-        '/tickets/$id/complete',
-        data: payload,
-      );
-      if (response.data != null) {
-        return TicketModel.fromJson(Map<String, dynamic>.from(response.data!));
-      }
-    } catch (_) {}
-    return null;
+    return _offlineRepo.completeTicketOfflineFirst(id, usedParts: usedParts);
   }
 }

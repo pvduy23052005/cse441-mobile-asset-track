@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/offline/widgets/offline_sync_banner.dart';
 import '../../core/routes/app_router.dart';
 import '../../core/utils/storage_service.dart';
 import '../../core/widgets/app_bottom_nav_bar.dart';
@@ -80,6 +81,7 @@ class _EngineerMainScreenState extends State<EngineerMainScreen> {
                 if (context.mounted) context.go(AppRoutes.loginPortal);
               },
             ),
+            const OfflineSyncBanner(),
             Expanded(
               child: IndexedStack(index: _currentIndex, children: _views),
             ),

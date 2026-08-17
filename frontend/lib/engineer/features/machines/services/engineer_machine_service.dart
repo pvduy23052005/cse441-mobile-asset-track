@@ -1,29 +1,29 @@
-import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/offline/repositories/offline_engineer_repository.dart';
 import '../models/machine_model.dart';
 
 class EngineerMachineService {
-  final Dio _dio = ApiClient.instance;
+  final OfflineEngineerRepository _offlineRepo;
+
+  EngineerMachineService([OfflineEngineerRepository? repo])
+      : _offlineRepo = repo ??
+            OfflineEngineerRepository(
+              ProviderContainer(),
+              ApiClient.instance,
+            );
 
   Future<List<MachineModel>> fetchMachinesFromApi() async {
-    try {
-      final response = await _dio.get<List<dynamic>>('/machines');
-      if (response.data != null) {
-        return response.data!
-            .map((item) => MachineModel.fromJson(Map<String, dynamic>.from(item as Map)))
-            .toList();
-      }
-    } catch (_) {}
-    return [];
+    return _offlineRepo.getMachinesOfflineFirst();
   }
 
   Future<MachineModel?> fetchMachineById(String id) async {
-    try {
-      final response = await _dio.get<Map<String, dynamic>>('/machines/$id');
-      if (response.data != null) {
-        return MachineModel.fromJson(response.data!);
-      }
-    } catch (_) {}
+    final machines = await _offlineRepo.getMachinesOfflineFirst();
+    final match = machines.where((m) => m.id == id);
+    if (match.isNotEmpty) return match.first;
     return null;
+  }
+  Future<bool> updateTroubleshooting(String machineId, List<TroubleshootingItem> items) async {
+    return _offlineRepo.updateTroubleshootingOfflineFirst(machineId, items);
   }
 }
