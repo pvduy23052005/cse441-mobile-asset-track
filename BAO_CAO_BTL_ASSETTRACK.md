@@ -117,7 +117,7 @@ flowchart LR
 Dựa trên phân tích yêu cầu nghiệp vụ nhà máy, trích xuất 6 Lớp Thực thể Cốt lõi:
 
 1. **`UserProfile`:** Lưu giữ định danh, họ tên, email, vai trò (`operator`, `me_engineer`, `supervisor`) và mã nhân viên.
-2. **`Machine`:** Lưu giữ lý lịch thiết bị, mã QR duy nhất, model, thông số kỹ thuật, trạng thái vận hành (`active`, `repairing`, `maintenance`, `inactive`), số giờ chạy tích lũy và mốc bảo trì định kỳ `pm_threshold_hours`.
+2. **`Machine`:** Lưu giữ lý lịch thiết bị, mã QR duy nhất, model, thông số kỹ thuật, trạng thái vận hành (`active`, `repairing`, `maintenance`, `inactive`), số giờ chạy tích lũy (lưu trực tiếp trong 1 trường `running_hours` của Machine) và mốc bảo trì định kỳ `pm_threshold_hours`.
 3. **`Ticket`:** Lưu giữ phiếu báo hỏng khẩn cấp SOS do Operator tạo, mức độ nghiêm trọng, mô tả lỗi, mảng ảnh hiện trường, kỹ sư tiếp nhận, thời gian dừng máy (Downtime) và chữ ký nghiệm thu.
 4. **`PmChecklist`:** Lưu giữ phiếu bảo trì định kỳ tự động sinh theo giờ máy chạy, gồm mốc giờ kích hoạt, kỹ sư thực hiện và trạng thái phê duyệt.
 5. **`PmChecklistItem`:** Lưu danh mục từng thao tác bảo dưỡng (tra dầu, siết ốc...), trạng thái hoàn thành và ảnh minh chứng linh kiện mới.
