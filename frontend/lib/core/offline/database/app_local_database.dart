@@ -86,6 +86,14 @@ class AppLocalDatabase {
       CREATE INDEX idx_local_tickets_sync_status 
       ON local_tickets (sync_status)
     ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS local_kv_cache (
+        key TEXT PRIMARY KEY,
+        json_data TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
   }
 
   static Future<void> close() async {
