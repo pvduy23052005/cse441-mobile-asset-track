@@ -60,6 +60,7 @@ class MachinePassportModal extends StatefulWidget {
 
 class _MachinePassportModalState extends State<MachinePassportModal> {
   int _activeTab = 0; // 0: SPECS, 1: TROUBLESHOOT, 2: HISTORY
+  int _historyCount = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -231,7 +232,7 @@ class _MachinePassportModalState extends State<MachinePassportModal> {
                 const SizedBox(width: 14),
                 _buildTabButton(1, 'Cẩm Nang Lỗi Nhanh'),
                 const SizedBox(width: 14),
-                _buildTabButton(2, 'Lịch Sử Bảo Trì (3)'),
+                _buildTabButton(2, 'Lịch Sử Bảo Trì${_historyCount > 0 ? ' ($_historyCount)' : ''}'),
               ],
             ),
           ),
@@ -248,7 +249,12 @@ class _MachinePassportModalState extends State<MachinePassportModal> {
                     machine: machine,
                     onSaveTroubleshooting: widget.onSaveTroubleshooting,
                   ),
-                  MachineHistoryTab(machine: machine),
+                  MachineHistoryTab(
+                    machine: machine,
+                    onCountChanged: (count) {
+                      if (mounted) setState(() => _historyCount = count);
+                    },
+                  ),
                 ],
               ),
             ),
