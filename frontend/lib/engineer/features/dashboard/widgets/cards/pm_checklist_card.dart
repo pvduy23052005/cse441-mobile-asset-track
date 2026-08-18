@@ -67,31 +67,58 @@ class PmChecklistCard extends StatelessWidget {
           ),
           const SizedBox(width: 8),
 
-          SizedBox(
-            height: 44,
-            child: ElevatedButton.icon(
-              onPressed: () => onOpenPM(pmChecklist),
-              icon: const Icon(Icons.play_arrow_rounded, size: 18),
-              label: const Text(
-                'Làm PM',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.3,
-                ),
+          if (pmChecklist.status == PMChecklistStatus.completed ||
+              pmChecklist.status == PMChecklistStatus.approved)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFBEB),
+                borderRadius: BorderRadius.circular(10.0),
+                border: Border.all(color: const Color(0xFFFDE68A)),
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFD97706),
-                foregroundColor: Colors.white,
-                elevation: 2,
-                shadowColor: const Color(0xFFD97706).withValues(alpha: 0.4),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.0),
+              child: const Row(
+                children: [
+                  Icon(Icons.hourglass_top_rounded,
+                      size: 14, color: Color(0xFFB45309)),
+                  SizedBox(width: 4),
+                  Text(
+                    'Chờ Duyệt',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFFB45309),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            SizedBox(
+              height: 44,
+              child: ElevatedButton.icon(
+                onPressed: () => onOpenPM(pmChecklist),
+                icon: const Icon(Icons.play_arrow_rounded, size: 18),
+                label: const Text(
+                  'Làm PM',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFD97706),
+                  foregroundColor: Colors.white,
+                  elevation: 2,
+                  shadowColor: const Color(0xFFD97706).withValues(alpha: 0.4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

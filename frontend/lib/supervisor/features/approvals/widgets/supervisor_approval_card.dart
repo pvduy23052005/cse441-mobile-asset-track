@@ -39,7 +39,7 @@ class SupervisorApprovalCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top Row: Code + Status Badge
+              // Top Row: Code + Category Badge + Status Badge
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -48,13 +48,19 @@ class SupervisorApprovalCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEFF6FF), // blue-50
+                          color: item.code.startsWith('PM')
+                              ? const Color(0xFFFEF3C7) // amber-100
+                              : const Color(0xFFFFE4E6), // rose-100
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(
-                          Icons.assignment_outlined,
+                        child: Icon(
+                          item.code.startsWith('PM')
+                              ? Icons.build_circle_outlined
+                              : Icons.warning_amber_rounded,
                           size: 16,
-                          color: Color(0xFF0284C7),
+                          color: item.code.startsWith('PM')
+                              ? const Color(0xFFD97706)
+                              : const Color(0xFFE11D48),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -64,6 +70,32 @@ class SupervisorApprovalCard extends StatelessWidget {
                           fontSize: 13,
                           fontWeight: FontWeight.w900,
                           color: Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: item.code.startsWith('PM')
+                              ? const Color(0xFFFFFBEB)
+                              : const Color(0xFFFFF1F2),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: item.code.startsWith('PM')
+                                ? const Color(0xFFFDE68A)
+                                : const Color(0xFFFECDD3),
+                          ),
+                        ),
+                        child: Text(
+                          item.code.startsWith('PM') ? 'PM BẢO TRÌ' : 'SỰ CỐ SOS',
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w900,
+                            color: item.code.startsWith('PM')
+                                ? const Color(0xFFB45309)
+                                : const Color(0xFFBE123C),
+                          ),
                         ),
                       ),
                     ],

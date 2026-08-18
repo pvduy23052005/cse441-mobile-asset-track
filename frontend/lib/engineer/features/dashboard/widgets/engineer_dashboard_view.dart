@@ -319,6 +319,24 @@ class _EngineerDashboardViewState extends State<EngineerDashboardView> {
                                   onClose: () => Navigator.pop(ctx),
                                   onComplete: () {
                                     Navigator.pop(ctx);
+                                    if (mounted) {
+                                      setState(() {
+                                        _pmChecklists = _pmChecklists.map((pm) {
+                                          if (pm.id == item.id) {
+                                            return PMChecklistModel(
+                                              id: pm.id,
+                                              code: pm.code,
+                                              machineId: pm.machineId,
+                                              machineName: pm.machineName,
+                                              scheduledHours: pm.scheduledHours,
+                                              status: PMChecklistStatus.completed,
+                                              itemCount: pm.itemCount,
+                                            );
+                                          }
+                                          return pm;
+                                        }).toList();
+                                      });
+                                    }
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(

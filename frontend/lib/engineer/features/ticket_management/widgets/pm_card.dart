@@ -49,31 +49,60 @@ class PMCard extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(
-            height: 44,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFD97706), // amber-600
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                elevation: 2,
-                shadowColor: const Color(0xFFD97706).withValues(alpha: 0.4),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+          if (pm.status.toUpperCase() == 'COMPLETED' ||
+              pm.status.toUpperCase() == 'SUBMITTED' ||
+              pm.status.toUpperCase() == 'PENDING_APPROVAL' ||
+              pm.status.toUpperCase() == 'APPROVED')
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFBEB),
+                borderRadius: BorderRadius.circular(10.0),
+                border: Border.all(color: const Color(0xFFFDE68A)),
               ),
-              onPressed: onTap,
-              icon: const Icon(Icons.play_arrow_rounded, size: 18),
-              label: const Text(
-                'Làm PM',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.3,
+              child: const Row(
+                children: [
+                  Icon(Icons.hourglass_top_rounded,
+                      size: 14, color: Color(0xFFB45309)),
+                  SizedBox(width: 4),
+                  Text(
+                    'Chờ Duyệt',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFFB45309),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            SizedBox(
+              height: 44,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFD97706), // amber-600
+                  foregroundColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  elevation: 2,
+                  shadowColor: const Color(0xFFD97706).withValues(alpha: 0.4),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onPressed: onTap,
+                icon: const Icon(Icons.play_arrow_rounded, size: 18),
+                label: const Text(
+                  'Làm PM',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.3,
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

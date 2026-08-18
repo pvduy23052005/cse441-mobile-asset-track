@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../models/work_order_model.dart';
+import '../../repositories/pm_checklist_repository.dart';
 import 'pm_checklist_item_tile.dart';
 import 'pm_spare_parts_form.dart';
 
@@ -55,8 +56,10 @@ class PMChecklistModal extends StatefulWidget {
 }
 
 class _PMChecklistModalState extends State<PMChecklistModal> {
+  final PMChecklistRepository _repository = PMChecklistRepository();
   late List<PMChecklistItemData> _items;
   final List<PMSparePartData> _spareParts = [];
+  bool _isSubmitting = false;
 
   final _partNameController = TextEditingController();
   final _partQtyController = TextEditingController(text: '1');
@@ -87,6 +90,75 @@ class _PMChecklistModalState extends State<PMChecklistModal> {
         isRequiredPhoto: true,
       ),
     ];
+    _loadSavedState();
+  }
+
+  Future<void> _loadSavedState() async {
+    final saved = await _repository.getPMStateLocally(widget.checklist.id);
+    if (saved != null && mounted) {
+      final savedItems = saved['items'] as List<dynamic>?;
+      final savedParts = saved['spareParts'] as List<dynamic>?;
+
+      setState(() {
+        if (savedItems != null) {
+          for (final item in _items) {
+            final match = savedItems.firstWhere(
+              (s) => s['id'] == item.id,
+              orElse: () => null,
+            );
+            if (match != null) {
+              item.isChecked = match['isChecked'] == true;
+              item.photoUrl = match['photoUrl']?.toString();
+            }
+          }
+        }
+
+        if (savedParts != null) {
+          _spareParts.clear();
+          for (final sp in savedParts) {
+            _spareParts.add(
+              PMSparePartData(
+                id: sp['id']?.toString() ?? '',
+                name: sp['name']?.toString() ?? '',
+                quantity: (sp['quantity'] as num?)?.toInt() ?? 1,
+                unitPrice: (sp['unitPrice'] as num?)?.toDouble() ?? 0.0,
+                totalCost: (sp['totalCost'] as num?)?.toDouble() ?? 0.0,
+                requiresApproval: sp['requiresApproval'] == true,
+              ),
+            );
+          }
+        }
+      });
+    }
+  }
+
+  Future<void> _saveCurrentStateLocally() async {
+    final itemsJson = _items
+        .map((it) => {
+              'id': it.id,
+              'taskDescription': it.taskDescription,
+              'isChecked': it.isChecked,
+              'isRequiredPhoto': it.isRequiredPhoto,
+              'photoUrl': it.photoUrl,
+            })
+        .toList();
+
+    final partsJson = _spareParts
+        .map((sp) => {
+              'id': sp.id,
+              'name': sp.name,
+              'quantity': sp.quantity,
+              'unitPrice': sp.unitPrice,
+              'totalCost': sp.totalCost,
+              'requiresApproval': sp.requiresApproval,
+            })
+        .toList();
+
+    await _repository.savePMStateLocally(
+      checklistId: widget.checklist.id,
+      items: itemsJson,
+      spareParts: partsJson,
+    );
   }
 
   @override
@@ -102,7 +174,11 @@ class _PMChecklistModalState extends State<PMChecklistModal> {
     if (name.isEmpty) return;
 
     final qty = int.tryParse(_partQtyController.text) ?? 1;
-    final price = double.tryParse(_partPriceController.text) ?? 0.0;
+    final priceStr = _partPriceController.text
+        .replaceAll('.', '')
+        .replaceAll(',', '')
+        .trim();
+    final price = double.tryParse(priceStr) ?? 0.0;
     final total = qty * price;
     final requiresAppr = total >= _costApprovalThreshold;
 
@@ -121,6 +197,44 @@ class _PMChecklistModalState extends State<PMChecklistModal> {
       _partQtyController.text = '1';
       _partPriceController.text = '500000';
     });
+    _saveCurrentStateLocally();
+  }
+
+  Future<void> _handleSubmit() async {
+    if (_isSubmitting) return;
+    setState(() => _isSubmitting = true);
+
+    final itemsJson = _items
+        .map((it) => {
+              'id': it.id,
+              'taskDescription': it.taskDescription,
+              'isChecked': it.isChecked,
+              'isRequiredPhoto': it.isRequiredPhoto,
+              'photoUrl': it.photoUrl,
+            })
+        .toList();
+
+    final partsJson = _spareParts
+        .map((sp) => {
+              'id': sp.id,
+              'name': sp.name,
+              'quantity': sp.quantity,
+              'unitPrice': sp.unitPrice,
+              'totalCost': sp.totalCost,
+              'requiresApproval': sp.requiresApproval,
+            })
+        .toList();
+
+    await _repository.submitPMChecklist(
+      checklistId: widget.checklist.id,
+      items: itemsJson,
+      spareParts: partsJson,
+    );
+
+    if (mounted) {
+      setState(() => _isSubmitting = false);
+      widget.onComplete();
+    }
   }
 
   bool get _allMandatoryCompleted {
@@ -235,12 +349,14 @@ class _PMChecklistModalState extends State<PMChecklistModal> {
                           setState(() {
                             item.isChecked = val ?? false;
                           });
+                          _saveCurrentStateLocally();
                         },
                         onSimulatePhoto: () {
                           setState(() {
                             item.photoUrl =
                                 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=500';
                           });
+                          _saveCurrentStateLocally();
                         },
                       ),
                     ),
@@ -268,11 +384,27 @@ class _PMChecklistModalState extends State<PMChecklistModal> {
                 width: double.infinity,
                 height: 44,
                 child: ElevatedButton.icon(
-                  onPressed: _allMandatoryCompleted ? widget.onComplete : null,
-                  icon: const Icon(Icons.check_circle_rounded, size: 18),
-                  label: const Text(
-                    'Hoàn Thành PM & Gửi Nghiệm Thu',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900),
+                  onPressed: (_allMandatoryCompleted && !_isSubmitting)
+                      ? _handleSubmit
+                      : null,
+                  icon: _isSubmitting
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Icon(Icons.check_circle_rounded, size: 18),
+                  label: Text(
+                    _isSubmitting
+                        ? 'Đang Gửi Nghiệm Thu...'
+                        : 'Hoàn Thành PM & Gửi Nghiệm Thu',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,

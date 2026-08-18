@@ -37,6 +37,8 @@ export class TicketsService {
     const data = (documentSnapshot.data() as FirestoreTicket) || {};
     return {
       id: documentSnapshot.id,
+      code: data.code || '',
+      title: data.title || '',
       machine_id: data.machine_id || '',
       reporter_id: data.reporter_id || '',
       engineer_id: data.engineer_id ?? null,

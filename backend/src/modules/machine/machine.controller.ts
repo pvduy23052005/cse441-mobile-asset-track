@@ -38,6 +38,14 @@ export class MachineController {
     return this.machineService.getPMChecklists();
   }
 
+  @Patch('pm-checklists/:id/submit')
+  async submitPMChecklist(
+    @Param('id') id: string,
+    @Body() body: { items?: any[]; used_spare_parts?: any[]; engineer_name?: string },
+  ): Promise<any> {
+    return this.machineService.submitPMChecklist(id, body);
+  }
+
   @Get(':id')
   async getMachineById(@Param('id') id: string): Promise<Machine> {
     return this.machineService.getMachineById(id);

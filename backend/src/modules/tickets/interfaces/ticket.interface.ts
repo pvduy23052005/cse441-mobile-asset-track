@@ -3,6 +3,8 @@ import { TicketStatus } from '../enums/ticket-status.enum';
 
 export interface Ticket {
   id: string;
+  code?: string;
+  title?: string;
   machine_id: string;
   reporter_id: string;
   engineer_id?: string | null;
@@ -27,6 +29,8 @@ export interface Ticket {
 }
 
 export interface FirestoreTicket {
+  code?: string;
+  title?: string;
   machine_id: string;
   reporter_id: string;
   engineer_id?: string | null;

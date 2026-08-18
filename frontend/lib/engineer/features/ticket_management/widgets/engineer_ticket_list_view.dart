@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../dashboard/models/work_order_model.dart' as dash_models;
+import '../../dashboard/services/engineer_dashboard_service.dart';
 import '../../dashboard/widgets/modals/pm_checklist_modal.dart' as dash_modals;
 import '../models/pm_checklist_model.dart';
 import '../models/ticket_model.dart';
@@ -18,26 +19,11 @@ class EngineerTicketListView extends StatefulWidget {
 
 class _EngineerTicketListViewState extends State<EngineerTicketListView> {
   final EngineerTicketService _ticketService = EngineerTicketService();
+  final EngineerDashboardService _dashboardService = EngineerDashboardService();
 
   List<TicketModel> _tickets = [];
+  List<PMChecklistModel> _pmChecklists = [];
   bool _isLoading = true;
-
-  final List<PMChecklistModel> _pmChecklists = [
-    PMChecklistModel(
-      id: 'pm1',
-      code: 'PM-2026-0500H',
-      machineId: 'm4',
-      machineCode: 'ROBOT-2024-004',
-      machineName: 'Dây Chuyền Hàn Robot Tự Động',
-      scheduledHours: 1000,
-      status: 'PENDING',
-      items: [
-        PMChecklistItem(id: '1', title: 'Kiểm tra mức dầu bôi trơn & thay mới nếu sẫm màu', isCompleted: true),
-        PMChecklistItem(id: '2', title: 'Siết lại toàn bộ bulong đỡ chân máy & quạt gió', isCompleted: false),
-        PMChecklistItem(id: '3', title: 'Vệ sinh lưới lọc bụi khí nạp phía sau động cơ', isCompleted: false),
-      ],
-    ),
-  ];
 
   @override
   void initState() {
@@ -48,10 +34,41 @@ class _EngineerTicketListViewState extends State<EngineerTicketListView> {
   Future<void> _loadTicketsData() async {
     setState(() => _isLoading = true);
     final apiList = await _ticketService.fetchTicketsFromApi();
+    final apiPMList = await _dashboardService.fetchPMChecklistsFromApi();
 
     if (mounted) {
       setState(() {
-        _tickets = apiList; // Lấy 100% từ API backend
+        _tickets = apiList;
+        if (apiPMList.isNotEmpty) {
+          _pmChecklists = apiPMList
+              .map((pm) => PMChecklistModel(
+                    id: pm.id,
+                    code: pm.code,
+                    machineId: pm.machineId,
+                    machineCode: pm.machineId,
+                    machineName: pm.machineName,
+                    scheduledHours: pm.scheduledHours.toDouble(),
+                    status: pm.status == dash_models.PMChecklistStatus.completed ||
+                            pm.status == dash_models.PMChecklistStatus.approved
+                        ? 'COMPLETED'
+                        : 'PENDING',
+                    items: [
+                      PMChecklistItem(
+                          id: '1',
+                          title: 'Kiểm tra mức dầu bôi trơn & thay mới nếu sẫm màu',
+                          isCompleted: true),
+                      PMChecklistItem(
+                          id: '2',
+                          title: 'Siết lại toàn bộ bulong đỡ chân máy & quạt gió',
+                          isCompleted: false),
+                      PMChecklistItem(
+                          id: '3',
+                          title: 'Vệ sinh lưới lọc bụi khí nạp phía sau động cơ',
+                          isCompleted: false),
+                    ],
+                  ))
+              .toList();
+        }
         _isLoading = false;
       });
     }
@@ -296,12 +313,29 @@ class _EngineerTicketListViewState extends State<EngineerTicketListView> {
                                             onClose: () => Navigator.pop(ctx),
                                             onComplete: () {
                                               Navigator.pop(ctx);
+                                               if (mounted) {
+                                                 setState(() {
+                                                   final idx = _pmChecklists.indexWhere((item) => item.id == pm.id);
+                                                   if (idx != -1) {
+                                                     _pmChecklists[idx] = PMChecklistModel(
+                                                       id: pm.id,
+                                                       code: pm.code,
+                                                       machineId: pm.machineId,
+                                                       machineCode: pm.machineCode,
+                                                       machineName: pm.machineName,
+                                                       scheduledHours: pm.scheduledHours,
+                                                       status: 'COMPLETED',
+                                                       items: pm.items,
+                                                     );
+                                                   }
+                                                 });
+                                               }
                                               ScaffoldMessenger.of(context).showSnackBar(
                                                 SnackBar(
                                                   content: Text(
-                                                    'Đã hoàn thành bảo trì PM ${pm.code} (${pm.machineName})!',
+                                                    'Đã hoàn thành & gửi nghiệm thu bảo trì PM ${pm.code} (${pm.machineName})!',
                                                   ),
-                                                  backgroundColor: const Color(0xFFD97706),
+                                                  backgroundColor: const Color(0xFF059669),
                                                 ),
                                               );
                                             },
