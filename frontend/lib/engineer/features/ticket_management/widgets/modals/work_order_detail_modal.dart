@@ -31,7 +31,10 @@ class WorkOrderDetailModal extends StatefulWidget {
       pageBuilder: (ctx, anim1, anim2) => Center(
         child: Dialog(
           backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 24,
+          ),
           child: WorkOrderDetailModal(
             ticket: ticket,
             onClaim: onClaim,
@@ -50,8 +53,12 @@ class WorkOrderDetailModal extends StatefulWidget {
 class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
   final List<SparePartItem> _usedParts = [];
   final TextEditingController _partNameController = TextEditingController();
-  final TextEditingController _partQtyController = TextEditingController(text: '1');
-  final TextEditingController _partPriceController = TextEditingController(text: '500000');
+  final TextEditingController _partQtyController = TextEditingController(
+    text: '1',
+  );
+  final TextEditingController _partPriceController = TextEditingController(
+    text: '500000',
+  );
   final TextEditingController _cancelReasonController = TextEditingController();
 
   bool _showAddPartForm = false;
@@ -89,8 +96,22 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
   void _addSparePart() {
     final name = _partNameController.text.trim();
     final qty = int.tryParse(_partQtyController.text.trim()) ?? 1;
-    final price = double.tryParse(_partPriceController.text.trim()) ?? 500000;
-    if (name.isEmpty) return;
+    final priceStr = _partPriceController.text
+        .replaceAll('.', '')
+        .replaceAll(',', '')
+        .trim();
+    final price = double.tryParse(priceStr) ?? 500000;
+
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng nhập tên phụ tùng / linh kiện!'),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
 
     setState(() {
       _usedParts.add(
@@ -106,6 +127,12 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
       _partQtyController.text = '1';
       _partPriceController.text = '500000';
       _showAddPartForm = false;
+    });
+  }
+
+  void _removeSparePart(int index) {
+    setState(() {
+      _usedParts.removeAt(index);
     });
   }
 
@@ -149,10 +176,7 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
           Container(
             width: 8,
             height: 8,
-            decoration: BoxDecoration(
-              color: dotColor,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
           ),
           const SizedBox(width: 4),
           Text(
@@ -206,11 +230,16 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFFCE7F3),
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: const Color(0xFFFBCFE8)),
+                              border: Border.all(
+                                color: const Color(0xFFFBCFE8),
+                              ),
                             ),
                             child: Text(
                               ticket.code,
@@ -305,7 +334,10 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                               ),
                               const SizedBox(width: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFD1FAE5),
                                   borderRadius: BorderRadius.circular(6),
@@ -335,11 +367,19 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                                 child: Text.rich(
                                   TextSpan(
                                     text: 'Báo bởi: ',
-                                    style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Color(0xFF64748B),
+                                    ),
                                     children: [
                                       TextSpan(
-                                        text: ticket.reporterName ?? 'Không xác định',
-                                        style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
+                                        text:
+                                            ticket.reporterName ??
+                                            'Không xác định',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w900,
+                                          color: Color(0xFF0F172A),
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -348,7 +388,13 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('Thời gian:', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                                  const Text(
+                                    'Thời gian:',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                  ),
                                   Text(
                                     ticket.createdAt,
                                     style: const TextStyle(
@@ -363,24 +409,37 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                             ],
                           ),
 
-                          if (ticket.engineerName != null && ticket.engineerName!.isNotEmpty) ...[
+                          if (ticket.engineerName != null &&
+                              ticket.engineerName!.isNotEmpty) ...[
                             const SizedBox(height: 10),
                             Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFECFEFF),
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: const Color(0xFFA5F3FC)),
+                                border: Border.all(
+                                  color: const Color(0xFFA5F3FC),
+                                ),
                               ),
                               child: Text.rich(
                                 TextSpan(
                                   text: 'Kỹ sư tiếp nhận: ',
-                                  style: const TextStyle(fontSize: 11, color: Color(0xFF0891B2), fontWeight: FontWeight.w500),
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF0891B2),
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                   children: [
                                     TextSpan(
                                       text: ticket.engineerName,
-                                      style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF0891B2)),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        color: Color(0xFF0891B2),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -424,7 +483,8 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                     ),
 
                     // ẢNH MINH CHỨNG LỖI HIỆN TRƯỜNG (Chỉ hiển thị nếu từ API thật có ảnh)
-                    if (ticket.imageUrl != null && ticket.imageUrl!.isNotEmpty) ...[
+                    if (ticket.imageUrl != null &&
+                        ticket.imageUrl!.isNotEmpty) ...[
                       const SizedBox(height: 14),
                       const Text(
                         'ẢNH MINH CHỨNG LỖI HIỆN TRƯỜNG:',
@@ -443,7 +503,8 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                           height: 175,
                           width: double.infinity,
                           fit: BoxFit.cover,
-                          errorBuilder: (ctx, err, stack) => const SizedBox.shrink(),
+                          errorBuilder: (ctx, err, stack) =>
+                              const SizedBox.shrink(),
                         ),
                       ),
                     ],
@@ -463,9 +524,12 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                             letterSpacing: 0.2,
                           ),
                         ),
-                        if (ticket.status != TicketStatus.closed && ticket.status != TicketStatus.cancelled)
+                        if (ticket.status != TicketStatus.closed &&
+                            ticket.status != TicketStatus.cancelled)
                           InkWell(
-                            onTap: () => setState(() => _showAddPartForm = !_showAddPartForm),
+                            onTap: () => setState(
+                              () => _showAddPartForm = !_showAddPartForm,
+                            ),
                             child: const Text(
                               '+ Khai báo thêm phụ tùng',
                               style: TextStyle(
@@ -490,20 +554,32 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Thêm Vật Tư / Phụ Tùng Thay Thế', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                            const Text(
+                              'Thêm Vật Tư / Phụ Tùng Thay Thế',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             const SizedBox(height: 8),
                             TextField(
                               controller: _partNameController,
                               style: const TextStyle(fontSize: 12),
                               decoration: InputDecoration(
-                                hintText: 'Tên phụ tùng (e.g. Vòng bi Spindle 7014C)',
+                                hintText:
+                                    'Tên phụ tùng (e.g. Vòng bi Spindle 7014C)',
                                 isDense: true,
                                 filled: true,
                                 fillColor: Colors.white,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
-                                  borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFCBD5E1),
+                                  ),
                                 ),
                               ),
                             ),
@@ -515,17 +591,26 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                                   child: TextField(
                                     controller: _partQtyController,
                                     keyboardType: TextInputType.number,
-                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                     textAlign: TextAlign.center,
                                     decoration: InputDecoration(
                                       hintText: 'SL',
                                       isDense: true,
                                       filled: true,
                                       fillColor: Colors.white,
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 10,
+                                          ),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(10),
-                                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFFCBD5E1),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -535,16 +620,26 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                                   child: TextField(
                                     controller: _partPriceController,
                                     keyboardType: TextInputType.number,
-                                    style: const TextStyle(fontSize: 12, fontFamily: 'monospace', fontWeight: FontWeight.w600),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontFamily: 'monospace',
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                     decoration: InputDecoration(
                                       hintText: 'Đơn giá (VND)',
                                       isDense: true,
                                       filled: true,
                                       fillColor: Colors.white,
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 10,
+                                          ),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(10),
-                                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFFCBD5E1),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -557,33 +652,65 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                               children: [
                                 const Text(
                                   'Duyệt Quản đốc nếu > 2.0Trđ',
-                                  style: TextStyle(fontSize: 10, color: Color(0xFF64748B)),
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Color(0xFF64748B),
+                                  ),
                                 ),
                                 Row(
                                   children: [
                                     OutlinedButton(
                                       style: OutlinedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 6,
+                                        ),
                                         minimumSize: Size.zero,
-                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
                                       ),
-                                      onPressed: () => setState(() => _showAddPartForm = false),
-                                      child: const Text('Hủy', style: TextStyle(fontSize: 11)),
+                                      onPressed: () => setState(
+                                        () => _showAddPartForm = false,
+                                      ),
+                                      child: const Text(
+                                        'Hủy',
+                                        style: TextStyle(fontSize: 11),
+                                      ),
                                     ),
                                     const SizedBox(width: 6),
                                     ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF008B99),
+                                        backgroundColor: const Color(
+                                          0xFF008B99,
+                                        ),
                                         foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 6,
+                                        ),
                                         minimumSize: Size.zero,
-                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
                                         elevation: 0,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
                                       ),
                                       onPressed: _addSparePart,
-                                      child: const Text('Lưu Vật Tư', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                      child: const Text(
+                                        'Lưu Vật Tư',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -608,15 +735,25 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                         child: const Text(
                           'Chưa khai báo linh kiện thay thế cho phiếu này.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 11.5, color: Color(0xFF94A3B8), fontStyle: FontStyle.italic),
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: Color(0xFF94A3B8),
+                            fontStyle: FontStyle.italic,
+                          ),
                         ),
                       )
                     else
-                      ..._usedParts.map((part) {
-                        final bool isApproved = (part.quantity * part.unitPrice) >= 2000000;
+                      ..._usedParts.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final part = entry.value;
+                        final bool isApproved =
+                            (part.quantity * part.unitPrice) >= 2000000;
                         return Container(
                           margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
@@ -651,24 +788,46 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: isApproved
-                                      ? const Color(0xFFD1FAE5)
-                                      : const Color(0xFFF1F5F9),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  isApproved ? 'Đã Duyệt' : 'Tự Động',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w900,
-                                    color: isApproved
-                                        ? const Color(0xFF065F46)
-                                        : const Color(0xFF475569),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isApproved
+                                          ? const Color(0xFFD1FAE5)
+                                          : const Color(0xFFF1F5F9),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      isApproved ? 'Đã Duyệt' : 'Tự Động',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w900,
+                                        color: isApproved
+                                            ? const Color(0xFF065F46)
+                                            : const Color(0xFF475569),
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                  if (widget.ticket.status != TicketStatus.closed &&
+                                      widget.ticket.status != TicketStatus.cancelled) ...[
+                                    const SizedBox(width: 4),
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.delete_outline_rounded,
+                                        size: 18,
+                                        color: Color(0xFFE11D48),
+                                      ),
+                                      visualDensity: VisualDensity.compact,
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      onPressed: () => _removeSparePart(index),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ],
                           ),
@@ -689,7 +848,11 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                           children: [
                             const Text(
                               'Hủy Phiếu SOS Đã Báo Nhầm (US-13)',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFFBE123C)),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFFBE123C),
+                              ),
                             ),
                             const SizedBox(height: 6),
                             TextField(
@@ -697,12 +860,15 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                               maxLines: 2,
                               style: const TextStyle(fontSize: 11.5),
                               decoration: InputDecoration(
-                                hintText: 'Nhập lý do hủy phiếu (thao tác nhầm...)',
+                                hintText:
+                                    'Nhập lý do hủy phiếu (thao tác nhầm...)',
                                 isDense: true,
                                 fillColor: Colors.white,
                                 filled: true,
                                 contentPadding: const EdgeInsets.all(10),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -711,11 +877,19 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                                 Expanded(
                                   child: OutlinedButton(
                                     style: OutlinedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(vertical: 8),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
                                     ),
-                                    onPressed: () => setState(() => _showCancelForm = false),
-                                    child: const Text('Quay Lại', style: TextStyle(fontSize: 11)),
+                                    onPressed: () =>
+                                        setState(() => _showCancelForm = false),
+                                    child: const Text(
+                                      'Quay Lại',
+                                      style: TextStyle(fontSize: 11),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -724,18 +898,31 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFFE11D48),
                                       foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                      ),
                                       elevation: 0,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
                                     ),
                                     onPressed: () {
-                                      final reason = _cancelReasonController.text.trim();
-                                      if (reason.isNotEmpty && widget.onCancel != null) {
+                                      final reason = _cancelReasonController
+                                          .text
+                                          .trim();
+                                      if (reason.isNotEmpty &&
+                                          widget.onCancel != null) {
                                         widget.onCancel!(reason);
                                         Navigator.pop(context);
                                       }
                                     },
-                                    child: const Text('Xác Nhận Hủy', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                    child: const Text(
+                                      'Xác Nhận Hủy',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -756,7 +943,8 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 18),
               child: Column(
                 children: [
-                  if (ticket.status == TicketStatus.open && !_showCancelForm) ...[
+                  if (ticket.status == TicketStatus.open &&
+                      !_showCancelForm) ...[
                     SizedBox(
                       width: double.infinity,
                       height: 44,
@@ -807,7 +995,11 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.cancel_outlined, size: 16, color: Color(0xFFE11D48)),
+                            Icon(
+                              Icons.cancel_outlined,
+                              size: 16,
+                              color: Color(0xFFE11D48),
+                            ),
                             SizedBox(width: 6),
                             Text(
                               'Hủy Phiếu SOS Báo Nhầm (US-13)',
@@ -820,8 +1012,8 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                         ),
                       ),
                     ),
-                  ]
-                  else if (ticket.status == TicketStatus.inProgress || ticket.status == TicketStatus.rejected) ...[
+                  ] else if (ticket.status == TicketStatus.inProgress ||
+                      ticket.status == TicketStatus.rejected) ...[
                     SizedBox(
                       width: double.infinity,
                       height: 44,
@@ -855,11 +1047,13 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                         ),
                       ),
                     ),
-                  ]
-                  else if (ticket.status == TicketStatus.pendingApproval) ...[
+                  ] else if (ticket.status == TicketStatus.pendingApproval) ...[
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFFBEB),
                         borderRadius: BorderRadius.circular(12),
@@ -868,14 +1062,20 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                       child: const Text(
                         'Đã hoàn thành sửa chữa — Đang chờ Quản đốc ký nghiệm thu!',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFFB45309)),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFFB45309),
+                        ),
                       ),
                     ),
-                  ]
-                  else if (ticket.status == TicketStatus.closed) ...[
+                  ] else if (ticket.status == TicketStatus.closed) ...[
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFECFDF5),
                         borderRadius: BorderRadius.circular(10),
@@ -884,7 +1084,11 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                       child: const Text(
                         'Đã được Quản đốc ký nghiệm thu & bàn giao về Active!',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Color(0xFF065F46)),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF065F46),
+                        ),
                       ),
                     ),
                   ],

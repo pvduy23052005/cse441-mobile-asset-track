@@ -19,21 +19,17 @@ class OfflineEngineerRepository {
   final _uuid = const Uuid();
 
   OfflineEngineerRepository(this._dio, [this._ref])
-      : _connectivity = NetworkConnectivityService();
+    : _connectivity = NetworkConnectivityService();
 
   // Helper to save JSON string to local_kv_cache
   Future<void> _saveCache(String key, String jsonData) async {
     try {
       final db = await AppLocalDatabase.database;
-      await db.insert(
-        'local_kv_cache',
-        {
-          'key': key,
-          'json_data': jsonData,
-          'updated_at': DateTime.now().toIso8601String(),
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+      await db.insert('local_kv_cache', {
+        'key': key,
+        'json_data': jsonData,
+        'updated_at': DateTime.now().toIso8601String(),
+      }, conflictAlgorithm: ConflictAlgorithm.replace);
     } catch (_) {}
   }
 
@@ -66,8 +62,11 @@ class OfflineEngineerRepository {
         final response = await _dio.get<List<dynamic>>('/tickets');
         if (response.data != null) {
           final tickets = response.data!
-              .map((item) =>
-                  TicketModel.fromJson(Map<String, dynamic>.from(item as Map)))
+              .map(
+                (item) => TicketModel.fromJson(
+                  Map<String, dynamic>.from(item as Map),
+                ),
+              )
               .toList();
 
           // Save to local cache
@@ -87,8 +86,10 @@ class OfflineEngineerRepository {
       try {
         final List jsonList = jsonDecode(cachedStr) as List;
         return jsonList
-            .map((item) =>
-                TicketModel.fromJson(Map<String, dynamic>.from(item as Map)))
+            .map(
+              (item) =>
+                  TicketModel.fromJson(Map<String, dynamic>.from(item as Map)),
+            )
             .toList();
       } catch (_) {}
     }
@@ -101,8 +102,9 @@ class OfflineEngineerRepository {
 
     if (isOnline) {
       try {
-        final response =
-            await _dio.patch<Map<String, dynamic>>('/tickets/$ticketId/claim');
+        final response = await _dio.patch<Map<String, dynamic>>(
+          '/tickets/$ticketId/claim',
+        );
         if (response.data != null) {
           final ticket = TicketModel.fromJson(response.data!);
           await _updateTicketInLocalCache(ticket);
@@ -119,11 +121,12 @@ class OfflineEngineerRepository {
     TicketModel? updatedTicket;
 
     if (index != -1) {
-      updatedTicket = tickets[index].copyWith(
-        status: TicketStatus.inProgress,
-      );
+      updatedTicket = tickets[index].copyWith(status: TicketStatus.inProgress);
       tickets[index] = updatedTicket;
-      await _saveCache('engineer_tickets', jsonEncode(tickets.map((t) => t.toJson()).toList()));
+      await _saveCache(
+        'engineer_tickets',
+        jsonEncode(tickets.map((t) => t.toJson()).toList()),
+      );
     }
 
     // Enqueue task into sync_queue
@@ -173,7 +176,10 @@ class OfflineEngineerRepository {
         usedSpareParts: usedParts ?? tickets[index].usedSpareParts,
       );
       tickets[index] = updatedTicket;
-      await _saveCache('engineer_tickets', jsonEncode(tickets.map((t) => t.toJson()).toList()));
+      await _saveCache(
+        'engineer_tickets',
+        jsonEncode(tickets.map((t) => t.toJson()).toList()),
+      );
     }
 
     await _enqueueSyncTask(
@@ -198,8 +204,11 @@ class OfflineEngineerRepository {
         final response = await _dio.get<List<dynamic>>('/machines');
         if (response.data != null) {
           final machines = response.data!
-              .map((item) =>
-                  MachineModel.fromJson(Map<String, dynamic>.from(item as Map)))
+              .map(
+                (item) => MachineModel.fromJson(
+                  Map<String, dynamic>.from(item as Map),
+                ),
+              )
               .toList();
 
           await _saveCache(cacheKey, jsonEncode(response.data));
@@ -213,8 +222,10 @@ class OfflineEngineerRepository {
       try {
         final List jsonList = jsonDecode(cachedStr) as List;
         return jsonList
-            .map((item) =>
-                MachineModel.fromJson(Map<String, dynamic>.from(item as Map)))
+            .map(
+              (item) =>
+                  MachineModel.fromJson(Map<String, dynamic>.from(item as Map)),
+            )
             .toList();
       } catch (_) {}
     }
@@ -263,7 +274,10 @@ class OfflineEngineerRepository {
     } else {
       tickets.add(updatedTicket);
     }
-    await _saveCache('engineer_tickets', jsonEncode(tickets.map((t) => t.toJson()).toList()));
+    await _saveCache(
+      'engineer_tickets',
+      jsonEncode(tickets.map((t) => t.toJson()).toList()),
+    );
   }
 
   Future<void> _enqueueSyncTask({
@@ -304,8 +318,9 @@ class OfflineEngineerRepository {
   }
 }
 
-final offlineEngineerRepositoryProvider =
-    Provider<OfflineEngineerRepository>((ref) {
+final offlineEngineerRepositoryProvider = Provider<OfflineEngineerRepository>((
+  ref,
+) {
   final dio = ApiClient.instance;
   return OfflineEngineerRepository(dio, ref);
 });

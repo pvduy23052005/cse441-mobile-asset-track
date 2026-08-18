@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -10,12 +12,14 @@ import 'core/utils/storage_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize SQLite FFI globally
-  try {
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
-  } catch (e) {
-    debugPrint('[SQLite FFI Init] $e');
+  // Initialize SQLite FFI only on Desktop (Windows/Linux/macOS)
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+    try {
+      sqfliteFfiInit();
+      databaseFactory = databaseFactoryFfi;
+    } catch (e) {
+      debugPrint('[SQLite FFI Init] $e');
+    }
   }
 
   try {

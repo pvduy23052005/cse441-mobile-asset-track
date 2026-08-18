@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart' as ffi;
 
 class AppLocalDatabase {
   static const String _dbName = 'asset_track_offline.db';
@@ -15,19 +17,25 @@ class AppLocalDatabase {
   }
 
   static Future<Database> _initDatabase() async {
-    try {
-      sqfliteFfiInit();
-      databaseFactory = databaseFactoryFfi;
-    } catch (e) {
-      debugPrint('[SQLite FFI Init] $e');
+    if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+      try {
+        ffi.sqfliteFfiInit();
+        databaseFactory = ffi.databaseFactoryFfi;
+      } catch (e) {
+        debugPrint('[SQLite FFI Init] $e');
+      }
     }
 
     String path;
     if (kIsWeb) {
-      path = inMemoryDatabasePath;
+      path = ffi.inMemoryDatabasePath;
     } else {
       try {
         final dbPath = await getDatabasesPath();
+        final dir = Directory(dbPath);
+        if (!await dir.exists()) {
+          await dir.create(recursive: true);
+        }
         path = join(dbPath, _dbName);
       } catch (_) {
         path = _dbName;

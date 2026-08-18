@@ -10,10 +10,7 @@ class SupervisorApprovalsView extends StatelessWidget {
       children: [
         const Text(
           'Danh Sách Cần Phê Duyệt',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         Card(
@@ -23,7 +20,10 @@ class SupervisorApprovalsView extends StatelessWidget {
             subtitle: const Text('Người gửi: Kỹ sư Nguyễn Văn A'),
             trailing: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 minimumSize: const Size(60, 36),
               ),
               onPressed: () {},
@@ -38,7 +38,10 @@ class SupervisorApprovalsView extends StatelessWidget {
             subtitle: const Text('Thiết bị: Máy nén khí khu vực 1'),
             trailing: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 minimumSize: const Size(60, 36),
               ),
               onPressed: () {},

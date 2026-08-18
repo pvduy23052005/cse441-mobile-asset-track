@@ -192,7 +192,6 @@ class _SupervisorApprovalViewState extends State<SupervisorApprovalView> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 12),
 
               if (_isLoading)

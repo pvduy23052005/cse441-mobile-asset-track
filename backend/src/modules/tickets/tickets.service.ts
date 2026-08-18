@@ -55,6 +55,7 @@ export class TicketsService {
       reporter_name: data.reporter_name || '',
       reporter_email: data.reporter_email || '',
       engineer_name: data.engineer_name || '',
+      used_spare_parts: data.used_spare_parts || [],
       created_at: data.created_at || '',
       updated_at: data.updated_at || '',
     };

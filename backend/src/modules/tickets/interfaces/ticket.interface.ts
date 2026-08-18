@@ -23,6 +23,7 @@ export interface Ticket {
   reporter_name?: string;
   reporter_email?: string;
   engineer_name?: string;
+  used_spare_parts?: any[];
 }
 
 export interface FirestoreTicket {
@@ -46,4 +47,5 @@ export interface FirestoreTicket {
   engineer_name?: string;
   created_at: string;
   updated_at: string;
+  used_spare_parts?: any[];
 }
