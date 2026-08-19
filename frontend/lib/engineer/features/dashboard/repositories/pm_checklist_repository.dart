@@ -55,6 +55,7 @@ class PMChecklistRepository {
     required String checklistId,
     required List<Map<String, dynamic>> items,
     required List<Map<String, dynamic>> spareParts,
+    String? engineerName,
   }) async {
     // 1. Save progress locally first
     await savePMStateLocally(
@@ -67,7 +68,8 @@ class PMChecklistRepository {
     final payload = {
       'items': items,
       'used_spare_parts': spareParts,
-      'engineer_name': 'Kỹ Sư ME Trần Minh Đức',
+      if (engineerName != null && engineerName.isNotEmpty)
+        'engineer_name': engineerName,
     };
 
     if (isOnline) {

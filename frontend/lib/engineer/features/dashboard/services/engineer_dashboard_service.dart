@@ -5,7 +5,6 @@ import '../models/work_order_model.dart';
 class EngineerDashboardService {
   final Dio _dio = ApiClient.instance;
 
-  // Real Backend NestJS + Firestore DB API Call for Tickets
   Future<List<WorkOrderModel>> fetchWorkOrdersFromApi() async {
     try {
       final response = await _dio.get<List<dynamic>>('/tickets');

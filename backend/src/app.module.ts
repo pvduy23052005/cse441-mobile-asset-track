@@ -8,6 +8,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { TicketsModule } from './modules/tickets/tickets.module';
 import { OperatorModule } from './operator/operator.module';
 import { SupervisorModule } from './supervisor/supervisor.module';
+import { EngineerModule } from './engineer/engineer.module';
 import { UserModule } from './modules/user/user.module';
 import { UploadModule } from './modules/upload/upload.module';
 
@@ -23,6 +24,7 @@ import { UploadModule } from './modules/upload/upload.module';
     TicketsModule,
     OperatorModule,
     SupervisorModule,
+    EngineerModule,
     NotificationsModule,
     UploadModule,
   ],
