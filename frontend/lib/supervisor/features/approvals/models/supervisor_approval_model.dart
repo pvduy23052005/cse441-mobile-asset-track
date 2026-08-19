@@ -128,10 +128,14 @@ class SupervisorApprovalModel {
       ];
     }
 
-    final ticketCode = json['code']?.toString() ??
+    final rawCode = json['code']?.toString() ??
         json['ticket_code']?.toString() ??
         json['machine_code']?.toString() ??
         'SOS-TICKET';
+
+    final ticketCode = (rawCode.startsWith('SOS') || rawCode.startsWith('PM'))
+        ? rawCode
+        : 'SOS-$rawCode';
 
     final mCode = json['machine_code']?.toString() ??
         json['machineCode']?.toString() ??
@@ -143,10 +147,18 @@ class SupervisorApprovalModel {
         json['machine']?['name']?.toString() ??
         'Thiết bị nhà xưởng';
 
-    final engName = json['engineer_name']?.toString() ??
+    final rawEngName = json['engineer_name']?.toString() ??
         json['engineerName']?.toString() ??
+        json['assignee_name']?.toString() ??
+        json['assigneeName']?.toString() ??
         json['assignee']?['fullName']?.toString() ??
-        'Kỹ Sư ME Trần Minh Đức';
+        json['assignee']?['full_name']?.toString() ??
+        json['assignee']?['name']?.toString() ??
+        json['reporter_name']?.toString() ??
+        json['created_by_name']?.toString();
+    final engName = (rawEngName != null && rawEngName.trim().isNotEmpty)
+        ? rawEngName.trim()
+        : 'Kỹ Sư ME';
 
     final downtime = json['downtime_duration']?.toString() ??
         json['downtimeDuration']?.toString() ??
