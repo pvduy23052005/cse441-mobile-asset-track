@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -67,4 +68,26 @@ export class NotificationsController {
   async markAsRead(@Param('id') id: string): Promise<NotificationItem> {
     return this.notificationsService.markAsRead(id);
   }
+
+  @Post('delete-batch')
+  async deleteBatchNotifications(
+    @Body('ids') ids: string[],
+  ): Promise<{ deletedCount: number }> {
+    return this.notificationsService.deleteMultipleNotifications(ids);
+  }
+
+  @Delete('batch')
+  async deleteBatchNotificationsDelete(
+    @Body('ids') ids: string[],
+  ): Promise<{ deletedCount: number }> {
+    return this.notificationsService.deleteMultipleNotifications(ids);
+  }
+
+  @Delete(':id')
+  async deleteNotification(
+    @Param('id') id: string,
+  ): Promise<{ success: boolean }> {
+    return this.notificationsService.deleteNotification(id);
+  }
 }
+

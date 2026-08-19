@@ -114,4 +114,40 @@ class NotificationService {
       return false;
     }
   }
+
+  /// Xóa 1 thông báo theo ID qua REST API & Firestore
+  Future<bool> deleteNotification(String notificationId) async {
+    try {
+      final fs = _firestore;
+      if (fs != null) {
+        await fs.collection('notifications').doc(notificationId).delete().catchError((_) {});
+      }
+      await ApiClient.instance.delete('/notifications/$notificationId');
+      return true;
+    } catch (e) {
+      debugPrint('Lỗi deleteNotification: $e');
+      return false;
+    }
+  }
+
+  /// Xóa nhiều thông báo theo danh sách IDs qua REST API & Firestore
+  Future<bool> deleteMultipleNotifications(List<String> notificationIds) async {
+    if (notificationIds.isEmpty) return true;
+    try {
+      final fs = _firestore;
+      if (fs != null) {
+        final batch = fs.batch();
+        for (final id in notificationIds) {
+          batch.delete(fs.collection('notifications').doc(id));
+        }
+        await batch.commit().catchError((_) {});
+      }
+      await ApiClient.instance.post('/notifications/delete-batch', data: {'ids': notificationIds});
+      return true;
+    } catch (e) {
+      debugPrint('Lỗi deleteMultipleNotifications: $e');
+      return false;
+    }
+  }
 }
+
