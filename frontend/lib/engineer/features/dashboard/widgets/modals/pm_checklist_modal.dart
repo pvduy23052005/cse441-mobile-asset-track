@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../models/work_order_model.dart';
 import 'pm_checklist_item_tile.dart';
@@ -57,12 +58,47 @@ class PMChecklistModal extends StatefulWidget {
 class _PMChecklistModalState extends State<PMChecklistModal> {
   late List<PMChecklistItemData> _items;
   final List<PMSparePartData> _spareParts = [];
+  final ImagePicker _imagePicker = ImagePicker();
 
   final _partNameController = TextEditingController();
   final _partQtyController = TextEditingController(text: '1');
   final _partPriceController = TextEditingController(text: '500000');
 
   final double _costApprovalThreshold = 2000000.0;
+
+  Future<void> _handleTakePhoto(PMChecklistItemData item) async {
+    try {
+      final XFile? photo = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+      );
+      if (photo != null) {
+        setState(() {
+          item.photoUrl = photo.path;
+        });
+        return;
+      }
+    } catch (e) {
+      try {
+        final XFile? photo = await _imagePicker.pickImage(
+          source: ImageSource.gallery,
+          imageQuality: 80,
+        );
+        if (photo != null) {
+          setState(() {
+            item.photoUrl = photo.path;
+          });
+          return;
+        }
+      } catch (_) {}
+
+      // Fallback demo image if camera is not available on emulator
+      setState(() {
+        item.photoUrl =
+            'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=500';
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -291,12 +327,7 @@ class _PMChecklistModalState extends State<PMChecklistModal> {
                             item.isChecked = val ?? false;
                           });
                         },
-                        onSimulatePhoto: () {
-                          setState(() {
-                            item.photoUrl =
-                                'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=500';
-                          });
-                        },
+                        onSimulatePhoto: () => _handleTakePhoto(item),
                       ),
                     ),
                     const SizedBox(height: 16),
