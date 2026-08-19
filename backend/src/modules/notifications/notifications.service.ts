@@ -172,4 +172,47 @@ export class NotificationsService {
     await batch.commit();
     return { updatedCount: unreadList.length };
   }
+
+  /**
+   * Xóa 1 thông báo theo ID
+   */
+  async deleteNotification(
+    notificationId: string,
+  ): Promise<{ success: boolean }> {
+    const firestore = this.firebaseService.firestore;
+    const docRef = firestore.collection(this.collectionName).doc(notificationId);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+      throw new NotFoundException(
+        `Không tìm thấy thông báo với ID '${notificationId}'`,
+      );
+    }
+
+    await docRef.delete();
+    return { success: true };
+  }
+
+  /**
+   * Xóa nhiều thông báo theo danh sách IDs
+   */
+  async deleteMultipleNotifications(
+    notificationIds: string[],
+  ): Promise<{ deletedCount: number }> {
+    if (!notificationIds || notificationIds.length === 0) {
+      return { deletedCount: 0 };
+    }
+
+    const firestore = this.firebaseService.firestore;
+    const batch = firestore.batch();
+
+    notificationIds.forEach((id) => {
+      const docRef = firestore.collection(this.collectionName).doc(id);
+      batch.delete(docRef);
+    });
+
+    await batch.commit();
+    return { deletedCount: notificationIds.length };
+  }
 }
+
