@@ -210,11 +210,9 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
 
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) {
-      HapticFeedback.heavyImpact();
+      HapticFeedback.lightImpact();
       return;
     }
-
-    HapticFeedback.mediumImpact();
 
     setState(() {
       _isSubmitting = true;
@@ -261,10 +259,15 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
       }
     } catch (e) {
       debugPrint('[SOS Ticket] Lỗi khi tạo phiếu SOS: $e');
+      String errorMessage = '$e';
+      if (e.toString().contains('Exception: ')) {
+        errorMessage = e.toString().replaceAll('Exception: ', '');
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Lỗi: $e'),
+            content: Text(errorMessage),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -483,9 +486,9 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
                         const SizedBox(height: 8),
                         SosSeveritySelector(
                           selectedSeverity: _selectedSeverity,
-                          onSeverityChanged: (level) {
+                          onSeverityChanged: (val) {
                             setState(() {
-                              _selectedSeverity = level;
+                              _selectedSeverity = val;
                             });
                           },
                         ),

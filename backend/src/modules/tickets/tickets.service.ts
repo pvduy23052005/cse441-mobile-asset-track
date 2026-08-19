@@ -99,6 +99,7 @@ export class TicketsService {
     }
 
     const machineData = (machineDoc.data() as FirestoreMachine) || {};
+
     const reporterDoc = await firestore
       .collection('users')
       .doc(reporterId)

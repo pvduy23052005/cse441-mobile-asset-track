@@ -20,7 +20,10 @@ class OperatorTicketsNotifier
   }
 
   Future<void> refresh() async {
-    state = const AsyncValue.loading();
+    final previous = state.valueOrNull;
+    if (previous != null) {
+      state = AsyncValue.data(previous);
+    }
     state = await AsyncValue.guard(() => _fetchTickets());
   }
 
