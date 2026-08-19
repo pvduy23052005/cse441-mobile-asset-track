@@ -1,10 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   ForbiddenException,
   Get,
   Param,
-  Patch,
   Post,
   Req,
   UnauthorizedException,
@@ -92,12 +92,11 @@ export class OperatorController {
     return this.ticketsService.getTicketById(id);
   }
 
-  @Patch('tickets/:id/cancel')
-  async cancelTicket(
+  @Delete('tickets/:id')
+  async deleteTicket(
     @Param('id') id: string,
     @Req() req: JwtAuthenticatedRequest,
-    @Body('reason') reason?: string,
-  ): Promise<Ticket> {
+  ): Promise<{ success: boolean; message: string; id: string }> {
     const reporterId = req.user?.uid || req.user?.id;
     if (!reporterId) {
       throw new UnauthorizedException(
@@ -105,6 +104,6 @@ export class OperatorController {
       );
     }
 
-    return this.ticketsService.cancelTicket(id, reporterId, reason);
+    return this.ticketsService.deleteTicket(id, reporterId);
   }
 }

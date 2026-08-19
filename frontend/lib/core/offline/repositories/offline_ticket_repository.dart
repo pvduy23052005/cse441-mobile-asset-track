@@ -144,6 +144,22 @@ class OfflineTicketRepository {
       return model.toDashboardTicketJson();
     }).toList();
   }
+
+  Future<void> deleteTicketOfflineFirst(String id, {bool isLocal = false}) async {
+    final db = await AppLocalDatabase.database;
+
+    await db.delete('local_tickets', where: 'id = ?', whereArgs: [id]);
+    await db.delete('sync_queue', where: 'local_record_id = ?', whereArgs: [id]);
+
+    final syncManager = _ref.read(syncManagerProvider.notifier);
+    await syncManager.updatePendingCount();
+
+    final isOnline =
+        await _ref.read(networkConnectivityServiceProvider).checkOnline();
+    if (isOnline && !isLocal) {
+      await _dio.delete('/operator/tickets/$id');
+    }
+  }
 }
 
 final offlineTicketRepositoryProvider =

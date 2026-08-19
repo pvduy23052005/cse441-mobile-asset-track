@@ -8,6 +8,7 @@ import '../../../providers/operator_tickets_provider.dart';
 import '../../../widgets/operator_qr_scanner_sheet.dart';
 import '../../machine/widgets/machine_detail_modal.dart';
 import '../../ticket/widgets/sos_ticket_card.dart';
+import '../../ticket/widgets/sos_ticket_detail_modal.dart';
 import 'operator_machine_card.dart';
 import 'operator_pagination_controls.dart';
 import 'operator_qr_banner.dart';
@@ -294,6 +295,11 @@ class _OperatorDashboardViewState extends ConsumerState<OperatorDashboardView> {
                         return SosTicketCard(
                           ticket: ticket,
                           index: globalIndex,
+                          onTap: () => SosTicketDetailModal.show(
+                            context,
+                            ticket: ticket,
+                            index: globalIndex,
+                          ),
                         );
                       },
                     ),
