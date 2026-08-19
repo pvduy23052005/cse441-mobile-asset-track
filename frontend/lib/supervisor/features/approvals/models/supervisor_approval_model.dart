@@ -4,6 +4,8 @@ class ApprovalSparePartItem {
   final String name;
   final int quantity;
   final String unit;
+  final double unitPrice;
+  final double totalCost;
 
   ApprovalSparePartItem({
     required this.id,
@@ -11,15 +13,29 @@ class ApprovalSparePartItem {
     required this.name,
     required this.quantity,
     this.unit = 'Cái',
-  });
+    this.unitPrice = 0.0,
+    double? totalCost,
+  }) : totalCost = totalCost ?? (quantity * unitPrice);
 
   factory ApprovalSparePartItem.fromJson(Map<String, dynamic> json) {
+    final qty = (json['quantity'] as num?)?.toInt() ?? 1;
+    final price = (json['unit_price'] as num?)?.toDouble() ??
+        (json['unitPrice'] as num?)?.toDouble() ??
+        (json['price'] as num?)?.toDouble() ??
+        (json['unit_price_raw'] as num?)?.toDouble() ??
+        500000.0;
+    final cost = (json['total_cost'] as num?)?.toDouble() ??
+        (json['totalCost'] as num?)?.toDouble() ??
+        (qty * price);
+
     return ApprovalSparePartItem(
       id: json['id']?.toString() ?? '',
       code: json['code']?.toString() ?? 'PART-001',
       name: json['name']?.toString() ?? 'Linh kiện thay thế',
-      quantity: (json['quantity'] as num?)?.toInt() ?? 1,
+      quantity: qty,
       unit: json['unit']?.toString() ?? 'Cái',
+      unitPrice: price,
+      totalCost: cost,
     );
   }
 
@@ -30,6 +46,8 @@ class ApprovalSparePartItem {
       'name': name,
       'quantity': quantity,
       'unit': unit,
+      'unit_price': unitPrice,
+      'total_cost': totalCost,
     };
   }
 }
@@ -69,15 +87,45 @@ class SupervisorApprovalModel {
     this.actionTimestamp,
   });
 
+  double get totalSparePartsCost {
+    return usedSpareParts.fold(0.0, (sum, item) => sum + item.totalCost);
+  }
+
+  bool get requiresHighCostApproval {
+    return totalSparePartsCost >= 2000000.0;
+  }
+
   factory SupervisorApprovalModel.fromJson(Map<String, dynamic> json) {
     final rawParts = json['used_spare_parts'] as List<dynamic>? ??
         json['usedSpareParts'] as List<dynamic>?;
     List<ApprovalSparePartItem> parts = [];
-    if (rawParts != null) {
+    if (rawParts != null && rawParts.isNotEmpty) {
       parts = rawParts
           .map((p) =>
               ApprovalSparePartItem.fromJson(Map<String, dynamic>.from(p as Map)))
           .toList();
+    } else {
+      // Default demo spare parts with unit prices if empty
+      parts = [
+        ApprovalSparePartItem(
+          id: 'sp-1',
+          code: 'SP-VG68',
+          name: 'Dầu bôi trơn công nghiệp ISO VG 68 (10L)',
+          quantity: 2,
+          unit: 'Cái',
+          unitPrice: 650000.0,
+          totalCost: 1300000.0,
+        ),
+        ApprovalSparePartItem(
+          id: 'sp-2',
+          code: 'SP-GK01',
+          name: 'Bộ gioăng cao su chịu nhiệt đệm van khí nén',
+          quantity: 1,
+          unit: 'Cái',
+          unitPrice: 450000.0,
+          totalCost: 450000.0,
+        ),
+      ];
     }
 
     final ticketCode = json['code']?.toString() ??
@@ -98,7 +146,7 @@ class SupervisorApprovalModel {
     final engName = json['engineer_name']?.toString() ??
         json['engineerName']?.toString() ??
         json['assignee']?['fullName']?.toString() ??
-        'Kỹ sư ME';
+        'Kỹ Sư ME Trần Minh Đức';
 
     final downtime = json['downtime_duration']?.toString() ??
         json['downtimeDuration']?.toString() ??

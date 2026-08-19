@@ -351,39 +351,120 @@ class _SupervisorDigitalSignoffModalState
                 ),
               ] else ...[
                 Column(
-                  children: widget.item.usedSpareParts.map((sp) {
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 4),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
+                  children: [
+                    ...widget.item.usedSpareParts.map((sp) {
+                      final strPrice = sp.unitPrice.toStringAsFixed(0).replaceAllMapped(
+                          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
+                      final strCost = sp.totalCost.toStringAsFixed(0).replaceAllMapped(
+                          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '• ${sp.name}',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF1E293B),
+                                    ),
+                                  ),
+                                  Text(
+                                    '${sp.quantity} ${sp.unit}${sp.unitPrice > 0 ? ' × ${strPrice}đ' : ''}',
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      fontFamily: 'monospace',
+                                      color: Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${strCost}đ',
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w900,
+                                fontFamily: 'monospace',
+                                color: Color(0xFF0284C7),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: widget.item.requiresHighCostApproval
+                            ? const Color(0xFFFFF1F2)
+                            : const Color(0xFFF0FDF4),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        border: Border.all(
+                          color: widget.item.requiresHighCostApproval
+                              ? const Color(0xFFFECDD3)
+                              : const Color(0xFFBBF7D0),
+                        ),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            '• ${sp.name}',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF1E293B),
-                            ),
+                          Row(
+                            children: [
+                              Icon(
+                                widget.item.requiresHighCostApproval
+                                    ? Icons.warning_amber_rounded
+                                    : Icons.check_circle_outline_rounded,
+                                size: 14,
+                                color: widget.item.requiresHighCostApproval
+                                    ? const Color(0xFFE11D48)
+                                    : const Color(0xFF059669),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                widget.item.requiresHighCostApproval
+                                    ? 'Tổng chi phí (Cần QĐ Duyệt >2Tr):'
+                                    : 'Tổng chi phí vật tư:',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: widget.item.requiresHighCostApproval
+                                      ? const Color(0xFFBE123C)
+                                      : const Color(0xFF065F46),
+                                ),
+                              ),
+                            ],
                           ),
                           Text(
-                            '${sp.quantity} ${sp.unit}',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF0284C7),
+                            '${widget.item.totalSparePartsCost.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}đ',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w900,
+                              fontFamily: 'monospace',
+                              color: widget.item.requiresHighCostApproval
+                                  ? const Color(0xFFE11D48)
+                                  : const Color(0xFF059669),
                             ),
                           ),
                         ],
                       ),
-                    );
-                  }).toList(),
+                    ),
+                  ],
                 ),
               ],
             ],
