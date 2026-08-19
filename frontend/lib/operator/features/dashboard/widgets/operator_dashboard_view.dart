@@ -8,6 +8,7 @@ import '../../../providers/operator_tickets_provider.dart';
 import '../../../widgets/operator_qr_scanner_sheet.dart';
 import '../../machine/widgets/machine_detail_modal.dart';
 import '../../ticket/widgets/sos_ticket_card.dart';
+import '../../ticket/widgets/sos_ticket_detail_modal.dart';
 import 'operator_machine_card.dart';
 import 'operator_pagination_controls.dart';
 import 'operator_qr_banner.dart';
@@ -20,8 +21,7 @@ class OperatorDashboardView extends ConsumerStatefulWidget {
       _OperatorDashboardViewState();
 }
 
-class _OperatorDashboardViewState
-    extends ConsumerState<OperatorDashboardView> {
+class _OperatorDashboardViewState extends ConsumerState<OperatorDashboardView> {
   late final PageController _machinePageController;
 
   @override
@@ -84,14 +84,14 @@ class _OperatorDashboardViewState
           Expanded(
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 12.0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  OperatorQRBanner(
-                    onTap: _openQRScanner,
-                  ),
+                  OperatorQRBanner(onTap: _openQRScanner),
 
                   const SizedBox(height: 20),
 
@@ -130,7 +130,8 @@ class _OperatorDashboardViewState
                       child: Padding(
                         padding: EdgeInsets.all(24.0),
                         child: CircularProgressIndicator(
-                            color: AppTheme.primaryColor),
+                          color: AppTheme.primaryColor,
+                        ),
                       ),
                     ),
                   ] else if (machines.isEmpty) ...[
@@ -145,8 +146,10 @@ class _OperatorDashboardViewState
                       alignment: Alignment.center,
                       child: const Text(
                         'Không có máy móc nào trong danh sách',
-                        style:
-                            TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                        style: TextStyle(
+                          color: Color(0xFF64748B),
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                   ] else if (totalMachinePages == 1) ...[
@@ -173,17 +176,22 @@ class _OperatorDashboardViewState
                         itemCount: totalMachinePages,
                         onPageChanged: (page) {
                           ref
-                              .read(operatorDashboardPageProvider.notifier)
-                              .state = page;
+                                  .read(operatorDashboardPageProvider.notifier)
+                                  .state =
+                              page;
                         },
                         itemBuilder: (ctx, pageIdx) {
                           final startIdx =
                               pageIdx * operatorDashboardItemsPerPage;
-                          final endIdx = (startIdx +
-                                  operatorDashboardItemsPerPage)
-                              .clamp(0, machines.length);
-                          final pageMachines =
-                              machines.sublist(startIdx, endIdx);
+                          final endIdx =
+                              (startIdx + operatorDashboardItemsPerPage).clamp(
+                                0,
+                                machines.length,
+                              );
+                          final pageMachines = machines.sublist(
+                            startIdx,
+                            endIdx,
+                          );
 
                           return ListView.separated(
                             padding: EdgeInsets.zero,
@@ -198,8 +206,8 @@ class _OperatorDashboardViewState
                               return OperatorMachineCard(
                                 machine: machine,
                                 index: globalIndex,
-                                onTap: () => MachineDetailModal.show(
-                                    context, machine),
+                                onTap: () =>
+                                    MachineDetailModal.show(context, machine),
                               );
                             },
                           );
@@ -240,7 +248,8 @@ class _OperatorDashboardViewState
                       child: Padding(
                         padding: EdgeInsets.all(24.0),
                         child: CircularProgressIndicator(
-                            color: AppTheme.primaryColor),
+                          color: AppTheme.primaryColor,
+                        ),
                       ),
                     ),
                   ] else if (tickets.isEmpty) ...[
@@ -279,12 +288,18 @@ class _OperatorDashboardViewState
                       separatorBuilder: (_, _) => const SizedBox(height: 10),
                       itemBuilder: (ctx, index) {
                         final ticket = pagedTickets[index];
-                        final globalIndex = safeTicketPage *
+                        final globalIndex =
+                            safeTicketPage *
                                 operatorTicketDashboardItemsPerPage +
                             index;
                         return SosTicketCard(
                           ticket: ticket,
                           index: globalIndex,
+                          onTap: () => SosTicketDetailModal.show(
+                            context,
+                            ticket: ticket,
+                            index: globalIndex,
+                          ),
                         );
                       },
                     ),
@@ -297,17 +312,23 @@ class _OperatorDashboardViewState
                         onPrevPressed: safeTicketPage > 0
                             ? () {
                                 ref
-                                    .read(operatorTicketDashboardPageProvider
-                                        .notifier)
-                                    .state = safeTicketPage - 1;
+                                        .read(
+                                          operatorTicketDashboardPageProvider
+                                              .notifier,
+                                        )
+                                        .state =
+                                    safeTicketPage - 1;
                               }
                             : null,
                         onNextPressed: safeTicketPage < totalTicketPages - 1
                             ? () {
                                 ref
-                                    .read(operatorTicketDashboardPageProvider
-                                        .notifier)
-                                    .state = safeTicketPage + 1;
+                                        .read(
+                                          operatorTicketDashboardPageProvider
+                                              .notifier,
+                                        )
+                                        .state =
+                                    safeTicketPage + 1;
                               }
                             : null,
                       ),

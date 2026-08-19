@@ -99,6 +99,7 @@ export class TicketsService {
     }
 
     const machineData = (machineDoc.data() as FirestoreMachine) || {};
+
     const reporterDoc = await firestore
       .collection('users')
       .doc(reporterId)
@@ -227,6 +228,71 @@ export class TicketsService {
     });
 
     return this.getTicketById(id);
+  }
+
+  async deleteTicket(
+    id: string,
+    reporterId: string,
+  ): Promise<{ success: boolean; message: string; id: string }> {
+    const documentReference = this.collection.doc(id);
+    const documentSnapshot = await documentReference.get();
+    if (!documentSnapshot.exists) {
+      throw new NotFoundException(`Phiếu sự cố với ID '${id}' không tồn tại`);
+    }
+
+    const ticketData = documentSnapshot.data() as FirestoreTicket;
+    if (ticketData.reporter_id !== reporterId) {
+      throw new ForbiddenException(
+        'Bạn chỉ có quyền xóa phiếu sự cố do chính mình tạo ra',
+      );
+    }
+
+    if (
+      ticketData.status !== TicketStatus.OPEN &&
+      ticketData.status !== TicketStatus.CANCELLED &&
+      ticketData.status !== TicketStatus.REJECTED
+    ) {
+      throw new BadRequestException(
+        'Không thể xóa phiếu sự cố đang được xử lý hoặc đã hoàn thành',
+      );
+    }
+
+    await documentReference.delete();
+    this.logger.log(`Đã xóa Ticket '${id}' bởi user ${reporterId}`);
+
+    if (ticketData.machine_id) {
+      try {
+        const otherTicketsQuery = await this.collection
+          .where('machine_id', '==', ticketData.machine_id)
+          .where('status', 'in', [TicketStatus.OPEN, TicketStatus.IN_PROGRESS])
+          .limit(1)
+          .get();
+
+        if (otherTicketsQuery.empty) {
+          const machineRef = this.firebaseService.firestore
+            .collection(FirestoreCollection.MACHINES)
+            .doc(ticketData.machine_id);
+          const machineSnap = await machineRef.get();
+          if (machineSnap.exists) {
+            const currentStatus = (machineSnap.data() as FirestoreMachine)?.status;
+            if (currentStatus === 'PENDING') {
+              await machineRef.update({
+                status: 'ACTIVE',
+                updatedAt: new Date().toISOString(),
+              });
+            }
+          }
+        }
+      } catch (e) {
+        this.logger.warn(`Không thể cập nhật trạng thái máy khi xóa ticket: ${e}`);
+      }
+    }
+
+    return {
+      success: true,
+      message: 'Đã xóa phiếu sự cố thành công',
+      id,
+    };
   }
 
   async claimTicket(id: string, engineerId: string): Promise<Ticket> {

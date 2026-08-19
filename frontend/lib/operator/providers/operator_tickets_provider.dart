@@ -20,7 +20,10 @@ class OperatorTicketsNotifier
   }
 
   Future<void> refresh() async {
-    state = const AsyncValue.loading();
+    final previous = state.valueOrNull;
+    if (previous != null) {
+      state = AsyncValue.data(previous);
+    }
     state = await AsyncValue.guard(() => _fetchTickets());
   }
 
@@ -48,15 +51,21 @@ class OperatorTicketsNotifier
     return localTicket.toDashboardTicketJson();
   }
 
-  Future<Map<String, dynamic>> cancelTicket(String id, {String? reason}) async {
-    final service = ref.read(operatorTicketServiceProvider);
-    final result = await service.cancelTicket(id, reason: reason);
+  Future<void> deleteTicket(String id, {bool isLocal = false}) async {
+    final offlineRepo = ref.read(offlineTicketRepositoryProvider);
+    await offlineRepo.deleteTicketOfflineFirst(id, isLocal: isLocal);
     await refresh();
-    return result;
+  }
+
+  Future<void> cancelTicket(String id, {String? reason, bool isLocal = false}) async {
+    return deleteTicket(id, isLocal: isLocal);
   }
 }
 
-final operatorTicketsProvider = AsyncNotifierProvider.autoDispose<
-    OperatorTicketsNotifier, List<Map<String, dynamic>>>(() {
-  return OperatorTicketsNotifier();
-});
+final operatorTicketsProvider =
+    AsyncNotifierProvider.autoDispose<
+      OperatorTicketsNotifier,
+      List<Map<String, dynamic>>
+    >(() {
+      return OperatorTicketsNotifier();
+    });

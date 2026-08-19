@@ -24,13 +24,13 @@ class SosTicketCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rawStatus = ticket['status']?.toString().toUpperCase() ?? 'OPEN';
+    final rawStatus = ticket['status']?.toString().toUpperCase() ?? 'PENDING';
     final ticketCode = _formatTicketCode(ticket, index);
-    final machineName = ticket['machine_name']?.toString() ??
+    final machineName =
+        ticket['machine_name']?.toString() ??
         (ticket['machine_code']?.toString() ?? 'Thiết bị');
     final description = ticket['description']?.toString() ?? '';
 
-    // Status Badge Configuration
     Color badgeBg;
     Color badgeText;
     Color badgeBorder;
@@ -43,7 +43,7 @@ class SosTicketCard extends StatelessWidget {
         badgeBg = const Color(0xFFE0F2FE);
         badgeBorder = const Color(0xFFBAE6FD);
         badgeText = const Color(0xFF0284C7);
-        displayStatus = 'IN_PROGRESS';
+        displayStatus = 'Đang xử lý';
         break;
       case 'CLOSED':
       case 'COMPLETED':
@@ -51,14 +51,19 @@ class SosTicketCard extends StatelessWidget {
         badgeBg = const Color(0xFFECFDF5);
         badgeBorder = const Color(0xFFA7F3D0);
         badgeText = const Color(0xFF059669);
-        displayStatus = 'CLOSED';
+        displayStatus = 'Đã hoàn thành';
         break;
-      case 'CANCELLED':
       case 'REJECTED':
         badgeBg = const Color(0xFFFEF2F2);
         badgeBorder = const Color(0xFFFECACA);
         badgeText = const Color(0xFFDC2626);
-        displayStatus = 'CANCELLED';
+        displayStatus = 'Bị từ chối';
+        break;
+      case 'CANCELLED':
+        badgeBg = const Color(0xFFF1F5F9);
+        badgeBorder = const Color(0xFFCBD5E1);
+        badgeText = const Color(0xFF64748B);
+        displayStatus = 'Đã hủy';
         break;
       case 'OPEN':
       case 'PENDING':
@@ -66,7 +71,7 @@ class SosTicketCard extends StatelessWidget {
         badgeBg = const Color(0xFFFEF3C7);
         badgeBorder = const Color(0xFFFDE68A);
         badgeText = const Color(0xFFD97706);
-        displayStatus = 'PENDING';
+        displayStatus = 'Chờ tiếp nhận';
         break;
     }
 
@@ -104,19 +109,25 @@ class SosTicketCard extends StatelessWidget {
                             ticket['is_local'] == true) ...[
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 7, vertical: 3),
+                              horizontal: 7,
+                              vertical: 3,
+                            ),
                             margin: const EdgeInsets.only(right: 6),
                             decoration: BoxDecoration(
                               color: const Color(0xFFFEF3C7),
                               borderRadius: BorderRadius.circular(6),
-                              border:
-                                  Border.all(color: const Color(0xFFFDE68A)),
+                              border: Border.all(
+                                color: const Color(0xFFFDE68A),
+                              ),
                             ),
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.cloud_off_rounded,
-                                    size: 11, color: Color(0xFFD97706)),
+                                Icon(
+                                  Icons.cloud_off_rounded,
+                                  size: 11,
+                                  color: Color(0xFFD97706),
+                                ),
                                 SizedBox(width: 4),
                                 Text(
                                   'Chờ đồng bộ',
@@ -132,7 +143,9 @@ class SosTicketCard extends StatelessWidget {
                         ],
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 9, vertical: 4),
+                            horizontal: 9,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: badgeBg,
                             borderRadius: BorderRadius.circular(6),
@@ -154,7 +167,6 @@ class SosTicketCard extends StatelessWidget {
 
                 const SizedBox(height: 8),
 
-                // Row 2: Machine Name
                 Text(
                   machineName,
                   style: const TextStyle(
@@ -166,7 +178,6 @@ class SosTicketCard extends StatelessWidget {
 
                 const SizedBox(height: 4),
 
-                // Row 3: Description
                 if (description.isNotEmpty)
                   Text(
                     description,
@@ -180,12 +191,13 @@ class SosTicketCard extends StatelessWidget {
                     ),
                   ),
 
-                // Row 4: Kỹ sư tiếp nhận (nếu có)
                 if (engineerName.isNotEmpty) ...[
                   const SizedBox(height: 6),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF0F9FF),
                       borderRadius: BorderRadius.circular(6),

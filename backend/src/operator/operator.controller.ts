@@ -1,10 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   ForbiddenException,
   Get,
   Param,
-  Patch,
   Post,
   Req,
   UnauthorizedException,
@@ -21,11 +21,14 @@ import { Ticket } from '../modules/tickets/interfaces/ticket.interface';
 import { TicketsService } from '../modules/tickets/tickets.service';
 
 @UseGuards(JwtAuthGuard)
-@Controller('operator/machines')
-export class OperatorMachineController {
-  constructor(private readonly machineService: MachineService) { }
+@Controller('operator')
+export class OperatorController {
+  constructor(
+    private readonly machineService: MachineService,
+    private readonly ticketsService: TicketsService,
+  ) {}
 
-  @Get()
+  @Get('machines')
   async getMyMachines(
     @Req() req: JwtAuthenticatedRequest,
   ): Promise<Machine[]> {
@@ -46,14 +49,7 @@ export class OperatorMachineController {
     return this.machineService.getMachinesForUser('operator', operatorId);
   }
 
-}
-
-@UseGuards(JwtAuthGuard)
-@Controller('operator/tickets')
-export class OperatorTicketController {
-  constructor(private readonly ticketsService: TicketsService) { }
-
-  @Post()
+  @Post('tickets')
   async createTicket(
     @Req() req: JwtAuthenticatedRequest,
     @Body() dto: CreateTicketDto,
@@ -79,7 +75,7 @@ export class OperatorTicketController {
     return this.ticketsService.create(reporterId, dto, req.user?.role);
   }
 
-  @Get()
+  @Get('tickets')
   async getMyTickets(@Req() req: JwtAuthenticatedRequest): Promise<Ticket[]> {
     const reporterId = req.user?.uid || req.user?.id;
     if (!reporterId) {
@@ -91,17 +87,16 @@ export class OperatorTicketController {
     return this.ticketsService.getMyTickets(reporterId);
   }
 
-  @Get(':id')
+  @Get('tickets/:id')
   async getTicketById(@Param('id') id: string): Promise<Ticket> {
     return this.ticketsService.getTicketById(id);
   }
 
-  @Patch(':id/cancel')
-  async cancelTicket(
+  @Delete('tickets/:id')
+  async deleteTicket(
     @Param('id') id: string,
     @Req() req: JwtAuthenticatedRequest,
-    @Body('reason') reason?: string,
-  ): Promise<Ticket> {
+  ): Promise<{ success: boolean; message: string; id: string }> {
     const reporterId = req.user?.uid || req.user?.id;
     if (!reporterId) {
       throw new UnauthorizedException(
@@ -109,6 +104,6 @@ export class OperatorTicketController {
       );
     }
 
-    return this.ticketsService.cancelTicket(id, reporterId, reason);
+    return this.ticketsService.deleteTicket(id, reporterId);
   }
 }

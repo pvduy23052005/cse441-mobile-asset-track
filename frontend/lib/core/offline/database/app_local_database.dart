@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart' as ffi;
 
@@ -26,23 +27,35 @@ class AppLocalDatabase {
       }
     }
 
-    String path;
+    final path = await _resolveDatabasePath();
+    debugPrint('[AppLocalDatabase] Initializing SQLite database at: $path');
+    return await openDatabase(path, version: _dbVersion, onCreate: _onCreate);
+  }
+
+  static Future<String> _resolveDatabasePath() async {
     if (kIsWeb) {
-      path = ffi.inMemoryDatabasePath;
-    } else {
-      try {
-        final dbPath = await getDatabasesPath();
-        final dir = Directory(dbPath);
-        if (!await dir.exists()) {
-          await dir.create(recursive: true);
-        }
-        path = join(dbPath, _dbName);
-      } catch (_) {
-        path = _dbName;
-      }
+      return ffi.inMemoryDatabasePath;
     }
 
-    return await openDatabase(path, version: _dbVersion, onCreate: _onCreate);
+    Directory dir;
+    try {
+      if (Platform.isAndroid || Platform.isIOS) {
+        dir = await getApplicationDocumentsDirectory();
+      } else {
+        // Desktop platforms (Windows, Linux, macOS)
+        dir = await getApplicationSupportDirectory();
+      }
+    } catch (e) {
+      debugPrint('[AppLocalDatabase] Error getting storage directory: $e, falling back to getApplicationDocumentsDirectory');
+      dir = await getApplicationDocumentsDirectory();
+    }
+
+    if (!await dir.exists()) {
+      await dir.create(recursive: true);
+    }
+
+    final fullPath = join(dir.path, _dbName);
+    return fullPath;
   }
 
   static Future<void> _onCreate(Database db, int version) async {

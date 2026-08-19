@@ -117,18 +117,17 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
   String _extractMachineId(String raw) {
     var trimmed = raw.trim();
 
-    // Strip wrapping quotes
     if ((trimmed.startsWith('"') && trimmed.endsWith('"')) ||
         (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
       trimmed = trimmed.substring(1, trimmed.length - 1).trim();
     }
 
-    // JSON format
     if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
       try {
         final data = jsonDecode(trimmed);
         if (data is Map) {
-          final extracted = data['id'] ??
+          final extracted =
+              data['id'] ??
               data['machineId'] ??
               data['machine_id'] ??
               data['code'] ??
@@ -141,7 +140,6 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
       } catch (_) {}
     }
 
-    // Prefix formats: machine:MC-101, id:MC-101, code:MC-101
     final lower = trimmed.toLowerCase();
     if (lower.startsWith('machine:') ||
         lower.startsWith('machine_id:') ||
@@ -153,7 +151,6 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
       }
     }
 
-    // URL format: https://.../machines/MC-101 or ...?id=MC-101
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
       final uri = Uri.tryParse(trimmed);
       if (uri != null) {
@@ -201,21 +198,18 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
 
       MachineModel? machine;
 
-      // 1. Try to fetch directly by ID / Code
       try {
         machine = await _machineService.getMachineById(targetId);
       } catch (e) {
         debugPrint('[QR Scanner] getMachineById targetId error: $e');
       }
 
-      // 2. Try raw code if different
       if (machine == null && rawCode.trim() != targetId) {
         try {
           machine = await _machineService.getMachineById(rawCode.trim());
         } catch (_) {}
       }
 
-      // 3. Fallback: Search in local list / loaded machines
       if (machine == null) {
         try {
           final machines = _allMachines.isNotEmpty
@@ -331,7 +325,10 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
           children: [
             Icon(Icons.warning_amber_rounded, color: AppTheme.errorColor),
             SizedBox(width: 8),
-            Text('Không tìm thấy', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              'Không tìm thấy',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
         content: Text(
@@ -387,7 +384,6 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
         top: false,
         child: Column(
           children: [
-            // Drag Handle
             const SizedBox(height: 10),
             Container(
               width: 40,
@@ -399,7 +395,6 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
             ),
             const SizedBox(height: 12),
 
-            // Header Row
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
@@ -432,7 +427,6 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
               ),
             ),
 
-            // Segmented Tab Switcher
             Container(
               margin: const EdgeInsets.fromLTRB(20, 8, 20, 12),
               decoration: BoxDecoration(
@@ -490,17 +484,10 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
               ),
             ),
 
-            // Tab Content using IndexedStack for smooth performance
             Expanded(
               child: IndexedStack(
                 index: _selectedTabIndex,
-                children: [
-                  // Tab 0: Camera Scanner
-                  _buildCameraScannerTab(),
-
-                  // Tab 1: Manual ID Lookup
-                  _buildManualLookupTab(),
-                ],
+                children: [_buildCameraScannerTab(), _buildManualLookupTab()],
               ),
             ),
           ],
@@ -520,7 +507,6 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Mobile Scanner
                   MobileScanner(
                     controller: _scannerController,
                     onDetect: (BarcodeCapture capture) {
@@ -533,7 +519,6 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
                     },
                   ),
 
-                  // Viewfinder Frame
                   Container(
                     width: 230,
                     height: 230,
@@ -546,7 +531,6 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
                     ),
                     child: Stack(
                       children: [
-                        // Animated Scanning Line
                         AnimatedBuilder(
                           animation: _animController,
                           builder: (context, child) {
@@ -569,7 +553,9 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
                                   borderRadius: BorderRadius.circular(2),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFF10B981).withValues(alpha: 0.8),
+                                      color: const Color(
+                                        0xFF10B981,
+                                      ).withValues(alpha: 0.8),
                                       blurRadius: 8,
                                       spreadRadius: 2,
                                     ),
@@ -580,7 +566,6 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
                           },
                         ),
 
-                        // Corner Brackets
                         _buildCorner(Alignment.topLeft, true, true),
                         _buildCorner(Alignment.topRight, true, false),
                         _buildCorner(Alignment.bottomLeft, false, true),
@@ -589,7 +574,6 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
                     ),
                   ),
 
-                  // Floating Controls (Torch, Flip)
                   Positioned(
                     top: 14,
                     right: 14,
@@ -617,7 +601,6 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
                     ),
                   ),
 
-                  // Processing Overlay
                   if (_isProcessing)
                     Container(
                       color: Colors.black.withValues(alpha: 0.75),
@@ -675,10 +658,7 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
               ),
               label: const Text(
                 'Tải ảnh QR từ thư viện máy',
-                style: TextStyle(
-                  fontSize: 14.5,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -692,14 +672,19 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
       child: Column(
         children: [
-          // Search Input Field
           TextField(
             controller: _manualIdController,
             onChanged: _onSearchQueryChanged,
             decoration: InputDecoration(
               hintText: 'Nhập mã máy (VD: CNC-01, ROBOT-02)...',
-              hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
-              prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.primaryColor),
+              hintStyle: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF94A3B8),
+              ),
+              prefixIcon: const Icon(
+                Icons.search_rounded,
+                color: AppTheme.primaryColor,
+              ),
               suffixIcon: _manualIdController.text.isNotEmpty
                   ? IconButton(
                       icon: const Icon(Icons.clear_rounded, size: 18),
@@ -711,7 +696,10 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
                   : null,
               filled: true,
               fillColor: const Color(0xFFF8FAFC),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: AppTheme.borderColor),
@@ -720,127 +708,133 @@ class _OperatorQRScannerSheetState extends State<OperatorQRScannerSheet>
           ),
           const SizedBox(height: 12),
 
-          // Machine Matching List
           Expanded(
             child: _isLoadingMachines
                 ? const Center(
-                    child: CircularProgressIndicator(color: AppTheme.primaryColor),
+                    child: CircularProgressIndicator(
+                      color: AppTheme.primaryColor,
+                    ),
                   )
                 : _filteredMachines.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.search_off_rounded,
-                              size: 48,
-                              color: Colors.grey.shade400,
-                            ),
-                            const SizedBox(height: 10),
-                            const Text(
-                              'Không tìm thấy thiết bị phù hợp',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF64748B),
-                              ),
-                            ),
-                          ],
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off_rounded,
+                          size: 48,
+                          color: Colors.grey.shade400,
                         ),
-                      )
-                    : ListView.separated(
-                        itemCount: _filteredMachines.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 8),
-                        itemBuilder: (ctx, index) {
-                          final m = _filteredMachines[index];
-                          return InkWell(
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              Navigator.pop(context, m);
-                            },
+                        const SizedBox(height: 10),
+                        const Text(
+                          'Không tìm thấy thiết bị phù hợp',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.separated(
+                    itemCount: _filteredMachines.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 8),
+                    itemBuilder: (ctx, index) {
+                      final m = _filteredMachines[index];
+                      return InkWell(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          Navigator.pop(context, m);
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
                             borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF8FAFC),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFFE2E8F0)),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: const Icon(
-                                      Icons.precision_manufacturing_rounded,
-                                      color: AppTheme.primaryColor,
-                                      size: 22,
-                                    ),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryColor.withValues(
+                                    alpha: 0.1,
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.precision_manufacturing_rounded,
+                                  color: AppTheme.primaryColor,
+                                  size: 22,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      m.name,
+                                      style: const TextStyle(
+                                        fontSize: 14.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF0F172A),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Row(
                                       children: [
-                                        Text(
-                                          m.name,
-                                          style: const TextStyle(
-                                            fontSize: 14.5,
-                                            fontWeight: FontWeight.w700,
-                                            color: Color(0xFF0F172A),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFEFF6FF),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            m.code,
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w700,
+                                              color: Color(0xFF2563EB),
+                                            ),
                                           ),
                                         ),
-                                        const SizedBox(height: 2),
-                                        Row(
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 6,
-                                                vertical: 2,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFFEFF6FF),
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: Text(
-                                                m.code,
-                                                style: const TextStyle(
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: Color(0xFF2563EB),
-                                                ),
-                                              ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            m.location,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Color(0xFF64748B),
                                             ),
-                                            const SizedBox(width: 8),
-                                            Expanded(
-                                              child: Text(
-                                                m.location,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Color(0xFF64748B),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                          ),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                  const Icon(
-                                    Icons.chevron_right_rounded,
-                                    color: Color(0xFF94A3B8),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
+                              const Icon(
+                                Icons.chevron_right_rounded,
+                                color: Color(0xFF94A3B8),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),

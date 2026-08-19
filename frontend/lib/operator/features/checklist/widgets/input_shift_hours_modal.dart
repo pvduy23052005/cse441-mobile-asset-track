@@ -23,10 +23,8 @@ class InputShiftHoursModal extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => InputShiftHoursModal(
-        machine: machine,
-        onSuccess: onSuccess,
-      ),
+      builder: (ctx) =>
+          InputShiftHoursModal(machine: machine, onSuccess: onSuccess),
     );
   }
 
@@ -41,13 +39,13 @@ class _InputShiftHoursModalState extends State<InputShiftHoursModal> {
 
   String _selectedShift = 'CA_SANG';
   bool _isSubmitting = false;
-  bool _isDirectNewTotal = true; // true: nhập chỉ số mới, false: cộng thêm giờ ca
+  bool _isDirectNewTotal = true;
 
   @override
   void initState() {
     super.initState();
     final current = widget.machine.runningHours.toDouble();
-    // Gợi ý mặc định là chỉ số mới cộng 8h (1 ca tiêu chuẩn)
+
     final suggestedNew = current + 8.0;
     _hoursController.text = suggestedNew.toStringAsFixed(1);
   }
@@ -163,7 +161,6 @@ class _InputShiftHoursModalState extends State<InputShiftHoursModal> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Handle bar
               Center(
                 child: Container(
                   width: 40,
@@ -176,7 +173,6 @@ class _InputShiftHoursModalState extends State<InputShiftHoursModal> {
               ),
               const SizedBox(height: 16),
 
-              // Title
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -189,8 +185,10 @@ class _InputShiftHoursModalState extends State<InputShiftHoursModal> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded,
-                        color: Color(0xFF64748B)),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: Color(0xFF64748B),
+                    ),
                     onPressed: () => Navigator.pop(context),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -199,7 +197,6 @@ class _InputShiftHoursModalState extends State<InputShiftHoursModal> {
               ),
               const SizedBox(height: 12),
 
-              // Machine info banner
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -254,7 +251,6 @@ class _InputShiftHoursModalState extends State<InputShiftHoursModal> {
 
               const SizedBox(height: 16),
 
-              // Shift Selection
               const Text(
                 'Ca làm việc',
                 style: TextStyle(
@@ -276,7 +272,6 @@ class _InputShiftHoursModalState extends State<InputShiftHoursModal> {
 
               const SizedBox(height: 18),
 
-              // Mode toggle: Chỉ số mới vs Cộng giờ ca
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -296,8 +291,8 @@ class _InputShiftHoursModalState extends State<InputShiftHoursModal> {
                       setState(() {
                         _isDirectNewTotal = !_isDirectNewTotal;
                         if (_isDirectNewTotal) {
-                          _hoursController.text =
-                              (_currentHours + 8.0).toStringAsFixed(1);
+                          _hoursController.text = (_currentHours + 8.0)
+                              .toStringAsFixed(1);
                         } else {
                           _hoursController.text = '8.0';
                         }
@@ -318,11 +313,11 @@ class _InputShiftHoursModalState extends State<InputShiftHoursModal> {
               ),
               const SizedBox(height: 8),
 
-              // Input Field
               TextFormField(
                 controller: _hoursController,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: InputDecoration(
                   hintText: _isDirectNewTotal ? 'Ví dụ: 506.5' : 'Ví dụ: 8.0',
                   suffixText: 'h (Giờ)',
@@ -372,7 +367,6 @@ class _InputShiftHoursModalState extends State<InputShiftHoursModal> {
 
               const SizedBox(height: 10),
 
-              // Quick Add Chips
               Row(
                 children: [
                   const Text(
@@ -396,7 +390,6 @@ class _InputShiftHoursModalState extends State<InputShiftHoursModal> {
 
               const SizedBox(height: 16),
 
-              // Preview calculation card
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -452,7 +445,6 @@ class _InputShiftHoursModalState extends State<InputShiftHoursModal> {
 
               const SizedBox(height: 16),
 
-              // Actions
               Row(
                 children: [
                   Expanded(
@@ -464,8 +456,9 @@ class _InputShiftHoursModalState extends State<InputShiftHoursModal> {
                         ),
                         side: const BorderSide(color: Color(0xFFCBD5E1)),
                       ),
-                      onPressed:
-                          _isSubmitting ? null : () => Navigator.pop(context),
+                      onPressed: _isSubmitting
+                          ? null
+                          : () => Navigator.pop(context),
                       child: const Text(
                         'Hủy',
                         style: TextStyle(

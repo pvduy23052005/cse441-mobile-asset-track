@@ -6,10 +6,7 @@ import 'machine_detail_modal.dart';
 class MachineCard extends StatelessWidget {
   final MachineModel machine;
 
-  const MachineCard({
-    super.key,
-    required this.machine,
-  });
+  const MachineCard({super.key, required this.machine});
 
   void _showDetail(BuildContext context) {
     MachineDetailModal.show(context, machine);
@@ -17,19 +14,19 @@ class MachineCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Determine location string from Firebase data
     final String locationText = machine.location.isNotEmpty
         ? machine.location
         : (machine.model.isNotEmpty
-            ? 'Model: ${machine.model}'
-            : (machine.specifications['location']?.toString() ??
-                machine.specifications['area']?.toString() ??
-                'Phân xưởng'));
+              ? 'Model: ${machine.model}'
+              : (machine.specifications['location']?.toString() ??
+                    machine.specifications['area']?.toString() ??
+                    'Phân xưởng'));
 
-    // Format maintenance hours string
     final String nextMaintText = machine.nextMaintenanceHours != null
         ? '${machine.nextMaintenanceHours}h'
-        : (machine.runningHours > 0 ? '${machine.runningHours + 500}h' : 'Chưa thiết lập');
+        : (machine.runningHours > 0
+              ? '${machine.runningHours + 500}h'
+              : 'Chưa thiết lập');
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -51,16 +48,17 @@ class MachineCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(12.0),
           onTap: () => _showDetail(context),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 14.0,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Main Content
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Row 1: Code + Name + Status Badge
                       Row(
                         children: [
                           Expanded(
@@ -103,8 +101,9 @@ class MachineCard extends StatelessWidget {
                               color: machine.statusBgColor,
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color:
-                                    machine.statusColor.withValues(alpha: 0.3),
+                                color: machine.statusColor.withValues(
+                                  alpha: 0.3,
+                                ),
                               ),
                             ),
                             child: Text(
@@ -120,7 +119,6 @@ class MachineCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 5),
 
-                      // Row 2: Location
                       Text(
                         locationText,
                         style: const TextStyle(
@@ -131,7 +129,6 @@ class MachineCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 5),
 
-                      // Row 3: Maintenance milestone
                       RichText(
                         text: TextSpan(
                           children: [
@@ -158,7 +155,6 @@ class MachineCard extends StatelessWidget {
                   ),
                 ),
 
-                // Right Trailing Arrow
                 const SizedBox(width: 8),
                 const Icon(
                   Icons.chevron_right_rounded,

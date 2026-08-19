@@ -23,7 +23,6 @@ class _OperatorMachineViewState extends ConsumerState<OperatorMachineView> {
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
-          // Section Title: TẤT CẢ THIẾT BỊ PHÂN XƯỞNG
           const SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.fromLTRB(16, 20, 16, 12),
@@ -91,8 +90,9 @@ class _OperatorMachineViewState extends ConsumerState<OperatorMachineView> {
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
-                        onPressed: () =>
-                            ref.read(operatorMachinesProvider.notifier).refresh(),
+                        onPressed: () => ref
+                            .read(operatorMachinesProvider.notifier)
+                            .refresh(),
                         icon: const Icon(Icons.refresh_rounded, size: 18),
                         label: const Text('Thử lại'),
                       ),
@@ -133,20 +133,15 @@ class _OperatorMachineViewState extends ConsumerState<OperatorMachineView> {
               }
 
               return SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final machine = machines[index];
-                    return MachineCard(machine: machine);
-                  },
-                  childCount: machines.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final machine = machines[index];
+                  return MachineCard(machine: machine);
+                }, childCount: machines.length),
               );
             },
           ),
 
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 24),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
       ),
     );

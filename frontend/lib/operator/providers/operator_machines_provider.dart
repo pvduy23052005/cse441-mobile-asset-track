@@ -24,30 +24,32 @@ class OperatorMachinesNotifier
   }
 }
 
-final operatorMachinesProvider = AsyncNotifierProvider.autoDispose<
-    OperatorMachinesNotifier, List<MachineModel>>(() {
-  return OperatorMachinesNotifier();
-});
+final operatorMachinesProvider =
+    AsyncNotifierProvider.autoDispose<
+      OperatorMachinesNotifier,
+      List<MachineModel>
+    >(() {
+      return OperatorMachinesNotifier();
+    });
 
-/// Provider lọc máy theo từ khóa tìm kiếm
-final operatorMachineSearchQueryProvider =
-    StateProvider.autoDispose<String>((ref) => '');
+final operatorMachineSearchQueryProvider = StateProvider.autoDispose<String>(
+  (ref) => '',
+);
 
-/// Provider danh sách máy đã lọc theo từ khóa
 final filteredOperatorMachinesProvider =
     Provider.autoDispose<AsyncValue<List<MachineModel>>>((ref) {
-  final query = ref.watch(operatorMachineSearchQueryProvider).toLowerCase();
-  final machinesAsync = ref.watch(operatorMachinesProvider);
+      final query = ref.watch(operatorMachineSearchQueryProvider).toLowerCase();
+      final machinesAsync = ref.watch(operatorMachinesProvider);
 
-  return machinesAsync.whenData((machines) {
-    if (query.isEmpty) return machines;
-    return machines.where((machine) {
-      final name = machine.name.toLowerCase();
-      final code = machine.code.toLowerCase();
-      final location = machine.location.toLowerCase();
-      return name.contains(query) ||
-          code.contains(query) ||
-          location.contains(query);
-    }).toList();
-  });
-});
+      return machinesAsync.whenData((machines) {
+        if (query.isEmpty) return machines;
+        return machines.where((machine) {
+          final name = machine.name.toLowerCase();
+          final code = machine.code.toLowerCase();
+          final location = machine.location.toLowerCase();
+          return name.contains(query) ||
+              code.contains(query) ||
+              location.contains(query);
+        }).toList();
+      });
+    });

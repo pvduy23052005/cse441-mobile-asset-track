@@ -28,7 +28,6 @@ class _SosSymptomSelectorState extends State<SosSymptomSelector> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. Tiêu đề mục & Nút xóa chọn
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -79,7 +78,6 @@ class _SosSymptomSelectorState extends State<SosSymptomSelector> {
         ),
         const SizedBox(height: 8),
 
-        // 2. Thanh Tab chuyển đổi danh mục
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
@@ -107,119 +105,116 @@ class _SosSymptomSelectorState extends State<SosSymptomSelector> {
         ),
         const SizedBox(height: 10),
 
-        // 3. Danh sách các nhóm danh mục tương ứng
         ...widget.categories
-            .where((category) =>
-                _activeCategoryTab == 'ALL' ||
-                _activeCategoryTab == category.id)
+            .where(
+              (category) =>
+                  _activeCategoryTab == 'ALL' ||
+                  _activeCategoryTab == category.id,
+            )
             .map((category) {
-          final selectedInCatCount = category.symptoms
-              .where((symptom) => widget.selectedSymptoms.contains(symptom))
-              .length;
+              final selectedInCatCount = category.symptoms
+                  .where((symptom) => widget.selectedSymptoms.contains(symptom))
+                  .length;
 
-          return Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: selectedInCatCount > 0
-                    ? category.color.withValues(alpha: 0.35)
-                    : const Color(0xFFE2E8F0),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header của từng danh mục
-                Row(
+              return Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: selectedInCatCount > 0
+                        ? category.color.withValues(alpha: 0.35)
+                        : const Color(0xFFE2E8F0),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      category.icon,
-                      size: 14,
-                      color: category.color,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      category.title,
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w800,
-                        color: category.color,
-                      ),
-                    ),
-                    if (selectedInCatCount > 0) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 1,
-                        ),
-                        decoration: BoxDecoration(
-                          color: category.color,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          '$selectedInCatCount',
-                          style: const TextStyle(
-                            fontSize: 9.5,
+                    Row(
+                      children: [
+                        Icon(category.icon, size: 14, color: category.color),
+                        const SizedBox(width: 6),
+                        Text(
+                          category.title,
+                          style: TextStyle(
+                            fontSize: 11.5,
                             fontWeight: FontWeight.w800,
-                            color: Colors.white,
+                            color: category.color,
                           ),
                         ),
-                      ),
-                    ],
+                        if (selectedInCatCount > 0) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 1,
+                            ),
+                            decoration: BoxDecoration(
+                              color: category.color,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              '$selectedInCatCount',
+                              style: const TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: category.symptoms.map((symptom) {
+                        final isSelected = widget.selectedSymptoms.contains(
+                          symptom,
+                        );
+
+                        return FilterChip(
+                          label: Text(symptom),
+                          selected: isSelected,
+                          onSelected: (_) {
+                            HapticFeedback.selectionClick();
+                            widget.onSymptomToggled(symptom);
+                          },
+                          labelStyle: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                            color: isSelected
+                                ? category.color
+                                : const Color(0xFF334155),
+                          ),
+                          backgroundColor: Colors.white,
+                          selectedColor: category.color.withValues(alpha: 0.12),
+                          checkmarkColor: category.color,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: BorderSide(
+                              color: isSelected
+                                  ? category.color
+                                  : const Color(0xFFE2E8F0),
+                              width: isSelected ? 1.3 : 1.0,
+                            ),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 1,
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 6),
-
-                // Danh sách chip triệu chứng trong danh mục
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: category.symptoms.map((symptom) {
-                    final isSelected =
-                        widget.selectedSymptoms.contains(symptom);
-
-                    return FilterChip(
-                      label: Text(symptom),
-                      selected: isSelected,
-                      onSelected: (_) {
-                        HapticFeedback.selectionClick();
-                        widget.onSymptomToggled(symptom);
-                      },
-                      labelStyle: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight:
-                            isSelected ? FontWeight.w700 : FontWeight.w500,
-                        color: isSelected
-                            ? category.color
-                            : const Color(0xFF334155),
-                      ),
-                      backgroundColor: Colors.white,
-                      selectedColor: category.color.withValues(alpha: 0.12),
-                      checkmarkColor: category.color,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(
-                          color: isSelected
-                              ? category.color
-                              : const Color(0xFFE2E8F0),
-                          width: isSelected ? 1.3 : 1.0,
-                        ),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 1,
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-          );
-        }),
+              );
+            }),
       ],
     );
   }
