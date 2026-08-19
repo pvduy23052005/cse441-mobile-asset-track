@@ -59,8 +59,9 @@ class OperatorTicketService {
 
   Future<Map<String, dynamic>> getTicketById(String id) async {
     try {
-      final response =
-          await _dio.get<Map<String, dynamic>>('/operator/tickets/$id');
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/operator/tickets/$id',
+      );
       if (response.data != null) {
         return response.data!;
       }
@@ -72,22 +73,23 @@ class OperatorTicketService {
     }
   }
 
-  Future<Map<String, dynamic>> cancelTicket(String id, {String? reason}) async {
+  Future<Map<String, dynamic>> deleteTicket(String id) async {
     try {
-      final response = await _dio.patch<Map<String, dynamic>>(
-        '/operator/tickets/$id/cancel',
-        data: {
-          if (reason != null && reason.isNotEmpty) 'reason': reason,
-        },
+      final response = await _dio.delete<Map<String, dynamic>>(
+        '/operator/tickets/$id',
       );
       if (response.data != null) {
         return response.data!;
       }
-      throw Exception('Không thể hủy phiếu sự cố');
+      return {'success': true};
     } on DioException catch (e) {
-      throw Exception(e.error ?? 'Không thể hủy phiếu sự cố');
+      throw Exception(e.error ?? 'Không thể xóa phiếu sự cố');
     } catch (e) {
-      throw Exception('Lỗi khi hủy phiếu sự cố: $e');
+      throw Exception('Lỗi khi xóa phiếu sự cố: $e');
     }
+  }
+
+  Future<Map<String, dynamic>> cancelTicket(String id, {String? reason}) async {
+    return deleteTicket(id);
   }
 }

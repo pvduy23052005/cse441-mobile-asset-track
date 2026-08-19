@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 class OperatorQRBanner extends StatelessWidget {
   final VoidCallback onTap;
 
-  const OperatorQRBanner({
-    super.key,
-    required this.onTap,
-  });
+  const OperatorQRBanner({super.key, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -18,10 +15,7 @@ class OperatorQRBanner extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [
-              Color(0xFF059669), // Emerald 600
-              Color(0xFF047857), // Emerald 700
-            ],
+            colors: [Color(0xFF059669), Color(0xFF047857)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -40,9 +34,11 @@ class OperatorQRBanner extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Badge: THAO TÁC CÔNG NHÂN
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(8),
@@ -59,7 +55,6 @@ class OperatorQRBanner extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
 
-                  // Main Title
                   const Text(
                     'Quét QR thông tin máy',
                     style: TextStyle(
@@ -71,7 +66,6 @@ class OperatorQRBanner extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
 
-                  // Subtitle
                   const Text(
                     'Xem thông số & báo lỗi khẩn cấp',
                     style: TextStyle(
@@ -85,7 +79,6 @@ class OperatorQRBanner extends StatelessWidget {
             ),
             const SizedBox(width: 12),
 
-            // White rounded box with QR code icon
             Container(
               width: 56,
               height: 56,

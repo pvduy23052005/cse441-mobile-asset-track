@@ -459,7 +459,9 @@ export class MachineService implements OnModuleInit {
     const machineDoc: FirestoreMachine = {
       code,
       name: data.name ? data.name.trim() : 'Thiết bị mới',
-      model: data.model ? data.model.trim() : (data.specifications?.category || 'Chưa xác định'),
+      model: data.model
+        ? data.model.trim()
+        : ((data.specifications?.category as string) || 'Chưa xác định'),
       location: data.location ? data.location.trim() : 'Phân Xưởng Sản Xuất',
       status: (data.status || 'ACTIVE').toUpperCase(),
       running_hours: Number(data.running_hours ?? 0),
@@ -646,7 +648,7 @@ export class MachineService implements OnModuleInit {
 
     let code = id.startsWith('PM') ? id : 'PM-2026-0500H';
     let machineId = 'm4';
-    let machineCode = 'ROBOT-2024-004';
+    const machineCode = 'ROBOT-2024-004';
     let machineName = 'Dây Chuyền Hàn Robot Tự Động';
 
     if (doc.exists) {

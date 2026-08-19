@@ -6,7 +6,6 @@ class OperatorBottomNavBar extends StatelessWidget {
   final ValueChanged<int> onItemSelected;
   final VoidCallback onQRTapped;
   final int pendingTasksCount;
-  final int unreadNotificationsCount;
 
   const OperatorBottomNavBar({
     super.key,
@@ -14,7 +13,6 @@ class OperatorBottomNavBar extends StatelessWidget {
     required this.onItemSelected,
     required this.onQRTapped,
     this.pendingTasksCount = 0,
-    this.unreadNotificationsCount = 0,
   });
 
   @override
@@ -48,8 +46,8 @@ class OperatorBottomNavBar extends StatelessWidget {
                 onTap: () => onItemSelected(0),
               ),
               _buildNavItem(
-                icon: Icons.memory_rounded,
-                activeIcon: Icons.memory_rounded,
+                icon: Icons.precision_manufacturing_outlined,
+                activeIcon: Icons.precision_manufacturing_rounded,
                 label: 'Máy Móc',
                 isSelected: currentIndex == 1,
                 onTap: () => onItemSelected(1),
@@ -62,14 +60,6 @@ class OperatorBottomNavBar extends StatelessWidget {
                 isSelected: currentIndex == 2,
                 badgeCount: pendingTasksCount,
                 onTap: () => onItemSelected(2),
-              ),
-              _buildNavItem(
-                icon: Icons.notifications_none_rounded,
-                activeIcon: Icons.notifications_rounded,
-                label: 'Thông Báo',
-                isSelected: currentIndex == 3,
-                badgeCount: unreadNotificationsCount,
-                onTap: () => onItemSelected(3),
               ),
             ],
           ),
@@ -86,9 +76,8 @@ class OperatorBottomNavBar extends StatelessWidget {
     required VoidCallback onTap,
     int badgeCount = 0,
   }) {
-    final Color color = isSelected
-        ? AppTheme.primaryColor
-        : AppTheme.mutedForegroundColor;
+    final Color color =
+        isSelected ? AppTheme.primaryColor : AppTheme.mutedForegroundColor;
 
     return Expanded(
       child: InkWell(

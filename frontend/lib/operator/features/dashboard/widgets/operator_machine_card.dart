@@ -49,8 +49,8 @@ class OperatorMachineCard extends StatelessWidget {
     final nextMaintText = machine.nextMaintenanceHours != null
         ? '${_formatHours(machine.nextMaintenanceHours!)}h'
         : (machine.runningHours > 0
-            ? '${_formatHours(machine.runningHours + 500)}h'
-            : '500h');
+              ? '${_formatHours(machine.runningHours + 500)}h'
+              : '500h');
 
     final isTopCard = index == 0;
 
@@ -76,11 +76,12 @@ class OperatorMachineCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           onTap: onTap,
           child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14.0,
+              vertical: 12.0,
+            ),
             child: Row(
               children: [
-                // Machine Icon
                 Container(
                   width: 44,
                   height: 44,
@@ -97,7 +98,6 @@ class OperatorMachineCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
 
-                // Machine Info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,8 +143,9 @@ class OperatorMachineCard extends StatelessWidget {
                               color: machine.statusBgColor,
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color:
-                                    machine.statusColor.withValues(alpha: 0.3),
+                                color: machine.statusColor.withValues(
+                                  alpha: 0.3,
+                                ),
                               ),
                             ),
                             child: Text(

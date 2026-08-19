@@ -89,7 +89,10 @@ class SosSeveritySelector extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: isSelected ? bgColor : const Color(0xFFF8FAFC),
                   borderRadius: BorderRadius.circular(12),
@@ -142,7 +145,9 @@ class SosSeveritySelector extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
-                                  color: isSelected ? color : const Color(0xFF1E293B),
+                                  color: isSelected
+                                      ? color
+                                      : const Color(0xFF1E293B),
                                 ),
                               ),
                               const SizedBox(width: 4),
@@ -168,7 +173,9 @@ class SosSeveritySelector extends StatelessWidget {
                               color: isSelected
                                   ? const Color(0xFF334155)
                                   : const Color(0xFF64748B),
-                              fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
+                              fontWeight: isSelected
+                                  ? FontWeight.w500
+                                  : FontWeight.w400,
                             ),
                           ),
                         ],
@@ -184,4 +191,3 @@ class SosSeveritySelector extends StatelessWidget {
     );
   }
 }
-

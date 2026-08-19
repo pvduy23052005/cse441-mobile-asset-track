@@ -73,13 +73,13 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
     if (_selectedTags.isEmpty) return;
     final currentText = _descriptionController.text.trim();
     final tagSummary = _selectedTags.join(', ');
-    
+
     if (currentText.isEmpty) {
       _descriptionController.text = 'Hiện tượng: $tagSummary.';
     } else {
-      // If already contains "Hiện tượng:", update it or append
       if (!currentText.contains(tagSummary)) {
-        _descriptionController.text = '$currentText\n[Triệu chứng: $tagSummary]';
+        _descriptionController.text =
+            '$currentText\n[Triệu chứng: $tagSummary]';
       }
     }
     _descriptionController.selection = TextSelection.fromPosition(
@@ -171,7 +171,9 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
                   'Chụp ảnh trực tiếp từ Camera',
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
-                subtitle: const Text('Khuyên dùng để kỹ thuật viên nắm rõ hiện trường'),
+                subtitle: const Text(
+                  'Khuyên dùng để kỹ thuật viên nắm rõ hiện trường',
+                ),
                 onTap: () {
                   Navigator.pop(ctx);
                   _pickImage(ImageSource.camera);
@@ -208,11 +210,9 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
 
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) {
-      HapticFeedback.heavyImpact();
+      HapticFeedback.lightImpact();
       return;
     }
-
-    HapticFeedback.mediumImpact();
 
     setState(() {
       _isSubmitting = true;
@@ -223,7 +223,9 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
           ? widget.machine.id
           : widget.machine.code;
 
-      await ref.read(operatorTicketsProvider.notifier).createTicket(
+      await ref
+          .read(operatorTicketsProvider.notifier)
+          .createTicket(
             machineId: targetMachineId,
             machineName: widget.machine.name,
             machineCode: widget.machine.code,
@@ -257,10 +259,15 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
       }
     } catch (e) {
       debugPrint('[SOS Ticket] Lỗi khi tạo phiếu SOS: $e');
+      String errorMessage = '$e';
+      if (e.toString().contains('Exception: ')) {
+        errorMessage = e.toString().replaceAll('Exception: ', '');
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Lỗi: $e'),
+            content: Text(errorMessage),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -294,7 +301,6 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Top drag handle
               const SizedBox(height: 10),
               Container(
                 width: 40,
@@ -305,7 +311,6 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
                 ),
               ),
 
-              // Header
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 12, 16, 12),
                 child: Row(
@@ -349,7 +354,10 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B)),
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: Color(0xFF64748B),
+                      ),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -358,16 +366,17 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
 
               const Divider(height: 1, color: Color(0xFFF1F5F9)),
 
-              // Scrollable Form Content
               Flexible(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
                   child: Form(
                     key: _formKey,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Section 1: Thông tin thiết bị gặp sự cố
                         Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
@@ -455,7 +464,6 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
                         ),
                         const SizedBox(height: 18),
 
-                        // Section 2: Mức độ nghiêm trọng
                         const Row(
                           children: [
                             Text(
@@ -478,15 +486,14 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
                         const SizedBox(height: 8),
                         SosSeveritySelector(
                           selectedSeverity: _selectedSeverity,
-                          onSeverityChanged: (level) {
+                          onSeverityChanged: (val) {
                             setState(() {
-                              _selectedSeverity = level;
+                              _selectedSeverity = val;
                             });
                           },
                         ),
                         const SizedBox(height: 18),
 
-                        // Section 3: Preset Quick Tags (Gợi ý nhanh sự cố theo danh mục)
                         SosSymptomSelector(
                           selectedSymptoms: _selectedTags,
                           onSymptomToggled: _togglePresetTag,
@@ -499,7 +506,6 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
                         ),
                         const SizedBox(height: 18),
 
-                        // Section 4: Mô tả chi tiết sự cố
                         const Row(
                           children: [
                             Text(
@@ -540,13 +546,15 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
                             contentPadding: const EdgeInsets.all(12),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide:
-                                  const BorderSide(color: Color(0xFFE2E8F0)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide:
-                                  const BorderSide(color: Color(0xFFE2E8F0)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE2E8F0),
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -565,7 +573,6 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
                         ),
                         const SizedBox(height: 18),
 
-                        // Section 5: Hình ảnh minh chứng lỗi
                         const Text(
                           'Ảnh Hiện Trường Minh Chứng',
                           style: TextStyle(
@@ -591,14 +598,11 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
                 ),
               ),
 
-              // Bottom Sticky Action Button
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: const BoxDecoration(
                   color: Colors.white,
-                  border: Border(
-                    top: BorderSide(color: Color(0xFFF1F5F9)),
-                  ),
+                  border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),
                 ),
                 child: SizedBox(
                   width: double.infinity,
@@ -619,8 +623,9 @@ class _CreateSosTicketModalState extends ConsumerState<CreateSosTicketModal> {
                             height: 24,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.5,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           )
                         : const Row(

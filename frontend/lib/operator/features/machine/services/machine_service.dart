@@ -10,8 +10,10 @@ class MachineService {
       final response = await _dio.get<List<dynamic>>('/operator/machines');
       if (response.data != null) {
         return response.data!
-            .map((item) =>
-                MachineModel.fromJson(Map<String, dynamic>.from(item as Map)))
+            .map(
+              (item) =>
+                  MachineModel.fromJson(Map<String, dynamic>.from(item as Map)),
+            )
             .toList();
       }
       return [];
@@ -24,8 +26,7 @@ class MachineService {
 
   Future<MachineModel> getMachineById(String id) async {
     try {
-      final response =
-          await _dio.get<Map<String, dynamic>>('/machines/$id');
+      final response = await _dio.get<Map<String, dynamic>>('/machines/$id');
       if (response.data != null) {
         return MachineModel.fromJson(response.data!);
       }
@@ -45,10 +46,7 @@ class MachineService {
     try {
       final response = await _dio.post<Map<String, dynamic>>(
         '/machines/$id/running-hours',
-        data: {
-          'running_hours': runningHours,
-          'shift': ?shift,
-        },
+        data: {'running_hours': runningHours, 'shift': ?shift},
       );
       if (response.data != null) {
         return MachineModel.fromJson(response.data!);
