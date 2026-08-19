@@ -13,7 +13,7 @@ class SupervisorHeaderBar extends StatelessWidget {
 
   const SupervisorHeaderBar({
     super.key,
-    this.supervisorName = 'Quản Đốc Lê Hoàng',
+    this.supervisorName = 'Quản Đốc Phân Xưởng',
     this.workshopName = 'WS-01',
     this.thresholdAmount = 2000000.0,
     required this.selectedFilter,

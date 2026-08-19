@@ -196,6 +196,19 @@ export class TicketsService {
     return this.getAllTickets({ reporter_id: reporterId });
   }
 
+  async getTicketsForEngineer(engineerId: string): Promise<Ticket[]> {
+    const snapshot = await this.collection
+      .where('engineer_id', '==', engineerId)
+      .get();
+    return snapshot.docs
+      .map((documentSnapshot) => this.mapTicket(documentSnapshot))
+      .sort(
+        (firstTicket, secondTicket) =>
+          new Date(secondTicket.created_at).getTime() -
+          new Date(firstTicket.created_at).getTime(),
+      );
+  }
+
   async cancelTicket(
     id: string,
     reporterId: string,

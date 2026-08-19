@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/storage_service.dart';
 import '../../ticket_management/models/ticket_model.dart';
 import '../../ticket_management/widgets/modals/work_order_detail_modal.dart';
 import '../models/work_order_model.dart';
@@ -7,6 +8,7 @@ import '../services/engineer_dashboard_service.dart';
 import 'cards/pm_checklist_card.dart';
 import 'cards/sos_work_order_card.dart';
 import 'modals/pm_checklist_modal.dart';
+import 'quick_stats_cards.dart';
 
 class EngineerDashboardView extends StatefulWidget {
   const EngineerDashboardView({super.key});
@@ -94,6 +96,10 @@ class _EngineerDashboardViewState extends State<EngineerDashboardView> {
   }
 
   Future<void> _handleClaimWorkOrder(WorkOrderModel wo) async {
+    final currentEngineerName = StorageService.getUserFullName()?.isNotEmpty == true
+        ? StorageService.getUserFullName()!
+        : 'Kỹ Sư ME';
+
     setState(() {
       _workOrders = _workOrders.map((item) {
         if (item.id == wo.id) {
@@ -106,7 +112,7 @@ class _EngineerDashboardViewState extends State<EngineerDashboardView> {
             status: WorkOrderStatus.inProgress,
             description: item.description,
             imageUrl: item.imageUrl,
-            assigneeName: 'Kỹ Sư ME Trần Minh Đức',
+            assigneeName: currentEngineerName,
             createdAt: item.createdAt,
           );
         }
@@ -189,6 +195,17 @@ class _EngineerDashboardViewState extends State<EngineerDashboardView> {
                     child: CircularProgressIndicator(color: AppTheme.primaryColor),
                   ),
                 ),
+
+              // Quick Stats KPI Cards (CHỜ TIẾP NHẬN & ĐANG XỬ LÝ)
+              QuickStatsCards(
+                pendingCount: _workOrders
+                    .where((w) => w.status == WorkOrderStatus.pending)
+                    .length,
+                inProgressCount: _workOrders
+                    .where((w) => w.status == WorkOrderStatus.inProgress)
+                    .length,
+              ),
+              const SizedBox(height: 10),
 
               // Section 1: PHIẾU SỰ CỐ SOS CẦN XỬ LÝ
               Card(

@@ -44,10 +44,10 @@ class _EngineerMainScreenState extends State<EngineerMainScreen> {
     final userProfile = StorageService.getUserProfile();
     final displayName = userProfile['fullName']?.isNotEmpty == true
         ? userProfile['fullName']!
-        : 'Kỹ Sư ME Trần Minh Đức';
+        : 'Kỹ Sư Cơ Điện';
     final displayEmail = userProfile['email']?.isNotEmpty == true
         ? userProfile['email']!
-        : 'me.duc@factory.com';
+        : 'engineer@factory.com';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),

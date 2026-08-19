@@ -9,6 +9,7 @@ import 'cards/top_downtime_machines_card.dart';
 import '../../approvals/models/supervisor_approval_model.dart';
 import '../../approvals/widgets/supervisor_digital_signoff_modal.dart';
 import '../../machine_management/widgets/add_machine_modal.dart';
+import '../../../../core/utils/storage_service.dart';
 
 class SupervisorDashboardView extends StatefulWidget {
   const SupervisorDashboardView({super.key});
@@ -189,7 +190,9 @@ class _SupervisorDashboardViewState extends State<SupervisorDashboardView> {
           children: [
             // 1. Header Bar
             SupervisorHeaderBar(
-              supervisorName: 'Quản Đốc Lê Hoàng',
+              supervisorName: StorageService.getUserFullName()?.isNotEmpty == true
+                  ? StorageService.getUserFullName()!
+                  : 'Quản Đốc Phân Xưởng',
               workshopName: 'WS-01 (Phân Xưởng Chế Tạo)',
               thresholdAmount: _costThreshold,
               selectedFilter: _selectedFilter,
