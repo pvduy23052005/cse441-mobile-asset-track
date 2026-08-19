@@ -46,7 +46,15 @@ class _PMChecklistModalState extends State<PMChecklistModal> {
   @override
   void initState() {
     super.initState();
-    _items = List.from(widget.pm.items);
+    final isDone = widget.pm.status.toUpperCase() == 'COMPLETED' ||
+        widget.pm.status.toUpperCase() == 'PENDING_APPROVAL' ||
+        widget.pm.status.toUpperCase() == 'APPROVED';
+
+    if (isDone) {
+      _items = widget.pm.items.map((i) => i.copyWith(isCompleted: true)).toList();
+    } else {
+      _items = List.from(widget.pm.items);
+    }
   }
 
   void _toggleItem(int index) {

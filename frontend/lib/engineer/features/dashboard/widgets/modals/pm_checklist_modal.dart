@@ -67,26 +67,52 @@ class _PMChecklistModalState extends State<PMChecklistModal> {
   @override
   void initState() {
     super.initState();
+    final isDone = widget.checklist.status == PMChecklistStatus.completed ||
+        widget.checklist.status == PMChecklistStatus.approved;
+
     _items = [
       PMChecklistItemData(
         id: 'pmi-1',
         taskDescription: 'Thay dầu bôi trơn động cơ ép chính và xả cặn đáy',
-        isChecked: false,
+        isChecked: isDone ? true : false,
         isRequiredPhoto: true,
+        photoUrl: isDone ? 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=500' : null,
       ),
       PMChecklistItemData(
         id: 'pmi-2',
         taskDescription: 'Kiểm tra áp suất khí nén đầu vào và điều chỉnh van an toàn',
-        isChecked: false,
+        isChecked: isDone ? true : false,
         isRequiredPhoto: false,
       ),
       PMChecklistItemData(
         id: 'pmi-3',
         taskDescription: 'Siết chặt bu-lông chân máy và kiểm tra độ chùng dây curoa',
-        isChecked: false,
+        isChecked: isDone ? true : false,
         isRequiredPhoto: true,
+        photoUrl: isDone ? 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500' : null,
       ),
     ];
+
+    if (isDone) {
+      _spareParts.addAll([
+        PMSparePartData(
+          id: 'sp-1',
+          name: 'Dầu bôi trơn công nghiệp ISO VG 68 (10L)',
+          quantity: 2,
+          unitPrice: 650000.0,
+          totalCost: 1300000.0,
+          requiresApproval: false,
+        ),
+        PMSparePartData(
+          id: 'sp-2',
+          name: 'Bộ gioăng cao su chịu nhiệt đệm van khí nén',
+          quantity: 1,
+          unitPrice: 450000.0,
+          totalCost: 450000.0,
+          requiresApproval: false,
+        ),
+      ]);
+    }
   }
 
   @override
@@ -211,6 +237,35 @@ class _PMChecklistModalState extends State<PMChecklistModal> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (widget.checklist.status == PMChecklistStatus.completed ||
+                        widget.checklist.status == PMChecklistStatus.approved) ...[
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFFBEB),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFFDE68A)),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.hourglass_bottom_rounded, color: Color(0xFFD97706), size: 18),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Phiếu PM này đang CHỜ DUYỆT từ Quản đốc. Kỹ sư ME vẫn có thể xem chi tiết và bổ sung thêm phụ tùng/vật tư bên dưới.',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFFB45309),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+
                     const Row(
                       children: [
                         Icon(Icons.build_rounded, size: 16, color: Color(0xFF059669)),
@@ -268,11 +323,24 @@ class _PMChecklistModalState extends State<PMChecklistModal> {
                 width: double.infinity,
                 height: 44,
                 child: ElevatedButton.icon(
-                  onPressed: _allMandatoryCompleted ? widget.onComplete : null,
-                  icon: const Icon(Icons.check_circle_rounded, size: 18),
-                  label: const Text(
-                    'Hoàn Thành PM & Gửi Nghiệm Thu',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900),
+                  onPressed: (widget.checklist.status == PMChecklistStatus.completed ||
+                          widget.checklist.status == PMChecklistStatus.approved ||
+                          _allMandatoryCompleted)
+                      ? widget.onComplete
+                      : null,
+                  icon: Icon(
+                    (widget.checklist.status == PMChecklistStatus.completed ||
+                            widget.checklist.status == PMChecklistStatus.approved)
+                        ? Icons.save_rounded
+                        : Icons.check_circle_rounded,
+                    size: 18,
+                  ),
+                  label: Text(
+                    (widget.checklist.status == PMChecklistStatus.completed ||
+                            widget.checklist.status == PMChecklistStatus.approved)
+                        ? 'Cập Nhật Phụ Tùng / Lưu Thay Đổi'
+                        : 'Hoàn Thành PM & Gửi Nghiệm Thu',
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
