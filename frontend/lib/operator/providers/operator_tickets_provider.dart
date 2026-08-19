@@ -56,7 +56,10 @@ class OperatorTicketsNotifier
   }
 }
 
-final operatorTicketsProvider = AsyncNotifierProvider.autoDispose<
-    OperatorTicketsNotifier, List<Map<String, dynamic>>>(() {
-  return OperatorTicketsNotifier();
-});
+final operatorTicketsProvider =
+    AsyncNotifierProvider.autoDispose<
+      OperatorTicketsNotifier,
+      List<Map<String, dynamic>>
+    >(() {
+      return OperatorTicketsNotifier();
+    });

@@ -62,9 +62,7 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
         });
         widget.onStatusUpdated?.call(fresh);
       }
-    } catch (_) {
-      // Keep initial machine state if offline or network error
-    }
+    } catch (_) {}
   }
 
   void _openAssignOperatorModal(BuildContext context) {
@@ -88,14 +86,14 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
     final String locationText = _currentMachine.location.isNotEmpty
         ? _currentMachine.location
         : (_currentMachine.specifications['location']?.toString() ??
-            _currentMachine.specifications['area']?.toString() ??
-            'Chưa cập nhật vị trí');
+              _currentMachine.specifications['area']?.toString() ??
+              'Chưa cập nhật vị trí');
 
     final String nextMaintText = _currentMachine.nextMaintenanceHours != null
         ? '${_currentMachine.nextMaintenanceHours} giờ'
         : (_currentMachine.runningHours > 0
-            ? '${_currentMachine.runningHours + 500} giờ'
-            : 'Chưa thiết lập');
+              ? '${_currentMachine.runningHours + 500} giờ'
+              : 'Chưa thiết lập');
 
     return Container(
       constraints: BoxConstraints(
@@ -110,7 +108,6 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Drag Handle
             const SizedBox(height: 12),
             Container(
               width: 40,
@@ -122,7 +119,6 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
             ),
             const SizedBox(height: 12),
 
-            // Modal Header
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Row(
@@ -146,14 +142,12 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
             ),
             const Divider(height: 1, color: AppTheme.borderColor),
 
-            // Scrollable Content
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Main Info Card
                     Container(
                       padding: const EdgeInsets.all(16.0),
                       decoration: BoxDecoration(
@@ -164,7 +158,6 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Header: Name + Code + Status Chip
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,7 +213,6 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
                           const Divider(height: 1, color: AppTheme.borderColor),
                           const SizedBox(height: 14),
 
-                          // Row 1: Model & Giờ vận hành
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -245,7 +237,6 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
                           ),
                           const SizedBox(height: 12),
 
-                          // Row 2: Vị trí & Mốc bảo trì kế
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -267,7 +258,6 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
                             ],
                           ),
 
-                          // Row 3: Người vận hành phụ trách
                           const SizedBox(height: 14),
                           const Divider(height: 1, color: AppTheme.borderColor),
                           const SizedBox(height: 12),
@@ -313,21 +303,31 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
                                     Text(
                                       _currentMachine.operator?.fullName ??
                                           (_currentMachine.operatorId != null &&
-                                                  _currentMachine.operatorId!.isNotEmpty
+                                                  _currentMachine
+                                                      .operatorId!
+                                                      .isNotEmpty
                                               ? 'Mã: ${_currentMachine.operatorId}'
                                               : 'Chưa phân công'),
                                       style: TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
-                                        color: _currentMachine.operator != null ||
-                                                (_currentMachine.operatorId != null &&
-                                                    _currentMachine.operatorId!.isNotEmpty)
+                                        color:
+                                            _currentMachine.operator != null ||
+                                                (_currentMachine.operatorId !=
+                                                        null &&
+                                                    _currentMachine
+                                                        .operatorId!
+                                                        .isNotEmpty)
                                             ? AppTheme.foregroundColor
                                             : AppTheme.mutedForegroundColor,
                                       ),
                                     ),
-                                    if (_currentMachine.operator?.email != null &&
-                                        _currentMachine.operator!.email.isNotEmpty) ...[
+                                    if (_currentMachine.operator?.email !=
+                                            null &&
+                                        _currentMachine
+                                            .operator!
+                                            .email
+                                            .isNotEmpty) ...[
                                       const SizedBox(height: 1),
                                       Text(
                                         _currentMachine.operator!.email,
@@ -341,7 +341,10 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
                                 ),
                               ),
                               if (_currentMachine.operator?.phone != null &&
-                                  _currentMachine.operator!.phone!.isNotEmpty) ...[
+                                  _currentMachine
+                                      .operator!
+                                      .phone!
+                                      .isNotEmpty) ...[
                                 Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 8,
@@ -377,10 +380,11 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
                                 const SizedBox(width: 8),
                               ],
 
-                              // Supervisor Reassign Button (if already assigned)
-                              if (isSupervisor && _currentMachine.operator != null)
+                              if (isSupervisor &&
+                                  _currentMachine.operator != null)
                                 InkWell(
-                                  onTap: () => _openAssignOperatorModal(context),
+                                  onTap: () =>
+                                      _openAssignOperatorModal(context),
                                   borderRadius: BorderRadius.circular(6),
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
@@ -418,8 +422,8 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
                             ],
                           ),
 
-                          // Quick CTA Button if no operator is assigned yet (Supervisor only)
-                          if (isSupervisor && _currentMachine.operator == null) ...[
+                          if (isSupervisor &&
+                              _currentMachine.operator == null) ...[
                             const SizedBox(height: 12),
                             SizedBox(
                               width: double.infinity,
@@ -428,12 +432,15 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
                                   backgroundColor: const Color(0xFF0284C7),
                                   foregroundColor: Colors.white,
                                   elevation: 0,
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
-                                onPressed: () => _openAssignOperatorModal(context),
+                                onPressed: () =>
+                                    _openAssignOperatorModal(context),
                                 icon: const Icon(
                                   Icons.person_add_alt_1_rounded,
                                   size: 16,
@@ -454,7 +461,6 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
 
                     const SizedBox(height: 20),
 
-                    // Specifications Section
                     const Text(
                       'Thông Số Kỹ Thuật',
                       style: TextStyle(
@@ -502,9 +508,12 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
                           border: Border.all(color: AppTheme.borderColor),
                         ),
                         child: Column(
-                          children: _currentMachine.specifications.entries.map((entry) {
-                            final readableKey =
-                                MachineFormatters.formatSpecKey(entry.key);
+                          children: _currentMachine.specifications.entries.map((
+                            entry,
+                          ) {
+                            final readableKey = MachineFormatters.formatSpecKey(
+                              entry.key,
+                            );
                             final readableValue =
                                 MachineFormatters.formatSpecValue(entry.value);
 
@@ -557,7 +566,6 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
 
                     const SizedBox(height: 20),
 
-                    // Action Buttons
                     Row(
                       children: [
                         Expanded(
@@ -565,7 +573,8 @@ class _MachineDetailModalState extends State<MachineDetailModal> {
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               side: const BorderSide(
-                                  color: AppTheme.borderColor),
+                                color: AppTheme.borderColor,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),

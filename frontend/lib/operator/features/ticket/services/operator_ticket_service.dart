@@ -59,8 +59,9 @@ class OperatorTicketService {
 
   Future<Map<String, dynamic>> getTicketById(String id) async {
     try {
-      final response =
-          await _dio.get<Map<String, dynamic>>('/operator/tickets/$id');
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/operator/tickets/$id',
+      );
       if (response.data != null) {
         return response.data!;
       }
@@ -76,9 +77,7 @@ class OperatorTicketService {
     try {
       final response = await _dio.patch<Map<String, dynamic>>(
         '/operator/tickets/$id/cancel',
-        data: {
-          if (reason != null && reason.isNotEmpty) 'reason': reason,
-        },
+        data: {if (reason != null && reason.isNotEmpty) 'reason': reason},
       );
       if (response.data != null) {
         return response.data!;

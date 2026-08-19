@@ -12,8 +12,7 @@ class OperatorNotificationsView extends StatefulWidget {
       _OperatorNotificationsViewState();
 }
 
-class _OperatorNotificationsViewState
-    extends State<OperatorNotificationsView> {
+class _OperatorNotificationsViewState extends State<OperatorNotificationsView> {
   final OperatorNotificationService _notificationService =
       OperatorNotificationService();
 
@@ -111,8 +110,10 @@ class _OperatorNotificationsViewState
             if (item.targetId != null) ...[
               const SizedBox(height: 16),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF0F9FF),
                   borderRadius: BorderRadius.circular(8),
@@ -120,8 +121,11 @@ class _OperatorNotificationsViewState
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.tag_rounded,
-                        size: 16, color: Color(0xFF0284C7)),
+                    const Icon(
+                      Icons.tag_rounded,
+                      size: 16,
+                      color: Color(0xFF0284C7),
+                    ),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
@@ -242,19 +246,15 @@ class _OperatorNotificationsViewState
             ? allNotifications.where((n) => !n.isRead).toList()
             : allNotifications;
 
-        final unreadCount =
-            allNotifications.where((n) => !n.isRead).length;
+        final unreadCount = allNotifications.where((n) => !n.isRead).length;
 
         return Column(
           children: [
-            // Top Action Bar
             Container(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                border: Border(
-                  bottom: BorderSide(color: Color(0xFFF1F5F9)),
-                ),
+                border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -274,7 +274,9 @@ class _OperatorNotificationsViewState
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 7, vertical: 2),
+                            horizontal: 7,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFDC2626),
                             borderRadius: BorderRadius.circular(10),
@@ -293,7 +295,6 @@ class _OperatorNotificationsViewState
                   ),
                   Row(
                     children: [
-                      // Filter unread toggle
                       InkWell(
                         onTap: () {
                           HapticFeedback.selectionClick();
@@ -304,7 +305,9 @@ class _OperatorNotificationsViewState
                         borderRadius: BorderRadius.circular(6),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: _showOnlyUnread
                                 ? const Color(0xFFEFF6FF)
@@ -349,7 +352,6 @@ class _OperatorNotificationsViewState
               ),
             ),
 
-            // Notification List
             Expanded(
               child: notifications.isEmpty
                   ? Center(
@@ -436,12 +438,16 @@ class _OperatorNotificationsViewState
                                                     height: 8,
                                                     margin:
                                                         const EdgeInsets.only(
-                                                            right: 6),
+                                                          right: 6,
+                                                        ),
                                                     decoration:
                                                         const BoxDecoration(
-                                                      color: Color(0xFF10B981),
-                                                      shape: BoxShape.circle,
-                                                    ),
+                                                          color: Color(
+                                                            0xFF10B981,
+                                                          ),
+                                                          shape:
+                                                              BoxShape.circle,
+                                                        ),
                                                   ),
                                                 ],
                                                 Expanded(
@@ -453,7 +459,8 @@ class _OperatorNotificationsViewState
                                                           ? FontWeight.w900
                                                           : FontWeight.w700,
                                                       color: const Color(
-                                                          0xFF0F172A),
+                                                        0xFF0F172A,
+                                                      ),
                                                     ),
                                                     maxLines: 1,
                                                     overflow:

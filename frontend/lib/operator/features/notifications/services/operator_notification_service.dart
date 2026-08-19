@@ -25,9 +25,7 @@ class OperatorNotificationService {
       final response = await ApiClient.instance.get('/notifications');
       if (response.statusCode == 200 && response.data is List) {
         final List list = response.data;
-        return list
-            .map((item) => EngineerNotification.fromJson(item))
-            .toList();
+        return list.map((item) => EngineerNotification.fromJson(item)).toList();
       }
       return [];
     } catch (e) {
@@ -46,20 +44,24 @@ class OperatorNotificationService {
     final currentUserId = userProfile['uid'] ?? userProfile['id'] ?? '';
 
     return fs.collection('notifications').snapshots().map((snapshot) {
-      final list = snapshot.docs.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id;
-        return EngineerNotification.fromJson(data);
-      }).where((notification) {
-        final role = notification.targetRole?.toLowerCase();
-        final isForOperator = role == 'operator';
-        final isForCurrentUser =
-            notification.userId != null && notification.userId == currentUserId;
-        final isGlobal =
-            notification.targetRole == null && notification.userId == null;
+      final list = snapshot.docs
+          .map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return EngineerNotification.fromJson(data);
+          })
+          .where((notification) {
+            final role = notification.targetRole?.toLowerCase();
+            final isForOperator = role == 'operator';
+            final isForCurrentUser =
+                notification.userId != null &&
+                notification.userId == currentUserId;
+            final isGlobal =
+                notification.targetRole == null && notification.userId == null;
 
-        return isForOperator || isForCurrentUser || isGlobal;
-      }).toList();
+            return isForOperator || isForCurrentUser || isGlobal;
+          })
+          .toList();
 
       list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return list;
@@ -93,8 +95,7 @@ class OperatorNotificationService {
       final currentUserId = userProfile['uid'] ?? userProfile['id'] ?? '';
 
       try {
-        final snapshot =
-            await _firestore?.collection('notifications').get();
+        final snapshot = await _firestore?.collection('notifications').get();
         if (snapshot != null) {
           final batch = _firestore!.batch();
           for (final doc in snapshot.docs) {

@@ -29,10 +29,7 @@ class SosImageAttachmentSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: const Color(0xFFCBD5E1),
-              width: 1.2,
-            ),
+            border: Border.all(color: const Color(0xFFCBD5E1), width: 1.2),
           ),
           child: Row(
             children: [
@@ -118,8 +115,11 @@ class SosImageAttachmentSection extends StatelessWidget {
                   padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   child: Row(
                     children: [
-                      Icon(Icons.add_circle_outline_rounded,
-                          size: 14, color: AppTheme.primaryColor),
+                      Icon(
+                        Icons.add_circle_outline_rounded,
+                        size: 14,
+                        color: AppTheme.primaryColor,
+                      ),
                       SizedBox(width: 4),
                       Text(
                         'Thêm ảnh',
@@ -160,8 +160,11 @@ class SosImageAttachmentSection extends StatelessWidget {
                     child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add_a_photo_outlined,
-                            color: Color(0xFF64748B), size: 22),
+                        Icon(
+                          Icons.add_a_photo_outlined,
+                          color: Color(0xFF64748B),
+                          size: 22,
+                        ),
                         SizedBox(height: 4),
                         Text(
                           'Thêm ảnh',
@@ -212,7 +215,10 @@ class SosImageAttachmentSection extends StatelessWidget {
                     bottom: 4,
                     left: 4,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black54,
                         borderRadius: BorderRadius.circular(4),
@@ -236,4 +242,3 @@ class SosImageAttachmentSection extends StatelessWidget {
     );
   }
 }
-

@@ -45,8 +45,11 @@ class _OperatorChecklistViewState extends ConsumerState<OperatorChecklistView> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline_rounded,
-                    size: 40, color: Color(0xFFDC2626)),
+                const Icon(
+                  Icons.error_outline_rounded,
+                  size: 40,
+                  color: Color(0xFFDC2626),
+                ),
                 const SizedBox(height: 12),
                 Text('Lỗi tải danh sách máy: $err'),
                 const SizedBox(height: 12),
@@ -93,7 +96,6 @@ class _OperatorChecklistViewState extends ConsumerState<OperatorChecklistView> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
               children: [
-                // Header Title
                 Text(
                   '1. Khai báo giờ máy chạy ca này (${machines.length} máy)',
                   style: const TextStyle(
@@ -105,10 +107,11 @@ class _OperatorChecklistViewState extends ConsumerState<OperatorChecklistView> {
                 ),
                 const SizedBox(height: 8),
 
-                // Warning Notice Banner for Payroll / Attendance
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFFBEB),
                     borderRadius: BorderRadius.circular(10),
@@ -149,7 +152,6 @@ class _OperatorChecklistViewState extends ConsumerState<OperatorChecklistView> {
                 ),
                 const SizedBox(height: 14),
 
-                // Machine List
                 ...List.generate(machines.length, (index) {
                   final machine = machines[index];
                   final machineCode = machine.code.isNotEmpty
@@ -210,7 +212,6 @@ class _OperatorChecklistViewState extends ConsumerState<OperatorChecklistView> {
                       ),
                       child: Row(
                         children: [
-                          // Left Side: Status Icon
                           Container(
                             width: 46,
                             height: 46,
@@ -232,7 +233,6 @@ class _OperatorChecklistViewState extends ConsumerState<OperatorChecklistView> {
                           ),
                           const SizedBox(width: 12),
 
-                          // Center Side: Machine Info
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -263,7 +263,6 @@ class _OperatorChecklistViewState extends ConsumerState<OperatorChecklistView> {
 
                           const SizedBox(width: 10),
 
-                          // Right Side: Action Button
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF059669),
