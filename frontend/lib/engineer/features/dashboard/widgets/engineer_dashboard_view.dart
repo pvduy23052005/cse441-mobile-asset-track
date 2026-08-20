@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/storage_service.dart';
@@ -24,10 +25,48 @@ class _EngineerDashboardViewState extends State<EngineerDashboardView> {
   List<PMChecklistModel> _pmChecklists = [];
   bool _isLoading = true;
 
+  StreamSubscription<List<WorkOrderModel>>? _streamSubscription;
+  Timer? _autoRefreshTimer;
+
   @override
   void initState() {
     super.initState();
     _loadDashboardData();
+
+    // 1. Realtime Stream from Firestore
+    _streamSubscription = _service.streamWorkOrders().listen((realtimeOrders) {
+      if (mounted && realtimeOrders.isNotEmpty) {
+        setState(() {
+          _workOrders = realtimeOrders;
+          _isLoading = false;
+        });
+      }
+    });
+
+    // 2. Silent Auto-Polling fallback every 5 seconds
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      _silentRefreshData();
+    });
+  }
+
+  Future<void> _silentRefreshData() async {
+    final apiOrders = await _service.fetchWorkOrdersFromApi();
+    final apiChecklists = await _service.fetchPMChecklistsFromApi();
+    if (mounted && apiOrders.isNotEmpty) {
+      setState(() {
+        _workOrders = apiOrders;
+        if (apiChecklists.isNotEmpty) {
+          _pmChecklists = apiChecklists;
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _streamSubscription?.cancel();
+    _autoRefreshTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadDashboardData() async {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../dashboard/models/work_order_model.dart' as dash_models;
@@ -25,10 +26,79 @@ class _EngineerTicketListViewState extends State<EngineerTicketListView> {
   List<PMChecklistModel> _pmChecklists = [];
   bool _isLoading = true;
 
+  StreamSubscription<List<dash_models.WorkOrderModel>>? _streamSubscription;
+  Timer? _autoRefreshTimer;
+
   @override
   void initState() {
     super.initState();
     _loadTicketsData();
+
+    // 1. Realtime Stream
+    _streamSubscription = _dashboardService.streamWorkOrders().listen((realtimeOrders) {
+      if (mounted && realtimeOrders.isNotEmpty) {
+        setState(() {
+          _tickets = realtimeOrders.map((wo) {
+            TicketStatus status = TicketStatus.open;
+            if (wo.status == dash_models.WorkOrderStatus.inProgress) {
+              status = TicketStatus.inProgress;
+            } else if (wo.status == dash_models.WorkOrderStatus.completed) {
+              status = TicketStatus.pendingApproval;
+            } else if (wo.status == dash_models.WorkOrderStatus.approved) {
+              status = TicketStatus.closed;
+            } else if (wo.status == dash_models.WorkOrderStatus.rejected) {
+              status = TicketStatus.rejected;
+            }
+
+            TicketSeverity severity = TicketSeverity.medium;
+            if (wo.severity == dash_models.WorkOrderSeverity.critical) {
+              severity = TicketSeverity.critical;
+            } else if (wo.severity == dash_models.WorkOrderSeverity.high) {
+              severity = TicketSeverity.high;
+            } else if (wo.severity == dash_models.WorkOrderSeverity.low) {
+              severity = TicketSeverity.low;
+            }
+
+            return TicketModel(
+              id: wo.id,
+              code: wo.code,
+              machineId: wo.machineId,
+              machineCode: wo.machineId,
+              machineName: wo.machineName,
+              description: wo.description,
+              severity: severity,
+              status: status,
+              createdAt: wo.createdAt,
+              imageUrl: wo.imageUrl,
+              engineerName: wo.assigneeName,
+              rejectionReason: wo.rejectionReason,
+            );
+          }).toList();
+          _isLoading = false;
+        });
+      }
+    });
+
+    // 2. Silent Auto-Polling fallback every 5 seconds
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      _silentRefreshTickets();
+    });
+  }
+
+  Future<void> _silentRefreshTickets() async {
+    final apiList = await _ticketService.fetchTicketsFromApi();
+    if (mounted && apiList.isNotEmpty) {
+      setState(() {
+        _tickets = apiList;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _streamSubscription?.cancel();
+    _autoRefreshTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadTicketsData() async {
