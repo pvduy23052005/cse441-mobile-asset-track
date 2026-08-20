@@ -11,7 +11,7 @@ class SignaturePadWidget extends StatefulWidget {
     super.key,
     this.height = 160,
     this.onSignatureChanged,
-    this.strokeColor = const Color(0xFF0284C7), // Deep blue ink stroke
+    this.strokeColor = const Color(0xFF0284C7),
     this.strokeWidth = 3.0,
   });
 
@@ -41,11 +41,9 @@ class SignaturePadWidgetState extends State<SignaturePadWidget> {
       Rect.fromLTWH(0, 0, 380, widget.height),
     );
 
-    // Paint white background
     final bgPaint = Paint()..color = Colors.white;
     canvas.drawRect(Rect.fromLTWH(0, 0, 380, widget.height), bgPaint);
 
-    // Paint strokes
     final strokePaint = Paint()
       ..color = widget.strokeColor
       ..strokeCap = StrokeCap.round
@@ -77,7 +75,7 @@ class SignaturePadWidgetState extends State<SignaturePadWidget> {
       ),
       child: Stack(
         children: [
-          // Canvas for touch gestures
+
           GestureDetector(
             onPanStart: (details) {
               final RenderBox renderBox = context.findRenderObject() as RenderBox;
@@ -113,7 +111,6 @@ class SignaturePadWidgetState extends State<SignaturePadWidget> {
             ),
           ),
 
-          // Instruction placeholder when empty
           if (!hasSigned)
             const IgnorePointer(
               child: Center(
@@ -123,7 +120,7 @@ class SignaturePadWidgetState extends State<SignaturePadWidget> {
                     Icon(
                       Icons.edit_note_rounded,
                       size: 32,
-                      color: Color(0xFFF59E0B), // amber-500
+                      color: Color(0xFFF59E0B),
                     ),
                     SizedBox(height: 4),
                     Text(
@@ -139,7 +136,6 @@ class SignaturePadWidgetState extends State<SignaturePadWidget> {
               ),
             ),
 
-          // Clear button when signed
           if (hasSigned)
             Positioned(
               top: 8,

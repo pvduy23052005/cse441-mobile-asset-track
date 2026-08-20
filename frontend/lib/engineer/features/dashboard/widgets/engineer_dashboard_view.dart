@@ -187,7 +187,7 @@ class _EngineerDashboardViewState extends State<EngineerDashboardView> {
           padding: const EdgeInsets.all(12.0),
           child: Column(
             children: [
-              // Loading Indicator
+
               if (_isLoading)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 20.0),
@@ -196,7 +196,6 @@ class _EngineerDashboardViewState extends State<EngineerDashboardView> {
                   ),
                 ),
 
-              // Quick Stats KPI Cards (CHỜ TIẾP NHẬN & ĐANG XỬ LÝ)
               QuickStatsCards(
                 pendingCount: _workOrders
                     .where((w) => w.status == WorkOrderStatus.pending)
@@ -207,7 +206,6 @@ class _EngineerDashboardViewState extends State<EngineerDashboardView> {
               ),
               const SizedBox(height: 10),
 
-              // Section 1: PHIẾU SỰ CỐ SOS CẦN XỬ LÝ
               Card(
                 elevation: 1,
                 shadowColor: Colors.black.withValues(alpha: 0.05),
@@ -221,7 +219,7 @@ class _EngineerDashboardViewState extends State<EngineerDashboardView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Section Header
+
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -246,7 +244,6 @@ class _EngineerDashboardViewState extends State<EngineerDashboardView> {
                       ),
                       const SizedBox(height: 10),
 
-                      // SOS Work Orders Feed
                       if (!_isLoading && pendingOrActiveWorkOrders.isEmpty)
                         Container(
                           width: double.infinity,
@@ -283,7 +280,6 @@ class _EngineerDashboardViewState extends State<EngineerDashboardView> {
               ),
               const SizedBox(height: 14),
 
-              // Section 2: NHIỆM VỤ BẢO TRÌ ĐỊNH KỲ (PM CHECKLIST)
               Card(
                 elevation: 1,
                 shadowColor: Colors.black.withValues(alpha: 0.05),
@@ -297,7 +293,7 @@ class _EngineerDashboardViewState extends State<EngineerDashboardView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Section Header
+
                       const Text(
                         'NHIỆM VỤ BẢO TRÌ ĐỊNH KỲ (PM CHECKLIST)',
                         style: TextStyle(
@@ -309,7 +305,6 @@ class _EngineerDashboardViewState extends State<EngineerDashboardView> {
                       ),
                       const SizedBox(height: 10),
 
-                      // PM Checklists Feed
                       if (!_isLoading && _pmChecklists.isEmpty)
                         Container(
                           width: double.infinity,

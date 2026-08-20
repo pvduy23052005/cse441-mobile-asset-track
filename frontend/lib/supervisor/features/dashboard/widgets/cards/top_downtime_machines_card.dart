@@ -28,7 +28,7 @@ class TopDowntimeMachinesCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Row
+
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

@@ -8,7 +8,6 @@ class SupervisorApprovalService {
   Future<List<SupervisorApprovalModel>> fetchPendingApprovalsFromApi() async {
     final list = <SupervisorApprovalModel>[];
 
-    // 1. Fetch SOS Breakdown Tickets from /tickets (Table: tickets)
     try {
       final resTickets = await _dio.get<List<dynamic>>('/tickets');
       if (resTickets.data != null) {
@@ -20,7 +19,6 @@ class SupervisorApprovalService {
       }
     } catch (_) {}
 
-    // 2. Fetch PM Checklists from /machines/pm-checklists (Table: pm_checklists)
     try {
       final resPM = await _dio.get<List<dynamic>>('/machines/pm-checklists');
       if (resPM.data != null) {
@@ -68,9 +66,6 @@ class SupervisorApprovalService {
       }
     } catch (_) {}
 
-    // Filter tickets to display:
-    // - Pending sign-off: COMPLETED / PENDING_APPROVAL / SUBMITTED / OPEN / IN_PROGRESS
-    // - Approved / Rejected within the last 60 minutes
     final now = DateTime.now();
     return list.where((t) {
       if (t.status == 'COMPLETED' ||
@@ -102,7 +97,7 @@ class SupervisorApprovalService {
       );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (_) {
-      return true; // Optimistic fallback
+      return true;
     }
   }
 
@@ -117,7 +112,7 @@ class SupervisorApprovalService {
       );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (_) {
-      return true; // Optimistic fallback
+      return true;
     }
   }
 }

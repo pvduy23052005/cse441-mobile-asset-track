@@ -67,7 +67,7 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
   @override
   void initState() {
     super.initState();
-    // Lấy 100% dữ liệu linh kiện thật từ phiếu Backend API
+
     _usedParts.addAll(widget.ticket.usedSpareParts);
   }
 
@@ -217,7 +217,7 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Header Row
+
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 18, 16, 12),
               child: Row(
@@ -283,14 +283,13 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
               ),
             ),
 
-            // 2. Scrollable Body Content
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Summary Card (THIẾT BỊ SỰ CỐ)
+
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(14),
@@ -452,7 +451,6 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
 
                     const SizedBox(height: 14),
 
-                    // MÔ TẢ CHI TIẾT SỰ CỐ
                     const Text(
                       'MÔ TẢ CHI TIẾT SỰ CỐ:',
                       style: TextStyle(
@@ -482,7 +480,6 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                       ),
                     ),
 
-                    // ẢNH MINH CHỨNG LỖI HIỆN TRƯỜNG (Chỉ hiển thị nếu từ API thật có ảnh)
                     if (ticket.imageUrl != null &&
                         ticket.imageUrl!.isNotEmpty) ...[
                       const SizedBox(height: 14),
@@ -511,7 +508,6 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
 
                     const SizedBox(height: 14),
 
-                    // LINH KIỆN ĐÃ KHAI BÁO
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -722,7 +718,6 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
                       const SizedBox(height: 8),
                     ],
 
-                    // Spare Parts List Cards (Nếu API chưa có linh kiện thì báo chưa khai báo)
                     if (_usedParts.isEmpty)
                       Container(
                         width: double.infinity,
@@ -938,7 +933,6 @@ class _WorkOrderDetailModalState extends State<WorkOrderDetailModal> {
               ),
             ),
 
-            // 3. Footer Action Buttons
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 18),
               child: Column(

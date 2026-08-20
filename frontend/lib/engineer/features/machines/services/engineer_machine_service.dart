@@ -22,7 +22,6 @@ class EngineerMachineService {
     return null;
   }
 
-
   Future<bool> updateTroubleshooting(String machineId, List<TroubleshootingItem> items) async {
     return _offlineRepo.updateTroubleshootingOfflineFirst(machineId, items);
   }

@@ -48,7 +48,7 @@ class _EngineerMachinesViewState extends State<EngineerMachinesView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Title matching ui prototype: TẤT CẢ THIẾT BỊ PHÂN XƯỞNG
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -57,7 +57,7 @@ class _EngineerMachinesViewState extends State<EngineerMachinesView> {
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w900,
-                      color: Color(0xFF475569), // Slate-600
+                      color: Color(0xFF475569),
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -66,7 +66,7 @@ class _EngineerMachinesViewState extends State<EngineerMachinesView> {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF047857), // Emerald-700
+                      color: Color(0xFF047857),
                     ),
                   ),
                 ],

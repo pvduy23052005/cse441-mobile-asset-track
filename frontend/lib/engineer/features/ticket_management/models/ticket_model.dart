@@ -1,17 +1,17 @@
 enum TicketStatus {
-  open, // OPEN / PENDING (Chờ tiếp nhận)
-  inProgress, // IN_PROGRESS (Đang xử lý)
-  pendingApproval, // PENDING_APPROVAL / COMPLETED (Hoàn thành - Chờ nghiệm thu)
-  closed, // CLOSED / APPROVED (Đã nghiệm thu)
-  rejected, // REJECTED (Quản đốc từ chối nghiệm thu)
-  cancelled, // CANCELLED (Đã hủy)
+  open,
+  inProgress,
+  pendingApproval,
+  closed,
+  rejected,
+  cancelled,
 }
 
 enum TicketSeverity {
-  critical, // NGHIÊM TRỌNG (CRITICAL)
-  high, // CAO (HIGH)
-  medium, // VỪA (MEDIUM)
-  low, // THẤP (LOW)
+  critical,
+  high,
+  medium,
+  low,
 }
 
 class SparePartItem {

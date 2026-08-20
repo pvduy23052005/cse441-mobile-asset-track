@@ -12,7 +12,6 @@ import 'core/utils/storage_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize SQLite FFI only on Desktop (Windows/Linux/macOS)
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     try {
       sqfliteFfiInit();

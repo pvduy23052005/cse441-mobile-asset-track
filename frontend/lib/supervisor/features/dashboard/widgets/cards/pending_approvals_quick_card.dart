@@ -22,7 +22,7 @@ class PendingApprovalsQuickCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFEF08A)), // yellow-200
+        border: Border.all(color: const Color(0xFFFEF08A)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x06000000),
@@ -34,7 +34,7 @@ class PendingApprovalsQuickCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Row
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

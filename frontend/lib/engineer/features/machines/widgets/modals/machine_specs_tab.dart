@@ -24,7 +24,7 @@ class MachineSpecsTab extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // 1. Grid 2x2 Thông Số Kỹ Thuật (Co giãn vừa khít theo chữ, không có khoảng trống thừa)
+
         Row(
           children: [
             Expanded(child: _buildSpecTile('Công Suất', power)),
@@ -42,22 +42,21 @@ class MachineSpecsTab extends StatelessWidget {
         ),
         const SizedBox(height: 10),
 
-        // 2. Maintenance ProgressBar (Co gọn khít, thanh thoát)
         Container(
           padding: const EdgeInsets.all(12.0),
           decoration: BoxDecoration(
             color: isOverdue
-                ? const Color(0xFFFFF1F2) // bg-rose-50
+                ? const Color(0xFFFFF1F2)
                 : isNearMaintenance
-                    ? const Color(0xFFFEF3C7) // bg-amber-50
-                    : const Color(0xFFF8FAFC), // bg-slate-50
+                    ? const Color(0xFFFEF3C7)
+                    : const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.circular(12.0),
             border: Border.all(
               color: isOverdue
-                  ? const Color(0xFFFECDD3) // border-rose-200
+                  ? const Color(0xFFFECDD3)
                   : isNearMaintenance
-                      ? const Color(0xFFFDE68A) // border-amber-200
-                      : const Color(0xFFE2E8F0), // border-slate-200
+                      ? const Color(0xFFFDE68A)
+                      : const Color(0xFFE2E8F0),
             ),
           ),
           child: Column(
@@ -86,7 +85,7 @@ class MachineSpecsTab extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFFB45309), // text-amber-700
+                              color: Color(0xFFB45309),
                             ),
                           ),
                         if (isOverdue)
@@ -95,7 +94,7 @@ class MachineSpecsTab extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFFBE123C), // text-rose-700
+                              color: Color(0xFFBE123C),
                             ),
                           ),
                       ],
@@ -107,14 +106,13 @@ class MachineSpecsTab extends StatelessWidget {
                       fontSize: 11,
                       fontWeight: FontWeight.w900,
                       fontFamily: 'monospace',
-                      color: Color(0xFF047857), // text-emerald-700
+                      color: Color(0xFF047857),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 6),
 
-              // Progress Bar Indicator (w-full bg-slate-200 h-2 rounded-full)
               ClipRRect(
                 borderRadius: BorderRadius.circular(999.0),
                 child: LinearProgressIndicator(
@@ -137,7 +135,7 @@ class MachineSpecsTab extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF64748B), // text-slate-500
+                  color: Color(0xFF64748B),
                 ),
               ),
             ],

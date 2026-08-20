@@ -13,7 +13,7 @@ class SupervisorKpiCards extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // KPI 1: Active Machines Card
+
         _buildKpiContainer(
           borderColor: const Color(0xFF99F6E4),
           iconBgColor: const Color(0xFFF0FDFA),
@@ -50,7 +50,6 @@ class SupervisorKpiCards extends StatelessWidget {
 
         const SizedBox(height: 8),
 
-        // KPI 3: Downtime Card
         _buildKpiContainer(
           borderColor: const Color(0xFFFDE68A),
           iconBgColor: const Color(0xFFFFFBEB),

@@ -144,7 +144,7 @@ class _EngineerTicketListViewState extends State<EngineerTicketListView> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFF8FAFC), // bg-slate-50
+      color: const Color(0xFFF8FAFC),
       child: RefreshIndicator(
         onRefresh: _loadTicketsData,
         child: SingleChildScrollView(
@@ -153,13 +153,13 @@ class _EngineerTicketListViewState extends State<EngineerTicketListView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Title & Engineer Badge
+
               const Text(
                 'NHIỆM VỤ KỸ SƯ CƠ ĐIỆN (ME TASKS)',
                 style: TextStyle(
                   fontSize: 11.5,
-                  fontWeight: FontWeight.w900, // font-extrabold
-                  color: Color(0xFF475569), // text-slate-600
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF475569),
                   letterSpacing: 0.6,
                 ),
               ),
@@ -172,7 +172,7 @@ class _EngineerTicketListViewState extends State<EngineerTicketListView> {
                   child: Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
                 )
               else ...[
-                // Card 1: 1. Sự cố SOS khẩn cấp cần sửa chữa (Count)
+
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
@@ -197,7 +197,7 @@ class _EngineerTicketListViewState extends State<EngineerTicketListView> {
                           style: const TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF1E293B), // text-slate-800
+                            color: Color(0xFF1E293B),
                           ),
                         ),
                       ),
@@ -245,7 +245,6 @@ class _EngineerTicketListViewState extends State<EngineerTicketListView> {
 
                 const SizedBox(height: 12),
 
-                // Card 2: 2. Đợt bảo trì định kỳ PM Checklist (Count)
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
@@ -270,7 +269,7 @@ class _EngineerTicketListViewState extends State<EngineerTicketListView> {
                           style: const TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF1E293B), // text-slate-800
+                            color: Color(0xFF1E293B),
                           ),
                         ),
                       ),

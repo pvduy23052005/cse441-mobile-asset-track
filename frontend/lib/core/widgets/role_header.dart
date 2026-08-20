@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
 class RoleHeader extends StatelessWidget {
-  final String roleName; // e.g. 'Kỹ Sư ME', 'Công Nhân', 'Quản Đốc'
+  final String roleName;
   final String userEmail;
   final IconData roleIcon;
   final Color roleColor;
@@ -78,7 +78,7 @@ class RoleHeader extends StatelessWidget {
               ),
             ],
           ),
-          // User tag badge (Top Right)
+
           InkWell(
             onTap: onChangeAccount,
             borderRadius: BorderRadius.circular(8),

@@ -35,15 +35,15 @@ class TicketCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
           decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC), // bg-slate-50
-            borderRadius: BorderRadius.circular(12), // rounded-xl
-            border: Border.all(color: const Color(0xFFE2E8F0)), // border-slate-200
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Row 1: Code & Severity Badge
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -51,16 +51,16 @@ class TicketCard extends StatelessWidget {
                     ticket.code,
                     style: const TextStyle(
                       fontSize: 12.5,
-                      fontWeight: FontWeight.w900, // font-mono font-bold
+                      fontWeight: FontWeight.w900,
                       fontFamily: 'monospace',
-                      color: Color(0xFFBE123C), // text-rose-700
+                      color: Color(0xFFBE123C),
                       letterSpacing: 0.2,
                     ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFE4E6), // bg-rose-100
+                      color: const Color(0xFFFFE4E6),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -68,7 +68,7 @@ class TicketCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFFBE123C), // text-rose-700
+                        color: Color(0xFFBE123C),
                         letterSpacing: 0.4,
                       ),
                     ),
@@ -78,12 +78,11 @@ class TicketCard extends StatelessWidget {
 
               const SizedBox(height: 5),
 
-              // Row 2: Machine Name
               Text(
                 ticket.machineName,
                 style: const TextStyle(
                   fontSize: 13,
-                  fontWeight: FontWeight.w800, // font-bold text-slate-900
+                  fontWeight: FontWeight.w800,
                   color: Color(0xFF0F172A),
                   height: 1.25,
                 ),
@@ -91,14 +90,13 @@ class TicketCard extends StatelessWidget {
 
               const SizedBox(height: 3),
 
-              // Row 3: Description (line-clamp-1 text-slate-500)
               Text(
                 ticket.description,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 11,
-                  color: Color(0xFF64748B), // text-slate-500
+                  color: Color(0xFF64748B),
                   height: 1.3,
                   fontWeight: FontWeight.w400,
                 ),

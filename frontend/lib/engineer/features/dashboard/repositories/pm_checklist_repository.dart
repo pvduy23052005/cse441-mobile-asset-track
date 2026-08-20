@@ -57,7 +57,7 @@ class PMChecklistRepository {
     required List<Map<String, dynamic>> spareParts,
     String? engineerName,
   }) async {
-    // 1. Save progress locally first
+
     await savePMStateLocally(
       checklistId: checklistId,
       items: items,
@@ -82,6 +82,6 @@ class PMChecklistRepository {
       } catch (_) {}
     }
 
-    return true; // Fallback for optimistic UI
+    return true;
   }
 }

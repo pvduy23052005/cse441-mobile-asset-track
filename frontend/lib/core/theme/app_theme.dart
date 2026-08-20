@@ -3,24 +3,24 @@ import 'package:flutter/material.dart';
 class AppTheme {
   static const Color primaryColor = Color(
     0xFF059669,
-  ); 
+  );
   static const Color backgroundColor = Color(
     0xFFF8FAFC,
-  ); 
-  static const Color cardColor = Color(0xFFFFFFFF); // White (--card)
+  );
+  static const Color cardColor = Color(0xFFFFFFFF);
   static const Color foregroundColor = Color(
     0xFF0F172A,
-  ); 
+  );
   static const Color mutedForegroundColor = Color(
     0xFF64748B,
-  ); 
+  );
   static const Color borderColor = Color(
     0xFFE2E8F0,
-  ); 
+  );
   static const Color secondaryColor = Color(
     0xFFF1F5F9,
-  ); 
-  static const Color errorColor = Color(0xFFE11D48); 
+  );
+  static const Color errorColor = Color(0xFFE11D48);
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -45,7 +45,7 @@ class AppTheme {
         foregroundColor: foregroundColor,
         elevation: 0,
         scrolledUnderElevation: 0.5,
-        centerTitle: true, 
+        centerTitle: true,
         shape: Border(bottom: BorderSide(color: borderColor, width: 0.8)),
         titleTextStyle: TextStyle(
           color: foregroundColor,

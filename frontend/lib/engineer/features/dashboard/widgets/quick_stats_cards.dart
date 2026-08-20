@@ -17,7 +17,7 @@ class QuickStatsCards extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Row(
         children: [
-          // Stat 1: Chờ Tiếp Nhận
+
           Expanded(
             child: Container(
               padding: const EdgeInsets.all(14.0),
@@ -56,7 +56,7 @@ class QuickStatsCards extends StatelessWidget {
                           fontSize: 22,
                           fontWeight: FontWeight.w900,
                           fontFamily: 'monospace',
-                          color: Color(0xFFBE123C), // Rose-700
+                          color: Color(0xFFBE123C),
                         ),
                       ),
                       const SizedBox(width: 4),
@@ -76,7 +76,6 @@ class QuickStatsCards extends StatelessWidget {
           ),
           const SizedBox(width: 10),
 
-          // Stat 2: Đang Xử Lý
           Expanded(
             child: Container(
               padding: const EdgeInsets.all(14.0),
@@ -115,7 +114,7 @@ class QuickStatsCards extends StatelessWidget {
                           fontSize: 22,
                           fontWeight: FontWeight.w900,
                           fontFamily: 'monospace',
-                          color: Color(0xFF0284C7), // Sky-600
+                          color: Color(0xFF0284C7),
                         ),
                       ),
                       const SizedBox(width: 4),

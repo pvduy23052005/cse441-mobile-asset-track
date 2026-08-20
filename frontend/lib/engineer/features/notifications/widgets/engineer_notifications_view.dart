@@ -315,7 +315,7 @@ class _EngineerNotificationsViewState extends State<EngineerNotificationsView> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              // Header Row
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -380,7 +380,6 @@ class _EngineerNotificationsViewState extends State<EngineerNotificationsView> {
 
               const SizedBox(height: 12),
 
-              // Filter Bar
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(

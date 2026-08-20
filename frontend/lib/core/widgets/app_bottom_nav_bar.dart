@@ -248,9 +248,9 @@ class _CenterQRButtonState extends State<_CenterQRButton> {
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [
-                            Color(0xFF059669), // emerald-600
-                            Color(0xFF10B981), // emerald-500
-                            Color(0xFF0D9488), // teal-500
+                            Color(0xFF059669),
+                            Color(0xFF10B981),
+                            Color(0xFF0D9488),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -270,7 +270,7 @@ class _CenterQRButtonState extends State<_CenterQRButton> {
                       ),
                       child: Center(
                         child: AnimatedRotation(
-                          turns: _isHovered ? 0.033 : 0.0, // rotate ~12 deg on hover like group-hover:rotate-12
+                          turns: _isHovered ? 0.033 : 0.0,
                           duration: const Duration(milliseconds: 200),
                           curve: Curves.easeOutCubic,
                           child: const Icon(
@@ -291,7 +291,7 @@ class _CenterQRButtonState extends State<_CenterQRButton> {
                       fontSize: 10,
                       fontWeight: FontWeight.w900,
                       color: _isHovered
-                          ? const Color(0xFF047857) // emerald-700
+                          ? const Color(0xFF047857)
                           : AppTheme.primaryColor,
                       letterSpacing: -0.2,
                     ),

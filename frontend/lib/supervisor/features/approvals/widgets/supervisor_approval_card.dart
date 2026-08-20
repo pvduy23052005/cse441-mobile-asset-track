@@ -39,7 +39,7 @@ class SupervisorApprovalCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top Row: Code + Category Badge + Status Badge
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -49,8 +49,8 @@ class SupervisorApprovalCard extends StatelessWidget {
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
                           color: item.code.startsWith('PM')
-                              ? const Color(0xFFFEF3C7) // amber-100
-                              : const Color(0xFFFFE4E6), // rose-100
+                              ? const Color(0xFFFEF3C7)
+                              : const Color(0xFFFFE4E6),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
@@ -106,7 +106,6 @@ class SupervisorApprovalCard extends StatelessWidget {
 
               const SizedBox(height: 10),
 
-              // Title
               Text(
                 item.title,
                 style: const TextStyle(
@@ -118,7 +117,6 @@ class SupervisorApprovalCard extends StatelessWidget {
 
               const SizedBox(height: 6),
 
-              // Machine & Engineer Line
               Row(
                 children: [
                   const Icon(Icons.memory_rounded,
@@ -162,7 +160,6 @@ class SupervisorApprovalCard extends StatelessWidget {
               const Divider(height: 1, color: Color(0xFFF1F5F9)),
               const SizedBox(height: 10),
 
-              // Bottom Row: Replaced parts summary count + Action button
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -185,7 +182,7 @@ class SupervisorApprovalCard extends StatelessWidget {
                   if (!isApproved && !isRejected)
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF059669), // emerald-600
+                        backgroundColor: const Color(0xFF059669),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 14, vertical: 8),

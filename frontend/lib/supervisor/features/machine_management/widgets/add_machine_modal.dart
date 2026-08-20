@@ -27,8 +27,8 @@ class _AddMachineModalState extends State<AddMachineModal> {
   final _categoryController = TextEditingController(text: 'Gia Công CNC');
   final _nameController = TextEditingController(text: 'Máy Phay CNC Haas 3 Trục');
   final _locationController = TextEditingController(text: 'Phân Xưởng 1 - Dây chuyền C');
-  
-  String _trackingUnit = 'HOURS'; // HOURS, KM, DAYS
+
+  String _trackingUnit = 'HOURS';
   final _initialHoursController = TextEditingController(text: '0');
   final _recurringIntervalController = TextEditingController(text: '500');
 
@@ -139,13 +139,13 @@ class _AddMachineModalState extends State<AddMachineModal> {
       final createdMachineModel = await MachineService().createMachine(payload);
 
       if (mounted) {
-        Navigator.pop(context); // Close loading dialog
+        Navigator.pop(context);
 
         if (widget.onAddMachine != null) {
           widget.onAddMachine!(payload);
         }
 
-        Navigator.pop(context); // Close modal
+        Navigator.pop(context);
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -156,7 +156,7 @@ class _AddMachineModalState extends State<AddMachineModal> {
       }
     } catch (e) {
       if (mounted) {
-        Navigator.pop(context); // Close loading dialog if open
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi khi thêm máy mới: ${e.toString().replaceAll('Exception: ', '')}'),
@@ -188,9 +188,7 @@ class _AddMachineModalState extends State<AddMachineModal> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // =========================================================================
-              // 1. HEADER BANNER (DARK GREEN / TEAL)
-              // =========================================================================
+
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: const BoxDecoration(
@@ -209,7 +207,7 @@ class _AddMachineModalState extends State<AddMachineModal> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
-                        Icons.memory_rounded, // Cpu icon
+                        Icons.memory_rounded,
                         color: Colors.white,
                         size: 22,
                       ),
@@ -247,15 +245,12 @@ class _AddMachineModalState extends State<AddMachineModal> {
                 ),
               ),
 
-              // =========================================================================
-              // 2. FORM BODY CONTENT
-              // =========================================================================
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Row 1: Mã Thiết Bị & Phân Loại
+
                     Row(
                       children: [
                         Expanded(
@@ -308,7 +303,6 @@ class _AddMachineModalState extends State<AddMachineModal> {
 
                     const SizedBox(height: 12),
 
-                    // Row 2: Tên Máy / Thiết Bị
                     const Text(
                       'Tên Máy / Thiết Bị',
                       style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF1E293B)),
@@ -322,7 +316,6 @@ class _AddMachineModalState extends State<AddMachineModal> {
 
                     const SizedBox(height: 12),
 
-                    // Row 3: Vị Trí Lắp Đặt / Phân Xưởng
                     const Text(
                       'Vị Trí Lắp Đặt / Phân Xưởng',
                       style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF1E293B)),
@@ -336,9 +329,6 @@ class _AddMachineModalState extends State<AddMachineModal> {
 
                     const SizedBox(height: 16),
 
-                    // =========================================================================
-                    // 3. ĐƠN VỊ THEO DÕI BẢO TRÌ (SEGMENTED SELECTOR BOX)
-                    // =========================================================================
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
@@ -369,15 +359,12 @@ class _AddMachineModalState extends State<AddMachineModal> {
 
                     const SizedBox(height: 16),
 
-                    // =========================================================================
-                    // 4. CẤU HÌNH MỐC BẢO TRÌ LẶP LẠI (MINT GREEN CONTAINER BOX)
-                    // =========================================================================
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF0FDF4), // emerald-50
+                        color: const Color(0xFFF0FDF4),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFA7F3D0)), // emerald-200
+                        border: Border.all(color: const Color(0xFFA7F3D0)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -403,7 +390,6 @@ class _AddMachineModalState extends State<AddMachineModal> {
                           ),
                           const SizedBox(height: 12),
 
-                          // Initial hours & recurring interval row
                           Row(
                             children: [
                               Expanded(
@@ -445,7 +431,6 @@ class _AddMachineModalState extends State<AddMachineModal> {
 
                           const SizedBox(height: 12),
 
-                          // Add milestone header
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -473,7 +458,6 @@ class _AddMachineModalState extends State<AddMachineModal> {
                           ),
                           const SizedBox(height: 8),
 
-                          // Milestone list items
                           ..._initialThresholds.asMap().entries.map((entry) {
                             final idx = entry.key;
                             final val = entry.value;
@@ -512,7 +496,6 @@ class _AddMachineModalState extends State<AddMachineModal> {
 
                           const SizedBox(height: 10),
 
-                          // Tip Alert Box
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
@@ -547,13 +530,10 @@ class _AddMachineModalState extends State<AddMachineModal> {
 
                     const SizedBox(height: 16),
 
-                    // =========================================================================
-                    // 5. CẨM NANG XỬ LÝ LỖI NHANH (QUICK TROUBLESHOOTING)
-                    // =========================================================================
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFFBEB), // amber-50
+                        color: const Color(0xFFFFFBEB),
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(color: const Color(0xFFFDE68A)),
                       ),
@@ -642,9 +622,6 @@ class _AddMachineModalState extends State<AddMachineModal> {
 
                     const SizedBox(height: 20),
 
-                    // =========================================================================
-                    // 6. ACTION BUTTONS (SUBMIT & CANCEL)
-                    // =========================================================================
                     Row(
                       children: [
                         Expanded(

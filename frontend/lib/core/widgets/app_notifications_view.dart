@@ -21,9 +21,8 @@ class _AppNotificationsViewState extends State<AppNotificationsView> {
   final NotificationService _service = NotificationService();
   bool _isLoading = true;
   List<AppNotification> _notifications = [];
-  String _selectedFilter = 'ALL'; // 'ALL', 'SOS', 'PM', 'APPROVAL'
+  String _selectedFilter = 'ALL';
 
-  // Chế độ chọn nhiều để xóa
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
 
@@ -434,7 +433,6 @@ class _AppNotificationsViewState extends State<AppNotificationsView> {
             ? snapshot.data!
             : _notifications;
 
-        // Apply selected filter
         final notifications = rawNotifications.where((n) {
           if (_selectedFilter == 'SOS') return n.type == NotificationType.sos;
           if (_selectedFilter == 'PM') return n.type == NotificationType.pm;
@@ -453,7 +451,7 @@ class _AppNotificationsViewState extends State<AppNotificationsView> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                // Header Row
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -495,7 +493,6 @@ class _AppNotificationsViewState extends State<AppNotificationsView> {
                       ),
                     ),
 
-                    // Nút Đã đọc tất cả / Chọn nhiều
                     Row(
                       children: [
                         if (_isSelectionMode) ...[
@@ -601,7 +598,6 @@ class _AppNotificationsViewState extends State<AppNotificationsView> {
 
                 const SizedBox(height: 12),
 
-                // Filter Bar
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
@@ -856,7 +852,6 @@ class _AppNotificationsViewState extends State<AppNotificationsView> {
             ),
           ),
 
-          // Thanh tác vụ nổi phía dưới khi chọn nhiều items
           bottomNavigationBar: _isSelectionMode && _selectedIds.isNotEmpty
               ? Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

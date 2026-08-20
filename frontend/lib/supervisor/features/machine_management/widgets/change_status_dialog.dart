@@ -130,7 +130,7 @@ class _ChangeStatusDialogState extends State<ChangeStatusDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Drag Handle
+
             Center(
               child: Container(
                 width: 40,
@@ -143,7 +143,6 @@ class _ChangeStatusDialogState extends State<ChangeStatusDialog> {
             ),
             const SizedBox(height: 16),
 
-            // Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -184,7 +183,6 @@ class _ChangeStatusDialogState extends State<ChangeStatusDialog> {
             const Divider(height: 1, color: AppTheme.borderColor),
             const SizedBox(height: 16),
 
-            // Status Options
             ..._statusOptions.map((opt) {
               final isSelected = _selectedStatus == opt['value'];
               final Color optColor = opt['color'] as Color;
@@ -254,7 +252,6 @@ class _ChangeStatusDialogState extends State<ChangeStatusDialog> {
 
             const SizedBox(height: 12),
 
-            // Action Buttons
             Row(
               children: [
                 Expanded(

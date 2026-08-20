@@ -18,7 +18,6 @@ class NotificationService {
     return null;
   }
 
-  /// Gọi REST API Backend NestJS lấy danh sách thông báo thật
   Future<List<AppNotification>> fetchNotificationsFromApi() async {
     try {
       final response = await ApiClient.instance.get('/notifications');
@@ -33,7 +32,6 @@ class NotificationService {
     }
   }
 
-  /// Lắng nghe dữ liệu realtime từ Firestore collection 'notifications'
   Stream<List<AppNotification>> streamNotifications({String? userRole, String? userId}) {
     final fs = _firestore;
     if (fs == null) {
@@ -50,7 +48,6 @@ class NotificationService {
         return AppNotification.fromJson(data);
       }).toList();
 
-      // Sắp xếp thời gian giảm dần
       list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return list;
     }).handleError((err) {
@@ -59,7 +56,6 @@ class NotificationService {
     });
   }
 
-  /// Gọi REST API lấy số lượng chưa đọc
   Future<int> fetchUnreadCountFromApi() async {
     try {
       final response = await ApiClient.instance.get('/notifications/unread-count');
@@ -73,16 +69,14 @@ class NotificationService {
     }
   }
 
-  /// Đánh dấu 1 thông báo đã đọc qua REST API & Firestore
   Future<bool> markAsRead(String notificationId) async {
     try {
-      // 1. Cập nhật Firestore nếu có
+
       final fs = _firestore;
       if (fs != null) {
         await fs.collection('notifications').doc(notificationId).update({'is_read': true}).catchError((_) {});
       }
 
-      // 2. Gọi API Backend
       await ApiClient.instance.patch('/notifications/$notificationId/read');
       return true;
     } catch (e) {
@@ -91,13 +85,11 @@ class NotificationService {
     }
   }
 
-  /// Đánh dấu tất cả thông báo là đã đọc
   Future<bool> markAllAsRead() async {
     try {
-      // 1. Gọi REST API
+
       await ApiClient.instance.patch('/notifications/read-all');
 
-      // 2. Cập nhật batch Firestore nếu có
       final fs = _firestore;
       if (fs != null) {
         final snapshot = await fs.collection('notifications').where('is_read', isEqualTo: false).get();
@@ -115,7 +107,6 @@ class NotificationService {
     }
   }
 
-  /// Xóa 1 thông báo theo ID qua REST API & Firestore
   Future<bool> deleteNotification(String notificationId) async {
     try {
       final fs = _firestore;
@@ -130,7 +121,6 @@ class NotificationService {
     }
   }
 
-  /// Xóa nhiều thông báo theo danh sách IDs qua REST API & Firestore
   Future<bool> deleteMultipleNotifications(List<String> notificationIds) async {
     if (notificationIds.isEmpty) return true;
     try {
@@ -150,4 +140,3 @@ class NotificationService {
     }
   }
 }
-

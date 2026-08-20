@@ -39,21 +39,21 @@ class StatusFilterBar extends StatelessWidget {
             type: StatusFilterType.pending,
             label: 'Chờ tiếp nhận ($pendingCount)',
             isSelected: activeFilter == StatusFilterType.pending,
-            activeBgColor: const Color(0xFFE11D48), // Rose-600
+            activeBgColor: const Color(0xFFE11D48),
           ),
           const SizedBox(width: 6),
           _buildFilterChip(
             type: StatusFilterType.inProgress,
             label: 'Đang xử lý ($inProgressCount)',
             isSelected: activeFilter == StatusFilterType.inProgress,
-            activeBgColor: const Color(0xFF0284C7), // Sky-600
+            activeBgColor: const Color(0xFF0284C7),
           ),
           const SizedBox(width: 6),
           _buildFilterChip(
             type: StatusFilterType.completed,
             label: 'Hoàn thành ($completedCount)',
             isSelected: activeFilter == StatusFilterType.completed,
-            activeBgColor: const Color(0xFF059669), // Emerald-600
+            activeBgColor: const Color(0xFF059669),
           ),
         ],
       ),

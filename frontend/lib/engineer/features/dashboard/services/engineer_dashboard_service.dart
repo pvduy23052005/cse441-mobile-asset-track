@@ -36,7 +36,6 @@ class EngineerDashboardService {
             status = WorkOrderStatus.cancelled;
           }
 
-          // Handle image_url or images_urls array
           String? imgUrl = data['imageUrl']?.toString();
           if (imgUrl == null && data['images_urls'] != null && (data['images_urls'] as List).isNotEmpty) {
             imgUrl = (data['images_urls'] as List).first.toString();
@@ -61,13 +60,10 @@ class EngineerDashboardService {
           );
         }).toList();
       }
-    } catch (e) {
-      // Return empty list if network error
-    }
+    } catch (_) {}
     return [];
   }
 
-  // Real Backend NestJS + Firestore DB API Call for PM Checklists
   Future<List<PMChecklistModel>> fetchPMChecklistsFromApi() async {
     try {
       final response = await _dio.get<List<dynamic>>('/machines/pm-checklists');
@@ -100,7 +96,6 @@ class EngineerDashboardService {
     return [];
   }
 
-  // Claim Ticket in NestJS Backend (/tickets/:id/claim)
   Future<bool> updateWorkOrderStatus(String ticketId, String status) async {
     try {
       if (status.toUpperCase() == 'IN_PROGRESS') {

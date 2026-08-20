@@ -1,7 +1,7 @@
 class MachineFormatters {
-  /// Bảng từ điển ánh xạ trực tiếp các trường kỹ thuật trong database sang tiếng Việt chuẩn
+
   static const Map<String, String> _specKeyMap = {
-    // Ép nhựa / Ép thủy lực
+
     'clamping_force': 'Lực kẹp khuôn',
     'clamping_force_ton': 'Lực kẹp (Tấn)',
     'clamping_force_kn': 'Lực kẹp (kN)',
@@ -10,29 +10,29 @@ class MachineFormatters {
     'press_force': 'Lực ép tối đa',
     'tonnage': 'Trọng tải ép (Tấn)',
     'force': 'Lực ép',
-    
+
     'screw_diameter': 'Đường kính trục vít',
     'screw_diameter_mm': 'Đường kính trục vít (mm)',
     'diameter': 'Đường kính',
-    
+
     'injection_pressure': 'Áp suất phun',
     'injection_pressure_mpa': 'Áp suất phun (MPa)',
     'injection_pressure_bar': 'Áp suất phun (bar)',
-    
+
     'injection_volume': 'Thể tích phun',
     'injection_volume_cm3': 'Thể tích phun (cm³)',
     'injection_capacity': 'Dung tích phun',
-    
+
     'injection_rate': 'Tốc độ phun',
     'injection_rate_cm3_s': 'Tốc độ phun (cm³/s)',
     'injection_rate_cm3_sec': 'Tốc độ phun (cm³/s)',
     'injection_rate_cm3s': 'Tốc độ phun (cm³/s)',
     'injection_speed': 'Tốc độ phun',
-    
+
     'injection_weight': 'Trọng lượng phun',
     'shot_weight': 'Khối lượng ép',
     'shot_size': 'Khối lượng ép một lần',
-    
+
     'mold_height': 'Chiều cao khuôn',
     'mold_height_min': 'Chiều cao khuôn tối thiểu',
     'mold_height_max': 'Chiều cao khuôn tối đa',
@@ -43,7 +43,7 @@ class MachineFormatters {
     'max_daylight': 'Khoảng mở khuôn tối đa',
     'max_daylight_mm': 'Khoảng mở khuôn tối đa (mm)',
     'daylight': 'Khoảng sáng giữa 2 bàn kẹp',
-    
+
     'tie_bar_distance': 'Khoảng cách giữa 4 trụ',
     'tie_bar_distance_mm': 'Khoảng cách giữa 4 trụ (mm)',
     'tie_bar_spacing': 'Khoảng cách giữa 4 trụ',
@@ -52,19 +52,19 @@ class MachineFormatters {
     'tie_bar_space_mm': 'Khoảng cách 4 trụ (mm)',
     'tie_bar_clearance': 'Khoảng lọt lòng 4 trụ',
     'tie_bar_clearance_mm': 'Khoảng lọt lòng 4 trụ (mm)',
-    
+
     'platen_size': 'Kích thước bàn kẹp',
     'platen_size_mm': 'Kích thước bàn kẹp (mm)',
     'platen_dimensions': 'Kích thước bàn kẹp',
     'platen_dimension': 'Kích thước bàn kẹp',
-    
+
     'ejector_stroke': 'Hành trình chốt đẩy',
     'ejector_stroke_mm': 'Hành trình chốt đẩy (mm)',
     'ejector_force': 'Lực đẩy phôi',
     'ejector_force_ton': 'Lực đẩy phôi (Tấn)',
     'ejector_force_kn': 'Lực đẩy phôi (kN)',
     'ejector_pins': 'Số chốt đẩy',
-    
+
     'heater_power': 'Công suất gia nhiệt',
     'heater_power_kw': 'Công suất gia nhiệt (kW)',
     'heating_power': 'Công suất gia nhiệt',
@@ -75,7 +75,6 @@ class MachineFormatters {
     'hopper_capacity_l': 'Dung tích phễu liệu (Lít)',
     'hopper_capacity_kg': 'Dung tích phễu liệu (kg)',
 
-    // Áp lực / Thủy lực / Khí nén
     'max_pressure': 'Áp suất tối đa',
     'max_pressure_bar': 'Áp suất tối đa (bar)',
     'max_pressure_mpa': 'Áp suất tối đa (MPa)',
@@ -95,7 +94,6 @@ class MachineFormatters {
     'lubricant': 'Dầu bôi trơn',
     'volume': 'Dung tích / Thể tích',
 
-    // Điện năng / Năng lượng / Động cơ
     'power': 'Công suất',
     'motor_power': 'Công suất động cơ',
     'motor_power_kw': 'Công suất động cơ (kW)',
@@ -115,7 +113,6 @@ class MachineFormatters {
     'frequency_hz': 'Tần số (Hz)',
     'current': 'Dòng điện định mức',
 
-    // Gia công cơ khí / CNC / Robot
     'spindle_speed': 'Tốc độ trục chính',
     'spindle_speed_rpm': 'Tốc độ trục chính (RPM)',
     'rpm': 'Vòng quay (RPM)',
@@ -145,7 +142,6 @@ class MachineFormatters {
     'duty_cycle': 'Chu kỳ làm việc',
     'cycle_time': 'Thời gian chu kỳ',
 
-    // Xe nâng / Kho vận
     'lifting_capacity': 'Tải trọng nâng',
     'lifting_capacity_ton': 'Tải trọng nâng (Tấn)',
     'load_capacity': 'Tải trọng tối đa',
@@ -157,7 +153,6 @@ class MachineFormatters {
     'fuel_type': 'Loại nhiên liệu',
     'battery_capacity': 'Dung lượng ắc quy / pin',
 
-    // Nhiệt độ / Làm mát / Môi trường
     'temperature': 'Nhiệt độ làm việc',
     'max_temp': 'Nhiệt độ tối đa',
     'temp_range': 'Dải nhiệt độ',
@@ -165,7 +160,6 @@ class MachineFormatters {
     'cooling_water': 'Nước làm mát',
     'noise_level': 'Độ ồn hoạt động',
 
-    // Thông tin chung / Nhà sản xuất / Bảo trì
     'manufacturer': 'Nhà sản xuất',
     'brand': 'Thương hiệu / Hãng SX',
     'origin': 'Xuất xứ',
@@ -201,7 +195,6 @@ class MachineFormatters {
     'description': 'Mô tả chi tiết',
   };
 
-  /// Bảng chuyển đổi các đơn vị ở hậu tố (suffix)
   static const Map<String, String> _unitMap = {
     'cm3_s': 'cm³/s',
     'cm3_sec': 'cm³/s',
@@ -232,7 +225,6 @@ class MachineFormatters {
     'liters': 'Lít',
   };
 
-  /// Từ điển dịch từng từ tiếng Anh thường dùng trong thông số kỹ thuật
   static const Map<String, String> _wordTranslations = {
     'tie': 'trụ',
     'bar': 'thanh',
@@ -300,7 +292,6 @@ class MachineFormatters {
     'daylight': 'khoảng mở',
   };
 
-  /// Từ điển dịch nhanh các giá trị tiếng Anh thường gặp sang tiếng Việt
   static const Map<String, String> _specValueMap = {
     'active': 'Đang hoạt động',
     'inactive': 'Tạm ngưng',
@@ -326,17 +317,14 @@ class MachineFormatters {
     'false': 'Không',
   };
 
-  /// Chuyển đổi tên trường kỹ thuật sang tiếng Việt chuẩn và dễ đọc
   static String formatSpecKey(String rawKey) {
     var cleanKey =
         rawKey.trim().toLowerCase().replaceAll(RegExp(r'[\s\-_/]+'), '_');
 
-    // 1. Kiểm tra trực tiếp trong từ điển ánh xạ
     if (_specKeyMap.containsKey(cleanKey)) {
       return _specKeyMap[cleanKey]!;
     }
 
-    // 2. Nếu đã có tiếng Việt hoặc dấu cách tự nhiên, giữ nguyên
     if (rawKey.contains(' ') ||
         RegExp(r'[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]',
                 caseSensitive: false)
@@ -344,7 +332,6 @@ class MachineFormatters {
       return rawKey;
     }
 
-    // 3. Tách và xử lý đơn vị ở cuối chuỗi (ví dụ: _mm, _cm3_s, _ton, _kw)
     String unitSuffix = '';
     for (final unitEntry in _unitMap.entries) {
       final pattern = '_${unitEntry.key}';
@@ -355,7 +342,6 @@ class MachineFormatters {
       }
     }
 
-    // Kiểm tra lại sau khi đã bóc tách đơn vị
     if (_specKeyMap.containsKey(cleanKey)) {
       final translated = _specKeyMap[cleanKey]!;
       return unitSuffix.isNotEmpty && !translated.contains('(')
@@ -363,7 +349,6 @@ class MachineFormatters {
           : translated;
     }
 
-    // 4. Dịch từng cụm từ kết hợp (Token-based Vietnamese Translation)
     final words = cleanKey.split('_').where((w) => w.isNotEmpty).toList();
     if (words.isNotEmpty) {
       final translatedWords = words.map((w) {
@@ -371,7 +356,7 @@ class MachineFormatters {
       }).toList();
 
       String result = translatedWords.join(' ');
-      // Viết hoa chữ cái đầu tiên của cụm từ tiếng Việt
+
       result = result[0].toUpperCase() + result.substring(1);
       return '$result$unitSuffix';
     }
@@ -379,7 +364,6 @@ class MachineFormatters {
     return rawKey;
   }
 
-  /// Định dạng giá trị hiển thị thân thiện tiếng Việt
   static String formatSpecValue(dynamic rawValue) {
     if (rawValue == null) return 'N/A';
     if (rawValue is bool) return rawValue ? 'Có hỗ trợ' : 'Không';
@@ -401,7 +385,6 @@ class MachineFormatters {
     return str;
   }
 
-  /// Định dạng ngày giờ từ ISO sang định dạng ngày tháng Việt Nam
   static String formatDateTime(String isoString) {
     try {
       final dt = DateTime.parse(isoString).toLocal();

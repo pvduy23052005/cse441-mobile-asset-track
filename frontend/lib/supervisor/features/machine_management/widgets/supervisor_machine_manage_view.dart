@@ -107,7 +107,7 @@ class _SupervisorMachineManageViewState
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
-          // Header Summary Metrics
+
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -133,7 +133,6 @@ class _SupervisorMachineManageViewState
                   ),
                   const SizedBox(height: 16),
 
-                  // Metrics Cards Row
                   Row(
                     children: [
                       Expanded(
@@ -167,7 +166,6 @@ class _SupervisorMachineManageViewState
 
                   const SizedBox(height: 16),
 
-                  // Search Bar
                   TextField(
                     controller: _searchController,
                     onChanged: (val) => setState(() => _searchQuery = val),
@@ -196,7 +194,6 @@ class _SupervisorMachineManageViewState
 
                   const SizedBox(height: 12),
 
-                  // Filter Chips
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -225,7 +222,6 @@ class _SupervisorMachineManageViewState
             ),
           ),
 
-          // Content States
           if (_isLoading)
             const SliverFillRemaining(
               hasScrollBody: false,
@@ -360,7 +356,6 @@ class _SupervisorMachineManageViewState
               ),
             ),
 
-          // Bottom Spacing
           const SliverToBoxAdapter(
             child: SizedBox(height: 24),
           ),

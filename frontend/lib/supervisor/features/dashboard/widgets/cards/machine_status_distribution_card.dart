@@ -28,7 +28,7 @@ class MachineStatusDistributionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Row
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -60,7 +60,6 @@ class MachineStatusDistributionCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // Combined Segmented Progress Bar
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: SizedBox(
@@ -94,7 +93,6 @@ class MachineStatusDistributionCard extends StatelessWidget {
 
           const SizedBox(height: 14),
 
-          // Detail Status Rows
           _buildStatusRow(
             color: const Color(0xFF10B981),
             title: '🟢 Hoạt Động (Active)',

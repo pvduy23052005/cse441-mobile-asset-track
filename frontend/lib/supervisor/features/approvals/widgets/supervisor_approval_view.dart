@@ -23,10 +23,10 @@ class _SupervisorApprovalViewState extends State<SupervisorApprovalView> {
   void initState() {
     super.initState();
     _loadApprovalsData();
-    // Periodic timer to check and auto-expire items older than 1 hour
+
     _expiryCheckTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       if (mounted) {
-        setState(() {}); // Trigger rebuild to filter out expired items
+        setState(() {});
       }
     });
   }
@@ -136,8 +136,7 @@ class _SupervisorApprovalViewState extends State<SupervisorApprovalView> {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    // Filter active items:
-    // Approved / Rejected items automatically expire and disappear after 1 hour (60 minutes)
+
     final visibleItems = _items.where((i) {
       if (i.status == 'APPROVED' || i.status == 'REJECTED') {
         if (i.actionTimestamp != null) {
@@ -160,7 +159,7 @@ class _SupervisorApprovalViewState extends State<SupervisorApprovalView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Title & Counter Badge
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

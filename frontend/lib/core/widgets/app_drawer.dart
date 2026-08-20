@@ -82,8 +82,8 @@ class AppDrawer extends StatelessWidget {
               minimumSize: const Size(100, 40),
             ),
             onPressed: () async {
-              Navigator.pop(dialogContext); // Close dialog
-              Navigator.pop(context); // Close drawer if open
+              Navigator.pop(dialogContext);
+              Navigator.pop(context);
               await StorageService.clearSession();
               if (onLogout != null) {
                 onLogout!();
@@ -123,7 +123,7 @@ class AppDrawer extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 12),
               children: [
-                // Optional Main Nav Items (if explicitly passed)
+
                 if (mainNavItems != null && mainNavItems!.isNotEmpty) ...[
                   _buildSectionHeader('ĐIỀU HÀNH MỞ RỘNG'),
                   ...mainNavItems!.map(
@@ -145,7 +145,6 @@ class AppDrawer extends StatelessWidget {
                   const SizedBox(height: 12),
                 ],
 
-                // 2.1 Tools & Utilities Section
                 if (toolNavItems != null && toolNavItems!.isNotEmpty) ...[
                   _buildSectionHeader('CÔNG CỤ & TIỆN ÍCH'),
                   ...toolNavItems!.map(
@@ -166,7 +165,6 @@ class AppDrawer extends StatelessWidget {
                   const SizedBox(height: 12),
                 ],
 
-                // 2.2 Account & System Section
                 _buildSectionHeader('TÀI KHOẢN & CÀI ĐẶT'),
                 _buildMenuItem(
                   context: context,
@@ -349,7 +347,7 @@ class AppDrawer extends StatelessWidget {
                 width: 8,
                 height: 8,
                 decoration: const BoxDecoration(
-                  color: Color(0xFF4ADE80), // Online green
+                  color: Color(0xFF4ADE80),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -436,7 +434,7 @@ class AppDrawer extends StatelessWidget {
             if (item.onTap != null) {
               item.onTap!();
             } else if (item.index != null) {
-              Navigator.pop(context); // Close drawer
+              Navigator.pop(context);
               if (onIndexSelected != null) {
                 onIndexSelected!(item.index!);
               }

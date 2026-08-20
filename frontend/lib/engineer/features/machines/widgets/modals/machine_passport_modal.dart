@@ -23,7 +23,7 @@ class MachinePassportModal extends StatefulWidget {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'MachinePassportModal',
-      barrierColor: const Color(0xFF0F172A).withValues(alpha: 0.6), // bg-slate-900/60
+      barrierColor: const Color(0xFF0F172A).withValues(alpha: 0.6),
       transitionDuration: const Duration(milliseconds: 300),
       pageBuilder: (ctx, anim1, anim2) => Center(
         child: Dialog(
@@ -59,7 +59,7 @@ class MachinePassportModal extends StatefulWidget {
 }
 
 class _MachinePassportModalState extends State<MachinePassportModal> {
-  int _activeTab = 0; // 0: SPECS, 1: TROUBLESHOOT, 2: HISTORY
+  int _activeTab = 0;
   int _historyCount = 0;
 
   @override
@@ -71,8 +71,8 @@ class _MachinePassportModalState extends State<MachinePassportModal> {
       constraints: const BoxConstraints(maxWidth: 420),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.0), // rounded-2xl
-        border: Border.all(color: const Color(0xFFE2E8F0)), // border-slate-200
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF0F172A).withValues(alpha: 0.25),
@@ -84,7 +84,7 @@ class _MachinePassportModalState extends State<MachinePassportModal> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 1. Header (p-3.5 border-b border-slate-100 bg-slate-50/60)
+
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
             decoration: const BoxDecoration(
@@ -105,7 +105,7 @@ class _MachinePassportModalState extends State<MachinePassportModal> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFD1FAE5), // bg-emerald-100
+                              color: const Color(0xFFD1FAE5),
                               borderRadius: BorderRadius.circular(4),
                               border: Border.all(color: const Color(0xFFA7F3D0)),
                             ),
@@ -128,7 +128,7 @@ class _MachinePassportModalState extends State<MachinePassportModal> {
                         machine.name,
                         style: const TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w800, // font-extrabold
+                          fontWeight: FontWeight.w800,
                           color: Color(0xFF0F172A),
                           letterSpacing: -0.3,
                         ),
@@ -161,7 +161,6 @@ class _MachinePassportModalState extends State<MachinePassportModal> {
             ),
           ),
 
-          // 2. Running hours / Km quick bar (mx-3.5 my-2 p-2.5 rounded-xl)
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
             padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
@@ -220,7 +219,6 @@ class _MachinePassportModalState extends State<MachinePassportModal> {
             ),
           ),
 
-          // 3. Navigation Tabs (px-4 border-b border-slate-100 flex gap-4)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14.0),
             decoration: const BoxDecoration(
@@ -237,7 +235,6 @@ class _MachinePassportModalState extends State<MachinePassportModal> {
             ),
           ),
 
-          // 4. Tab Content Scrollable Area
           Flexible(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(14.0),
@@ -260,7 +257,6 @@ class _MachinePassportModalState extends State<MachinePassportModal> {
             ),
           ),
 
-          // 5. Footer Action với nút Pulsing Animation [🚨 BÁO LỖI SOS KHẨN CẤP 🚨]
           Container(
             padding: const EdgeInsets.all(14.0),
             decoration: const BoxDecoration(
@@ -410,7 +406,7 @@ class _PulsingSosButtonState extends State<_PulsingSosButton>
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE11D48), // Rose-600
+                  backgroundColor: const Color(0xFFE11D48),
                   foregroundColor: Colors.white,
                   elevation: 4,
                   shadowColor: const Color(0xFFE11D48).withValues(alpha: 0.45),

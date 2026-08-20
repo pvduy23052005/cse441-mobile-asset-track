@@ -77,12 +77,12 @@ class SupervisorMachineCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Main Content
+
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Row 1: Code + Name
+
                       Row(
                         children: [
                           if (machine.code.isNotEmpty)
@@ -128,7 +128,6 @@ class SupervisorMachineCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 5),
 
-                      // Row 2: Location
                       Text(
                         locationText,
                         style: const TextStyle(
@@ -139,7 +138,6 @@ class SupervisorMachineCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 5),
 
-                      // Row 3: Maintenance milestone
                       RichText(
                         text: TextSpan(
                           children: [
@@ -166,7 +164,6 @@ class SupervisorMachineCard extends StatelessWidget {
                   ),
                 ),
 
-                // Right: Status Chip & QR Code Button
                 const SizedBox(width: 8),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,

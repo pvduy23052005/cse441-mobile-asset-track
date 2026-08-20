@@ -21,7 +21,6 @@ class OfflineEngineerRepository {
   OfflineEngineerRepository(this._dio, [this._ref])
     : _connectivity = NetworkConnectivityService();
 
-  // Helper to save JSON string to local_kv_cache
   Future<void> _saveCache(String key, String jsonData) async {
     try {
       final db = await AppLocalDatabase.database;
@@ -33,7 +32,6 @@ class OfflineEngineerRepository {
     } catch (_) {}
   }
 
-  // Helper to read JSON string from local_kv_cache
   Future<String?> _readCache(String key) async {
     try {
       final db = await AppLocalDatabase.database;
@@ -50,9 +48,6 @@ class OfflineEngineerRepository {
     return null;
   }
 
-  // --------------------------------------------------------------------------
-  // TICKETS
-  // --------------------------------------------------------------------------
   Future<List<TicketModel>> getTicketsOfflineFirst() async {
     const cacheKey = 'engineer_tickets';
     final isOnline = await _connectivity.checkOnline();
@@ -69,18 +64,16 @@ class OfflineEngineerRepository {
               )
               .toList();
 
-          // Save to local cache
           final jsonStr = jsonEncode(response.data);
           await _saveCache(cacheKey, jsonStr);
 
           return tickets;
         }
       } catch (_) {
-        // Fallback to cache on error
+
       }
     }
 
-    // Load from local cache if offline or API failed
     final cachedStr = await _readCache(cacheKey);
     if (cachedStr != null && cachedStr.isNotEmpty) {
       try {
@@ -111,11 +104,10 @@ class OfflineEngineerRepository {
           return ticket;
         }
       } catch (_) {
-        // Network failed mid-request -> fallback to offline enqueue
+
       }
     }
 
-    // Offline mode: Optimistically update local ticket cache and enqueue task
     final tickets = await getTicketsOfflineFirst();
     final index = tickets.indexWhere((t) => t.id == ticketId);
     TicketModel? updatedTicket;
@@ -129,7 +121,6 @@ class OfflineEngineerRepository {
       );
     }
 
-    // Enqueue task into sync_queue
     await _enqueueSyncTask(
       actionType: 'CLAIM_TICKET',
       endpoint: '/tickets/$ticketId/claim',
@@ -161,11 +152,10 @@ class OfflineEngineerRepository {
           return ticket;
         }
       } catch (_) {
-        // Network failed mid-request -> fallback to offline enqueue
+
       }
     }
 
-    // Offline mode: Optimistically update local ticket cache & enqueue task
     final tickets = await getTicketsOfflineFirst();
     final index = tickets.indexWhere((t) => t.id == ticketId);
     TicketModel? updatedTicket;
@@ -192,9 +182,6 @@ class OfflineEngineerRepository {
     return updatedTicket;
   }
 
-  // --------------------------------------------------------------------------
-  // MACHINES
-  // --------------------------------------------------------------------------
   Future<List<MachineModel>> getMachinesOfflineFirst() async {
     const cacheKey = 'engineer_machines';
     final isOnline = await _connectivity.checkOnline();
@@ -252,7 +239,6 @@ class OfflineEngineerRepository {
       } catch (_) {}
     }
 
-    // Offline queue
     await _enqueueSyncTask(
       actionType: 'UPDATE_TROUBLESHOOTING',
       endpoint: '/machines/$machineId/troubleshooting',
@@ -263,9 +249,6 @@ class OfflineEngineerRepository {
     return true;
   }
 
-  // --------------------------------------------------------------------------
-  // HELPERS
-  // --------------------------------------------------------------------------
   Future<void> _updateTicketInLocalCache(TicketModel updatedTicket) async {
     final tickets = await getTicketsOfflineFirst();
     final index = tickets.indexWhere((t) => t.id == updatedTicket.id);

@@ -16,7 +16,6 @@ class StorageService {
   static const String _keyUserUid = 'user_uid';
   static const String _keyIsLoggedIn = 'is_logged_in';
 
-  // Keys for Remember Me
   static const String _keyRememberMe = 'remember_me';
   static const String _keySavedEmail = 'saved_email';
   static const String _keySavedPassword = 'saved_password';
@@ -64,9 +63,7 @@ class StorageService {
         await _prefs?.setString(_keySavedEmail, email);
         try {
           await _secureStorage.write(key: _keySavedPassword, value: password);
-        } catch (e) {
-          // Fallback if secure storage encounters key store error on emulator
-        }
+        } catch (_) {}
       } else {
         await _prefs?.remove(_keySavedEmail);
         try {

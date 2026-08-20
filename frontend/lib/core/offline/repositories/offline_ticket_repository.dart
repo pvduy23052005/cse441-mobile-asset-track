@@ -34,7 +34,6 @@ class OfflineTicketRepository {
 
     final localImagePaths = imageFiles.map((f) => f.path).toList();
 
-    // Try online creation first if connected
     final isOnline =
         await _ref.read(networkConnectivityServiceProvider).checkOnline();
 
@@ -104,7 +103,6 @@ class OfflineTicketRepository {
       }
     }
 
-    // If offline, save to local database and queue for background sync
     final localTicket = LocalTicketModel(
       id: localTicketId,
       machineId: machineId,
@@ -183,7 +181,6 @@ class OfflineTicketRepository {
               .where((id) => id != null && id.isNotEmpty)
               .toSet();
 
-          // Clean up stale or already synced local rows
           final localPendingRows = await db.query(
             'local_tickets',
             where: "sync_status IN ('PENDING', 'FAILED')",
@@ -218,7 +215,6 @@ class OfflineTicketRepository {
             }
           }
 
-          // Cache remote items to local database
           for (final item in formattedRemote) {
             try {
               final id = item['id']?.toString() ?? '';
@@ -253,11 +249,10 @@ class OfflineTicketRepository {
           return [...trulyPending, ...formattedRemote];
         }
       } catch (_) {
-        // Fallback to local cache if network request fails
+
       }
     }
 
-    // 3. Return cached synced + pending if offline
     final allLocalRows = await db.query(
       'local_tickets',
       orderBy: 'created_at DESC',

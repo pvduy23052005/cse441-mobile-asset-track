@@ -74,13 +74,11 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
   String _extractMachineCode(String raw) {
     var trimmed = raw.trim();
 
-    // Strip wrapping quotes
     if ((trimmed.startsWith('"') && trimmed.endsWith('"')) ||
         (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
       trimmed = trimmed.substring(1, trimmed.length - 1).trim();
     }
 
-    // JSON format
     if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
       try {
         final data = jsonDecode(trimmed);
@@ -98,7 +96,6 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
       } catch (_) {}
     }
 
-    // Prefix formats: machine:MC-101, id:MC-101, code:MC-101
     final lower = trimmed.toLowerCase();
     if (lower.startsWith('machine:') ||
         lower.startsWith('machine_id:') ||
@@ -110,7 +107,6 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
       }
     }
 
-    // URL format
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
       final uri = Uri.tryParse(trimmed);
       if (uri != null) {
@@ -150,7 +146,6 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
 
       MachineModel? found;
 
-      // 1. Try search in local cache first
       final q = targetCode.toLowerCase().trim();
       final rawQ = rawCode.toLowerCase().trim();
       final stripped = q.replaceAll(RegExp(r'[^a-z0-9]'), '');
@@ -170,14 +165,12 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
         }
       }
 
-      // 2. Fallback: Query live API /machines/$targetCode
       if (found == null) {
         try {
           found = await _machineService.fetchMachineById(targetCode);
         } catch (_) {}
       }
 
-      // 3. Fallback: Query live API with rawCode
       if (found == null && rawCode.trim() != targetCode) {
         try {
           found = await _machineService.fetchMachineById(rawCode.trim());
@@ -318,7 +311,7 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xB30F172A), // bg-slate-900/70 backdrop overlay
+      backgroundColor: const Color(0xB30F172A),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -327,8 +320,8 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
               constraints: const BoxConstraints(maxWidth: 380),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16.0), // rounded-2xl
-                border: Border.all(color: const Color(0xFFE2E8F0)), // border-slate-200
+                borderRadius: BorderRadius.circular(16.0),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFF0F172A).withValues(alpha: 0.35),
@@ -342,7 +335,7 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // 1. Camera Header (px-5 py-4 border-b border-slate-100 bg-white)
+
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                       decoration: const BoxDecoration(
@@ -356,7 +349,7 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
                             children: [
                               Icon(
                                 Icons.qr_code_rounded,
-                                color: Color(0xFF059669), // text-emerald-600
+                                color: Color(0xFF059669),
                                 size: 20,
                               ),
                               SizedBox(width: 8),
@@ -364,15 +357,15 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
                                 'Quét Mã QR thông tin máy',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w900, // font-extrabold
-                                  color: Color(0xFF0F172A), // text-slate-900
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFF0F172A),
                                 ),
                               ),
                             ],
                           ),
                           Row(
                             children: [
-                              // Flash Button (Zap icon)
+
                               InkWell(
                                 onTap: () async {
                                   await _scannerController.toggleTorch();
@@ -383,8 +376,8 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
                                     color: _isTorchOn
-                                        ? const Color(0xFFFACC15) // bg-amber-400
-                                        : const Color(0xFFF1F5F9), // bg-slate-100
+                                        ? const Color(0xFFFACC15)
+                                        : const Color(0xFFF1F5F9),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
@@ -397,7 +390,7 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              // Close Button (X icon)
+
                               InkWell(
                                 onTap: () => Navigator.maybePop(context),
                                 borderRadius: BorderRadius.circular(20),
@@ -420,7 +413,6 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
                       ),
                     ),
 
-                    // 2. Viewfinder Camera Box (h-64 bg-slate-900 = 256px)
                     SizedBox(
                       height: 256,
                       child: Stack(
@@ -488,7 +480,6 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
                               ),
                             ),
 
-                          // Reticle Box (w-48 h-48 border-2 border-emerald-400/60 rounded-xl = 192px)
                           Container(
                             width: 192,
                             height: 192,
@@ -598,17 +589,16 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
                       ),
                     ),
 
-                    // 3. Simulator Selection Bar (p-4 bg-slate-50 border-t border-slate-100)
                     Container(
                       padding: const EdgeInsets.all(16.0),
                       decoration: const BoxDecoration(
-                        color: Color(0xFFF8FAFC), // bg-slate-50
+                        color: Color(0xFFF8FAFC),
                         border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Gallery Button
+
                           SizedBox(
                             width: double.infinity,
                             child: OutlinedButton.icon(
@@ -635,7 +625,6 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
 
                           const SizedBox(height: 12),
 
-                          // Header danh sách thiết bị
                           const Row(
                             children: [
                               Icon(Icons.precision_manufacturing_rounded, size: 15, color: Color(0xFF059669)),
@@ -652,7 +641,6 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
                           ),
                           const SizedBox(height: 8),
 
-                          // Simulator Machine List (space-y-2)
                           if (_isLoadingMachines)
                             const Padding(
                               padding: EdgeInsets.symmetric(vertical: 16.0),
@@ -712,7 +700,7 @@ class _AssetLookupScreenState extends State<AssetLookupScreen>
                                                         Container(
                                                           padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                                                           decoration: BoxDecoration(
-                                                            color: const Color(0xFFD1FAE5), // bg-emerald-100
+                                                            color: const Color(0xFFD1FAE5),
                                                             borderRadius: BorderRadius.circular(4),
                                                             border: Border.all(color: const Color(0xFFA7F3D0)),
                                                           ),

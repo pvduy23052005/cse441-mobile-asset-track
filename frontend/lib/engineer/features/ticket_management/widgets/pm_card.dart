@@ -24,9 +24,9 @@ class PMCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
         decoration: BoxDecoration(
-          color: const Color(0xFFF8FAFC), // bg-slate-50
-          borderRadius: BorderRadius.circular(12), // rounded-xl
-          border: Border.all(color: const Color(0xFFE2E8F0)), // border-slate-200
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -40,7 +40,7 @@ class PMCard extends StatelessWidget {
                     '${pm.code} - ${pm.machineName}',
                     style: const TextStyle(
                       fontSize: 12.5,
-                      fontWeight: FontWeight.w800, // font-bold text-slate-900
+                      fontWeight: FontWeight.w800,
                       color: Color(0xFF0F172A),
                       height: 1.25,
                     ),
@@ -50,7 +50,7 @@ class PMCard extends StatelessWidget {
                     'Mốc ${pm.scheduledHours.toInt()}h máy chạy',
                     style: const TextStyle(
                       fontSize: 11,
-                      color: Color(0xFF64748B), // text-slate-500
+                      color: Color(0xFF64748B),
                       fontWeight: FontWeight.w400,
                     ),
                   ),

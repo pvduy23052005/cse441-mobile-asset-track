@@ -42,7 +42,7 @@ class AppLocalDatabase {
       if (Platform.isAndroid || Platform.isIOS) {
         dir = await getApplicationDocumentsDirectory();
       } else {
-        // Desktop platforms (Windows, Linux, macOS)
+
         dir = await getApplicationSupportDirectory();
       }
     } catch (e) {
@@ -95,12 +95,12 @@ class AppLocalDatabase {
     ''');
 
     await db.execute('''
-      CREATE INDEX idx_sync_queue_status_created 
+      CREATE INDEX idx_sync_queue_status_created
       ON sync_queue (status, created_at ASC)
     ''');
 
     await db.execute('''
-      CREATE INDEX idx_local_tickets_sync_status 
+      CREATE INDEX idx_local_tickets_sync_status
       ON local_tickets (sync_status)
     ''');
 

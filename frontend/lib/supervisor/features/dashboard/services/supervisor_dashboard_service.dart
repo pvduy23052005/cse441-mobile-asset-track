@@ -17,7 +17,6 @@ class SupervisorDashboardService {
       }
     } catch (_) {}
 
-    // Fallback demo real data structure
     return SupervisorDashboardStats.fromMachinesAndTickets([], pending);
   }
 

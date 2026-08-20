@@ -57,7 +57,7 @@ class _SupervisorDigitalSignoffModalState
 
   Future<void> _handleConfirm() async {
     if (!_hasSigned) return;
-    // Export signature drawing
+
     final image = await _signatureKey.currentState?.exportImage();
     final signatureDataStr =
         image != null ? 'data:image/png;base64,sample_signature_png' : 'signed';
@@ -93,7 +93,7 @@ class _SupervisorDigitalSignoffModalState
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Drag handle
+
           const SizedBox(height: 10),
           Container(
             width: 40,
@@ -104,7 +104,6 @@ class _SupervisorDigitalSignoffModalState
             ),
           ),
 
-          // Header
           Padding(
             padding: const EdgeInsets.fromLTRB(18, 12, 18, 12),
             child: Row(
@@ -115,7 +114,7 @@ class _SupervisorDigitalSignoffModalState
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFECFDF5), // emerald-50
+                        color: const Color(0xFFECFDF5),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: const Color(0xFFA7F3D0)),
                       ),
@@ -170,7 +169,6 @@ class _SupervisorDigitalSignoffModalState
 
           const Divider(height: 1, color: Color(0xFFE2E8F0)),
 
-          // Body Content
           Flexible(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(18),
@@ -186,7 +184,7 @@ class _SupervisorDigitalSignoffModalState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Work Summary Card (Wireframe 5.E / US-08)
+
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
@@ -237,7 +235,6 @@ class _SupervisorDigitalSignoffModalState
 
               const SizedBox(height: 10),
 
-              // Machine & Engineer details grid
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -284,12 +281,11 @@ class _SupervisorDigitalSignoffModalState
 
               const SizedBox(height: 10),
 
-              // Downtime Duration Badge
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFFBEB), // amber-50
+                  color: const Color(0xFFFFFBEB),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: const Color(0xFFFDE68A)),
                 ),
@@ -324,7 +320,6 @@ class _SupervisorDigitalSignoffModalState
 
               const SizedBox(height: 10),
 
-              // Used Spare Parts List
               const Text(
                 'Vật tư & Phụ tùng đã thay thế:',
                 style: TextStyle(
@@ -473,12 +468,11 @@ class _SupervisorDigitalSignoffModalState
 
         const SizedBox(height: 12),
 
-        // Instruction Box
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: const Color(0xFFF0F9FF), // sky-50
+            color: const Color(0xFFF0F9FF),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: const Color(0xFFBAE6FD)),
           ),
@@ -502,7 +496,6 @@ class _SupervisorDigitalSignoffModalState
 
         const SizedBox(height: 12),
 
-        // Signature Canvas Pad
         SignaturePadWidget(
           key: _signatureKey,
           height: 160,
@@ -517,14 +510,13 @@ class _SupervisorDigitalSignoffModalState
 
         const SizedBox(height: 16),
 
-        // Footer Action Buttons
         Row(
           children: [
-            // Reject Button (Red)
+
             if (widget.onReject != null)
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFDC2626), // red-600
+                  backgroundColor: const Color(0xFFDC2626),
                   foregroundColor: Colors.white,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -546,7 +538,6 @@ class _SupervisorDigitalSignoffModalState
 
             if (widget.onReject != null) const SizedBox(width: 8),
 
-            // Cancel Button
             Expanded(
               child: OutlinedButton(
                 style: OutlinedButton.styleFrom(
@@ -562,11 +553,10 @@ class _SupervisorDigitalSignoffModalState
 
             const SizedBox(width: 8),
 
-            // Confirm Approval Button (Emerald Green)
             Expanded(
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF059669), // emerald-600
+                  backgroundColor: const Color(0xFF059669),
                   foregroundColor: Colors.white,
                   disabledBackgroundColor: const Color(0xFFCBD5E1),
                   disabledForegroundColor: const Color(0xFF94A3B8),
@@ -596,7 +586,7 @@ class _SupervisorDigitalSignoffModalState
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFF1F2), // rose-50
+            color: const Color(0xFFFFF1F2),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: const Color(0xFFFECDD3)),
           ),

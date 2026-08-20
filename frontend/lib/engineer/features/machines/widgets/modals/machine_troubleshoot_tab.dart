@@ -59,11 +59,11 @@ class _MachineTroubleshootTabState extends State<MachineTroubleshootTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Top Action Bar for Engineer to Edit/Add Tips
+
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFFBEB), // Amber-50
+            color: const Color(0xFFFFFBEB),
             borderRadius: BorderRadius.circular(12.0),
             border: Border.all(color: const Color(0xFFFDE68A)),
           ),
@@ -123,7 +123,7 @@ class _MachineTroubleshootTabState extends State<MachineTroubleshootTab> {
         const SizedBox(height: 10),
 
         if (!_isEditing) ...[
-          // Read-Only Accordion Mode
+
           if (widget.machine.quickTroubleshooting.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 20),
@@ -226,7 +226,7 @@ class _MachineTroubleshootTabState extends State<MachineTroubleshootTab> {
               );
             }),
         ] else ...[
-          // Edit Mode
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

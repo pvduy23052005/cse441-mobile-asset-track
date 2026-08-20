@@ -123,10 +123,9 @@ class _LoginPortalScreenState extends State<LoginPortalScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // 1. Banner Header Gradient (Wireframe K match)
+
             _HeaderBanner(height: screenHeight * 0.34),
 
-            // 2. Form Đăng nhập
             Transform.translate(
               offset: const Offset(0, -30),
               child: Padding(
@@ -148,7 +147,7 @@ class _LoginPortalScreenState extends State<LoginPortalScreen> {
             ),
 
             const SizedBox(height: 20),
-            // 3. Footer Hỗ trợ kỹ thuật
+
             const _FooterSection(),
             const SizedBox(height: 28),
           ],
@@ -378,7 +377,7 @@ class _LoginFormCard extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 12),
-              // Remember me & Version
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

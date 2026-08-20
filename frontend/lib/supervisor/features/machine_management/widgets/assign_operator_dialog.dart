@@ -161,7 +161,7 @@ class _AssignOperatorDialogState extends State<AssignOperatorDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Drag Handle
+
             const SizedBox(height: 12),
             Container(
               width: 40,
@@ -173,7 +173,6 @@ class _AssignOperatorDialogState extends State<AssignOperatorDialog> {
             ),
             const SizedBox(height: 12),
 
-            // Header
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Row(
@@ -210,7 +209,6 @@ class _AssignOperatorDialogState extends State<AssignOperatorDialog> {
             ),
             const Divider(height: 1, color: AppTheme.borderColor),
 
-            // Search Bar
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
               child: TextField(
@@ -258,12 +256,10 @@ class _AssignOperatorDialogState extends State<AssignOperatorDialog> {
               ),
             ),
 
-            // Body List
             Flexible(
               child: _buildBody(),
             ),
 
-            // Footer Actions
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: const BoxDecoration(
@@ -439,7 +435,7 @@ class _AssignOperatorDialogState extends State<AssignOperatorDialog> {
             ),
             child: Row(
               children: [
-                // Avatar
+
                 CircleAvatar(
                   radius: 20,
                   backgroundColor: isSelected
@@ -459,7 +455,6 @@ class _AssignOperatorDialogState extends State<AssignOperatorDialog> {
                 ),
                 const SizedBox(width: 12),
 
-                // Name & Info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -506,7 +501,6 @@ class _AssignOperatorDialogState extends State<AssignOperatorDialog> {
                   ),
                 ),
 
-                // Selection Radio Icon
                 Container(
                   width: 24,
                   height: 24,

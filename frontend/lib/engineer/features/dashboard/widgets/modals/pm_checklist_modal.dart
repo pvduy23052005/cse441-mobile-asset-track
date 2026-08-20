@@ -97,7 +97,6 @@ class _PMChecklistModalState extends State<PMChecklistModal> {
         }
       } catch (_) {}
 
-      // Fallback demo image if camera is not available on emulator
       setState(() {
         item.photoUrl =
             'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=500';
@@ -322,7 +321,7 @@ class _PMChecklistModalState extends State<PMChecklistModal> {
         constraints: const BoxConstraints(maxHeight: 620),
         child: Column(
           children: [
-            // Header
+
             Container(
               padding: const EdgeInsets.all(16),
               decoration: const BoxDecoration(
@@ -387,7 +386,6 @@ class _PMChecklistModalState extends State<PMChecklistModal> {
               ),
             ),
 
-            // Scrollable Content
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
@@ -465,7 +463,6 @@ class _PMChecklistModalState extends State<PMChecklistModal> {
               ),
             ),
 
-            // Footer Action
             Container(
               padding: const EdgeInsets.all(14),
               decoration: const BoxDecoration(

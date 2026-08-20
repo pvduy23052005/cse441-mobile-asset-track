@@ -46,7 +46,7 @@ class SupervisorHeaderBar extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Row 1: Profile Info & Action Icons
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -57,7 +57,7 @@ class SupervisorHeaderBar extends StatelessWidget {
                       width: 34,
                       height: 34,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFD97706), // amber-600
+                        color: const Color(0xFFD97706),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       alignment: Alignment.center,
@@ -93,7 +93,7 @@ class SupervisorHeaderBar extends StatelessWidget {
                                 width: 7,
                                 height: 7,
                                 decoration: const BoxDecoration(
-                                  color: Color(0xFF10B981), // emerald-500
+                                  color: Color(0xFF10B981),
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -114,7 +114,6 @@ class SupervisorHeaderBar extends StatelessWidget {
                 ),
               ),
 
-              // Action Buttons
               Row(
                 children: [
                   IconButton(
@@ -165,7 +164,6 @@ class SupervisorHeaderBar extends StatelessWidget {
           const Divider(height: 1, color: Color(0xFFF1F5F9)),
           const SizedBox(height: 10),
 
-          // Row 2: Time Filter Segmented Tabs
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

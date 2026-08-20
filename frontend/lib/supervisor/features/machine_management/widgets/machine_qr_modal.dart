@@ -82,7 +82,6 @@ class _MachineQrModalState extends State<MachineQrModal> {
           : widget.machine.id;
       final fileName = 'QR_${rawCode.replaceAll(RegExp(r'[^\w\-]'), '_')}';
 
-      // If running on Desktop (macOS / Windows / Linux)
       if (!kIsWeb && (Platform.isMacOS || Platform.isWindows || Platform.isLinux)) {
         final downloadsDir = await getDownloadsDirectory() ?? await getApplicationDocumentsDirectory();
         final filePath = '${downloadsDir.path}/$fileName.png';
@@ -112,7 +111,7 @@ class _MachineQrModalState extends State<MachineQrModal> {
           );
         }
       } else if (!kIsWeb && Platform.isAndroid) {
-        // Android: Save to public Download folder & Photos gallery
+
         bool savedToFiles = false;
         try {
           final downloadDir = Directory('/storage/emulated/0/Download');
@@ -156,7 +155,7 @@ class _MachineQrModalState extends State<MachineQrModal> {
           );
         }
       } else {
-        // iOS or Web
+
         await Gal.putImageBytes(
           _qrImageBytes!,
           name: fileName,
@@ -268,7 +267,7 @@ class _MachineQrModalState extends State<MachineQrModal> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Drag Handle
+
             Container(
               width: 40,
               height: 4,
@@ -279,7 +278,6 @@ class _MachineQrModalState extends State<MachineQrModal> {
             ),
             const SizedBox(height: 16),
 
-            // Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -312,7 +310,6 @@ class _MachineQrModalState extends State<MachineQrModal> {
             const Divider(height: 1, color: AppTheme.borderColor),
             const SizedBox(height: 20),
 
-            // Machine Info
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
@@ -382,7 +379,6 @@ class _MachineQrModalState extends State<MachineQrModal> {
 
             const SizedBox(height: 20),
 
-            // QR Code Box
             if (_isLoading)
               Container(
                 height: 220,
@@ -473,7 +469,6 @@ class _MachineQrModalState extends State<MachineQrModal> {
 
             const SizedBox(height: 16),
 
-            // Note
             const Text(
               'Mã QR chứa ID thiết bị dùng để in/dán lên máy móc. Nhân viên vận hành có thể quét mã này để kiểm tra nhanh thông số và thực hiện checklist.',
               textAlign: TextAlign.center,

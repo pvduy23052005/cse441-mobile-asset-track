@@ -32,7 +32,7 @@ class SupervisorDashboardStats {
     List<dynamic> machines,
     List<dynamic> pendingTickets,
   ) {
-    // Collect unique machine identifiers for SOS breakdown and PM maintenance
+
     final Set<String> sosMachineIds = {};
     final Set<String> pmMachineIds = {};
 
@@ -164,8 +164,8 @@ class PendingSignoffItemModel {
   final String machineName;
   final String engineerName;
   final String downtimeDuration;
-  final String type; // 'SOS' | 'PM'
-  final String status; // 'COMPLETED', 'PENDING_APPROVAL'
+  final String type;
+  final String status;
   final bool requiresHighCostApproval;
   final double totalPartsCost;
 

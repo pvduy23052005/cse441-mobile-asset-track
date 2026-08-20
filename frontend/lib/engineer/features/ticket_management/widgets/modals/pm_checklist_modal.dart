@@ -86,11 +86,11 @@ class _PMChecklistModalState extends State<PMChecklistModal> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Header
+
           Container(
             padding: const EdgeInsets.all(16),
             decoration: const BoxDecoration(
-              color: Color(0xFFFFFBEB), // amber-50
+              color: Color(0xFFFFFBEB),
               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               border: Border(bottom: BorderSide(color: Color(0xFFFDE68A))),
             ),
@@ -141,7 +141,6 @@ class _PMChecklistModalState extends State<PMChecklistModal> {
             ),
           ),
 
-          // Checklist items
           Flexible(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
@@ -200,7 +199,6 @@ class _PMChecklistModalState extends State<PMChecklistModal> {
             ),
           ),
 
-          // Footer complete button
           Container(
             padding: const EdgeInsets.all(16),
             decoration: const BoxDecoration(

@@ -99,7 +99,7 @@ class SyncManager extends StateNotifier<SyncState> {
       final tasks = pendingRows.map((e) => SyncTaskModel.fromMap(e)).toList();
 
       for (final task in tasks) {
-        // Mark as processing
+
         await db.update(
           'sync_queue',
           {
@@ -125,10 +125,9 @@ class SyncManager extends StateNotifier<SyncState> {
         }
 
         if (success) {
-          // Delete completed task from queue
+
           await db.delete('sync_queue', where: 'id = ?', whereArgs: [task.id]);
 
-          // Update local record status
           if (task.localRecordId != null) {
             await db.update(
               'local_tickets',
@@ -170,7 +169,6 @@ class SyncManager extends StateNotifier<SyncState> {
             );
           }
 
-          // Exponential backoff pause
           final backoffMs = min(1000 * pow(2, newRetryCount).toInt(), 30000);
           await Future.delayed(Duration(milliseconds: backoffMs));
         }
@@ -198,7 +196,6 @@ class SyncManager extends StateNotifier<SyncState> {
   Future<bool> _processCreateTicketTask(SyncTaskModel task) async {
     final payload = Map<String, dynamic>.from(task.payload);
 
-    // 1. Check if there are local offline image files that need uploading
     final localImagePaths = (payload['local_image_paths'] as List?)
             ?.map((e) => e.toString())
             .toList() ??
@@ -224,7 +221,6 @@ class SyncManager extends StateNotifier<SyncState> {
       }
     }
 
-    // 2. Prepare API payload
     final apiPayload = {
       'machine_id': payload['machine_id'],
       'description': payload['description'],
@@ -234,7 +230,6 @@ class SyncManager extends StateNotifier<SyncState> {
         'downtime_start': payload['downtime_start'],
     };
 
-    // 3. Post to Server API
     final response = await _dio.post(
       task.endpoint,
       data: apiPayload,

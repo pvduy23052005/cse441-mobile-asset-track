@@ -63,7 +63,7 @@ class SupervisorApprovalModel {
   final String downtimeDuration;
   final List<ApprovalSparePartItem> usedSpareParts;
   final String description;
-  final String status; // 'COMPLETED', 'APPROVED', 'REJECTED'
+  final String status;
   final String? rejectionReason;
   final String? signatureUrl;
   final String createdAt;
@@ -105,7 +105,7 @@ class SupervisorApprovalModel {
               ApprovalSparePartItem.fromJson(Map<String, dynamic>.from(p as Map)))
           .toList();
     } else {
-      // Default demo spare parts with unit prices if empty
+
       parts = [
         ApprovalSparePartItem(
           id: 'sp-1',

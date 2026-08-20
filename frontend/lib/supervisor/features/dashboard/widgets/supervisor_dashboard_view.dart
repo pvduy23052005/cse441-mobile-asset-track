@@ -188,7 +188,7 @@ class _SupervisorDashboardViewState extends State<SupervisorDashboardView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Header Bar
+
             SupervisorHeaderBar(
               supervisorName: StorageService.getUserFullName()?.isNotEmpty == true
                   ? StorageService.getUserFullName()!
@@ -205,15 +205,12 @@ class _SupervisorDashboardViewState extends State<SupervisorDashboardView> {
             ),
             const SizedBox(height: 12),
 
-            // 2. Native Mobile KPI Cards
             SupervisorKpiCards(stats: _stats),
             const SizedBox(height: 12),
 
-            // 3. Machine Status Distribution Progress Bars
             MachineStatusDistributionCard(stats: _stats),
             const SizedBox(height: 12),
 
-            // 4. Feed: Pending Sign-offs & Approval Items
             PendingApprovalsQuickCard(
               pendingItems: _pendingApprovals,
               onRefresh: _loadDashboardData,
@@ -221,7 +218,6 @@ class _SupervisorDashboardViewState extends State<SupervisorDashboardView> {
             ),
             const SizedBox(height: 12),
 
-            // 5. Top Downtime Machines Table Ranking
             TopDowntimeMachinesCard(topMachines: _topMachines),
             const SizedBox(height: 24),
           ],
