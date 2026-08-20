@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  OnModuleInit,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import * as QRCode from 'qrcode';
 import { FirebaseService } from '../firebase/firebase.service';
 
@@ -136,9 +131,6 @@ export interface MachineQrCodeResponse {
 
 @Injectable()
 export class MachineService implements OnModuleInit {
-  private readonly logger = new Logger(MachineService.name);
-
-  // Collections as per system_design.md
   private readonly machinesCollection = 'machines';
   private readonly pmChecklistsCollection = 'pm_checklists';
   private readonly pmChecklistItemsCollection = 'pm_checklist_items';
@@ -190,7 +182,6 @@ export class MachineService implements OnModuleInit {
       }
       return null;
     } catch (e) {
-      this.logger.warn(`Error fetching operator info for ${operatorId}: ${e}`);
       return null;
     }
   }
@@ -220,15 +211,11 @@ export class MachineService implements OnModuleInit {
         };
       });
     } catch (error) {
-      this.logger.error(`Error fetching machines from Firestore: ${error}`);
       return [];
     }
   }
 
-  async getMachinesForUser(
-    role?: string,
-    userId?: string,
-  ): Promise<Machine[]> {
+  async getMachinesForUser(role?: string, userId?: string): Promise<Machine[]> {
     const allMachines = await this.getAllMachines();
     const normalizedRole = role?.toLowerCase();
 
@@ -256,7 +243,6 @@ export class MachineService implements OnModuleInit {
     const doc = await docRef.get();
 
     if (!doc.exists) {
-      // 1. Try exact code match
       let querySnapshot = await this.firebaseService.firestore
         .collection(this.machinesCollection)
         .where('code', '==', cleanId)
@@ -319,7 +305,9 @@ export class MachineService implements OnModuleInit {
         return { ...found, operator };
       }
 
-      throw new NotFoundException(`Machine with ID or Code '${cleanId}' not found`);
+      throw new NotFoundException(
+        `Machine with ID or Code '${cleanId}' not found`,
+      );
     }
 
     const data = doc.data() as FirestoreMachine;
@@ -356,7 +344,9 @@ export class MachineService implements OnModuleInit {
         .get();
 
       if (querySnapshot.empty) {
-        throw new NotFoundException(`Machine with ID or Code '${id}' not found`);
+        throw new NotFoundException(
+          `Machine with ID or Code '${id}' not found`,
+        );
       }
 
       const foundDoc = querySnapshot.docs[0];
@@ -395,7 +385,9 @@ export class MachineService implements OnModuleInit {
         .get();
 
       if (querySnapshot.empty) {
-        throw new NotFoundException(`Machine with ID or Code '${id}' not found`);
+        throw new NotFoundException(
+          `Machine with ID or Code '${id}' not found`,
+        );
       }
 
       const foundDoc = querySnapshot.docs[0];
@@ -433,7 +425,9 @@ export class MachineService implements OnModuleInit {
         .get();
 
       if (querySnapshot.empty) {
-        throw new NotFoundException(`Machine with ID or Code '${id}' not found`);
+        throw new NotFoundException(
+          `Machine with ID or Code '${id}' not found`,
+        );
       }
 
       doc = querySnapshot.docs[0];
@@ -451,7 +445,9 @@ export class MachineService implements OnModuleInit {
 
   async createMachine(data: Partial<FirestoreMachine>): Promise<Machine> {
     const now = new Date().toISOString();
-    const code = data.code ? data.code.trim().toUpperCase() : `MC-${Date.now()}`;
+    const code = data.code
+      ? data.code.trim().toUpperCase()
+      : `MC-${Date.now()}`;
     const docRef = this.firebaseService.firestore
       .collection(this.machinesCollection)
       .doc();
@@ -461,7 +457,7 @@ export class MachineService implements OnModuleInit {
       name: data.name ? data.name.trim() : 'Thiết bị mới',
       model: data.model
         ? data.model.trim()
-        : ((data.specifications?.category as string) || 'Chưa xác định'),
+        : (data.specifications?.category as string) || 'Chưa xác định',
       location: data.location ? data.location.trim() : 'Phân Xưởng Sản Xuất',
       status: (data.status || 'ACTIVE').toUpperCase(),
       running_hours: Number(data.running_hours ?? 0),
@@ -473,7 +469,6 @@ export class MachineService implements OnModuleInit {
     };
 
     await docRef.set(machineDoc);
-    this.logger.log(`Đã tạo hồ sơ máy mới: [${code}] ${machineDoc.name}`);
 
     return this.getMachineById(docRef.id);
   }
@@ -499,7 +494,9 @@ export class MachineService implements OnModuleInit {
         .get();
 
       if (querySnapshot.empty) {
-        throw new NotFoundException(`Machine with ID or Code '${id}' not found`);
+        throw new NotFoundException(
+          `Machine with ID or Code '${id}' not found`,
+        );
       }
 
       doc = querySnapshot.docs[0];
@@ -531,11 +528,6 @@ export class MachineService implements OnModuleInit {
         timestamp: updatedAt,
       });
 
-    this.logger.log(
-      `Đã cập nhật giờ chạy máy ${machineData.code || machineId}: ${previousHours}h -> ${newHours}h bởi ${loggedBy || 'Operator'}`,
-    );
-
-    // Auto-trigger PM Checklist creation if running hours reach or exceed next maintenance threshold
     if (newHours >= nextMaint) {
       const nextThreshold = nextMaint + 500;
       const pmCode = `PM-2026-${Math.round(nextMaint)}H`;
@@ -587,10 +579,6 @@ export class MachineService implements OnModuleInit {
             .collection(this.pmChecklistItemsCollection)
             .add(item);
         }
-
-        this.logger.log(
-          `⚡ TỰ ĐỘNG KÍCH HOẠT: Tạo phiếu PM mới ${pmCode} cho máy ${machineData.code || machineId} (${newHours}h >= ${nextMaint}h)!`,
-        );
       }
 
       await doc.ref.update({
@@ -602,7 +590,6 @@ export class MachineService implements OnModuleInit {
     return this.getMachineById(machineId);
   }
 
-  // PM Checklists Firestore API
   async getPMChecklists(): Promise<PMChecklist[]> {
     try {
       const snapshot = await this.firebaseService.firestore
@@ -624,9 +611,6 @@ export class MachineService implements OnModuleInit {
         };
       });
     } catch (error) {
-      this.logger.error(
-        `Error fetching PM checklists from Firestore: ${error}`,
-      );
       return [];
     }
   }
@@ -662,7 +646,6 @@ export class MachineService implements OnModuleInit {
         updatedAt: currentTime,
       });
     } else {
-      // Fallback: search by code query if doc.id didn't match directly
       const byCodeSnap = await this.firebaseService.firestore
         .collection(this.pmChecklistsCollection)
         .where('code', '==', id)
@@ -683,8 +666,8 @@ export class MachineService implements OnModuleInit {
       }
     }
 
-    // Connect to tickets collection so Supervisor approval list sees this PM checklist
-    const ticketsCollection = this.firebaseService.firestore.collection('tickets');
+    const ticketsCollection =
+      this.firebaseService.firestore.collection('tickets');
     const existingTicketQuery = await ticketsCollection
       .where('code', '==', code)
       .limit(1)
@@ -750,18 +733,13 @@ export class MachineService implements OnModuleInit {
     };
   }
 
-  // Auto seed missing Firebase collections matching system_design.md
   async seedAllFirebaseCollections() {
     try {
-      // 1. Check & Seed PM Checklists & Items
       const pmSnap = await this.firebaseService.firestore
         .collection(this.pmChecklistsCollection)
         .get();
 
       if (pmSnap.empty) {
-        this.logger.log(
-          'Seeding collection: pm_checklists into Firebase Firestore...',
-        );
         const pmDocRef = await this.firebaseService.firestore
           .collection(this.pmChecklistsCollection)
           .add({
@@ -804,15 +782,11 @@ export class MachineService implements OnModuleInit {
         }
       }
 
-      // 2. Check & Seed Running Hours Logs (Usage Logs)
       const rhlSnap = await this.firebaseService.firestore
         .collection(this.runningHoursLogsCollection)
         .get();
 
       if (rhlSnap.empty) {
-        this.logger.log(
-          'Seeding collection: running_hours_logs into Firebase Firestore...',
-        );
         await this.firebaseService.firestore
           .collection(this.runningHoursLogsCollection)
           .add({
@@ -826,15 +800,11 @@ export class MachineService implements OnModuleInit {
           });
       }
 
-      // 3. Check & Seed Spare Part Logs
       const splSnap = await this.firebaseService.firestore
         .collection(this.sparePartLogsCollection)
         .get();
 
       if (splSnap.empty) {
-        this.logger.log(
-          'Seeding collection: spare_part_logs into Firebase Firestore...',
-        );
         await this.firebaseService.firestore
           .collection(this.sparePartLogsCollection)
           .add({
@@ -847,15 +817,11 @@ export class MachineService implements OnModuleInit {
           });
       }
 
-      // 4. Check & Seed Spare Parts Requests
       const sprSnap = await this.firebaseService.firestore
         .collection(this.sparePartsRequestsCollection)
         .get();
 
       if (sprSnap.empty) {
-        this.logger.log(
-          'Seeding collection: spare_parts_requests into Firebase Firestore...',
-        );
         await this.firebaseService.firestore
           .collection(this.sparePartsRequestsCollection)
           .add({
@@ -871,15 +837,11 @@ export class MachineService implements OnModuleInit {
           });
       }
 
-      // 5. Check & Seed Workshop Configs
       const cfgSnap = await this.firebaseService.firestore
         .collection(this.workshopConfigsCollection)
         .get();
 
       if (cfgSnap.empty) {
-        this.logger.log(
-          'Seeding collection: workshop_configs into Firebase Firestore...',
-        );
         await this.firebaseService.firestore
           .collection(this.workshopConfigsCollection)
           .add({
@@ -890,12 +852,6 @@ export class MachineService implements OnModuleInit {
             updatedAt: new Date().toISOString(),
           });
       }
-
-      this.logger.log(
-        'All missing Firebase collections checked & seeded successfully!',
-      );
-    } catch (e) {
-      this.logger.error(`Error seeding Firebase collections: ${e}`);
-    }
+    } catch (e) {}
   }
 }

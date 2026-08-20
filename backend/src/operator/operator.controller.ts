@@ -12,10 +12,7 @@ import {
 } from '@nestjs/common';
 import type { JwtAuthenticatedRequest } from '../modules/auth/jwt-auth.guard';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
-import {
-  Machine,
-  MachineService,
-} from '../modules/machine/machine.service';
+import { Machine, MachineService } from '../modules/machine/machine.service';
 import { CreateTicketDto } from '../modules/tickets/dto/create-ticket.dto';
 import { Ticket } from '../modules/tickets/interfaces/ticket.interface';
 import { TicketsService } from '../modules/tickets/tickets.service';
@@ -29,9 +26,7 @@ export class OperatorController {
   ) {}
 
   @Get('machines')
-  async getMyMachines(
-    @Req() req: JwtAuthenticatedRequest,
-  ): Promise<Machine[]> {
+  async getMyMachines(@Req() req: JwtAuthenticatedRequest): Promise<Machine[]> {
     const userRole = req.user?.role?.toLowerCase();
     if (userRole && userRole !== 'operator' && userRole !== 'supervisor') {
       throw new ForbiddenException(
@@ -55,11 +50,7 @@ export class OperatorController {
     @Body() dto: CreateTicketDto,
   ): Promise<Ticket> {
     const userRole = req.user?.role?.toLowerCase();
-    if (
-      userRole &&
-      userRole !== 'operator' &&
-      userRole !== 'supervisor'
-    ) {
+    if (userRole && userRole !== 'operator' && userRole !== 'supervisor') {
       throw new ForbiddenException(
         'Chỉ người vận hành (Operator) mới có quyền tạo phiếu báo cáo sự cố tại đây',
       );

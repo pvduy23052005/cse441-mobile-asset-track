@@ -41,7 +41,8 @@ export class MachineController {
   @Patch('pm-checklists/:id/submit')
   async submitPMChecklist(
     @Param('id') id: string,
-    @Body() body: { items?: any[]; used_spare_parts?: any[]; engineer_name?: string },
+    @Body()
+    body: { items?: any[]; used_spare_parts?: any[]; engineer_name?: string },
   ): Promise<any> {
     return this.machineService.submitPMChecklist(id, body);
   }

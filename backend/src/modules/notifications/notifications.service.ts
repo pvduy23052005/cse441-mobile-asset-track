@@ -133,14 +133,13 @@ export class NotificationsService {
     return { updatedCount: unreadNotifications.length };
   }
 
-  /**
-   * Xóa 1 thông báo theo ID
-   */
   async deleteNotification(
     notificationId: string,
   ): Promise<{ success: boolean }> {
     const firestore = this.firebaseService.firestore;
-    const docRef = firestore.collection(this.collectionName).doc(notificationId);
+    const docRef = firestore
+      .collection(this.collectionName)
+      .doc(notificationId);
     const doc = await docRef.get();
 
     if (!doc.exists) {
@@ -153,9 +152,6 @@ export class NotificationsService {
     return { success: true };
   }
 
-  /**
-   * Xóa nhiều thông báo theo danh sách IDs
-   */
   async deleteMultipleNotifications(
     notificationIds: string[],
   ): Promise<{ deletedCount: number }> {
@@ -175,4 +171,3 @@ export class NotificationsService {
     return { deletedCount: notificationIds.length };
   }
 }
-

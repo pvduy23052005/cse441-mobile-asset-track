@@ -25,7 +25,7 @@ export class TicketsService {
   constructor(
     private readonly firebaseService: FirebaseService,
     private readonly notificationsService: NotificationsService,
-  ) { }
+  ) {}
 
   private get collection() {
     return this.firebaseService.firestore.collection(this.collectionName);
@@ -287,7 +287,8 @@ export class TicketsService {
             .doc(ticketData.machine_id);
           const machineSnap = await machineRef.get();
           if (machineSnap.exists) {
-            const currentStatus = (machineSnap.data() as FirestoreMachine)?.status;
+            const currentStatus = (machineSnap.data() as FirestoreMachine)
+              ?.status;
             if (currentStatus === 'PENDING') {
               await machineRef.update({
                 status: 'ACTIVE',
@@ -297,7 +298,9 @@ export class TicketsService {
           }
         }
       } catch (e) {
-        this.logger.warn(`Không thể cập nhật trạng thái máy khi xóa ticket: ${e}`);
+        this.logger.warn(
+          `Không thể cập nhật trạng thái máy khi xóa ticket: ${e}`,
+        );
       }
     }
 

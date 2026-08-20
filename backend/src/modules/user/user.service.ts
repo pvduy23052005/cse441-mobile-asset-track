@@ -67,7 +67,6 @@ export class UserService {
 
     const firestore = this.firebaseService.firestore;
 
-    // Check if user already exists
     const existingSnap = await firestore
       .collection('users')
       .where('email', '==', cleanEmail)

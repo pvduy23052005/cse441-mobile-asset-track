@@ -39,9 +39,7 @@ export class SupervisorController {
   }
 
   @Get('operators')
-  async getOperators(
-    @Req() req: JwtAuthenticatedRequest,
-  ): Promise<any[]> {
+  async getOperators(@Req() req: JwtAuthenticatedRequest): Promise<any[]> {
     const userRole = req.user?.role?.toLowerCase();
     if (userRole !== 'supervisor') {
       throw new ForbiddenException(
