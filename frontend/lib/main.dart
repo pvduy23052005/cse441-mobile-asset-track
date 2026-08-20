@@ -34,11 +34,7 @@ void main() async {
     await StorageService.init();
   } catch (_) {}
 
-  runApp(
-    const ProviderScope(
-      child: MyApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
